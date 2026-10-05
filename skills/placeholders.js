@@ -1,6 +1,6 @@
 /* skills/placeholders.js — menu tiles for every module in the CLAUDE.md table that is not built yet.
    When a real skill is built, it registers the same id and replaces its placeholder here.
-   Group assignments are PROVISIONAL pending Fons's confirmation. */
+   Group assignments accepted for now; revisit as modules are built. */
 (function () {
   'use strict';
   [

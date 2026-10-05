@@ -108,5 +108,5 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [ ] SBA-approved interpretation thresholds
 - [x] Milestone 1 portal shell (2026-10-05): menu board, Knowledge tab (empty), core engine, registry + placeholders, demo skill on synthetic data.
 - [ ] Upgrade `vendor/xlsx.full.min.js` from SheetJS 0.18.5 (npm) to 0.20.3+ from cdn.sheetjs.com (0.18.5 has known advisories for crafted files); drop-in replacement.
-- [ ] Confirm menu-board group for each module (`skills/placeholders.js`; currently provisional).
-- [ ] Word export is MHTML saved as `.doc` (embeds the chart); confirm it opens cleanly in office Word.
+- [x] Menu-board groups accepted for now (2026-10-05); revisit as modules are built (`skills/placeholders.js`).
+- [x] Office desktop test of milestone 1 passed (demo run, validation errors, Excel/Word save, folder connect + remembered, print).
