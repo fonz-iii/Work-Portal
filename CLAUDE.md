@@ -107,6 +107,7 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [ ] Complaints data format (Customer Service)
 - [ ] SBA-approved interpretation thresholds
 - [x] Milestone 1 portal shell (2026-10-05): menu board, Knowledge tab (empty), core engine, registry + placeholders, demo skill on synthetic data.
-- [ ] Upgrade `vendor/xlsx.full.min.js` from SheetJS 0.18.5 (npm) to 0.20.3+ from cdn.sheetjs.com (0.18.5 has known advisories for crafted files); drop-in replacement.
+- [x] SheetJS upgraded to 0.20.3 in `vendor/xlsx.full.min.js` (2026-10-05); demo re-tested.
 - [x] Menu-board groups accepted for now (2026-10-05); revisit as modules are built (`skills/placeholders.js`).
 - [x] Office desktop test of milestone 1 passed (demo run, validation errors, Excel/Word save, folder connect + remembered, print).
+- [ ] UI refresh: more corporate, sleek and formal look across the menu board, runner, Knowledge tab and outputs (keep navy/amber base, system fonts, 1366×768). Mock-up first for Fons to approve, then apply in `assets/css/portal.css`.
