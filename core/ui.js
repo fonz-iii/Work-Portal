@@ -34,7 +34,7 @@
   function renderShell(active) {
     var h = $('#shell');
     h.innerHTML =
-      '<a class="brand" href="index.html"><span class="brand-mark">SBA</span><span class="brand-text">Marketing Portal</span></a>' +
+      '<a class="brand" href="index.html"><span class="brand-mark">SBA</span><span class="brand-text"><b>Sterling Bank of Asia</b><small>Marketing Portal</small></span></a>' +
       '<nav class="nav">' +
       '<a href="index.html"' + (active === 'board' ? ' class="active"' : '') + '>Menu board</a>' +
       '<a href="knowledge.html"' + (active === 'knowledge' ? ' class="active"' : '') + '>Knowledge</a>' +
@@ -79,7 +79,10 @@
     var names = GROUP_ORDER.filter(function (g) { return groups[g]; })
       .concat(Object.keys(groups).filter(function (g) { return GROUP_ORDER.indexOf(g) < 0; }));
 
-    var html = '<section class="hero"><h1>Good day, Fons.</h1><p>Pick a task. Each tile turns a raw file into a ready-to-review output. Nothing leaves this computer.</p></section>';
+    var today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    var html = '<section class="hero"><div><p class="eyebrow">Marketing</p><h1>Reports and reference</h1>' +
+      '<p>Select a module. Each one turns a source file into a draft output for your review.</p></div>' +
+      '<p class="hero-date">' + esc(today) + '</p></section>';
     names.forEach(function (g) {
       html += '<section class="group"><h2>' + esc(g) + '</h2><div class="tiles">';
       groups[g].forEach(function (s) {
@@ -87,7 +90,8 @@
         html += '<a class="tile tile-' + esc(st) + '" href="' + esc(href) + '">' +
           '<span class="badge badge-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span>' +
           '<span class="tile-title">' + esc(s.title) + '</span>' +
-          '<span class="tile-desc">' + esc(s.description || '') + '</span></a>';
+          '<span class="tile-desc">' + esc(s.description || '') + '</span>' +
+          '<span class="tile-foot">' + (isLive(s) ? 'Open' : 'View details') + ' <span aria-hidden="true">›</span></span></a>';
       });
       html += '</div></section>';
     });

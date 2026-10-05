@@ -17,12 +17,12 @@
     '@page Section1{size:595.3pt 841.9pt;margin:54pt 54pt 54pt 54pt;}' +
     'div.Section1{page:Section1;}' +
     'body{font-family:"Segoe UI",Calibri,Arial,sans-serif;font-size:10.5pt;color:#1d2433;}' +
-    'h1{font-size:18pt;color:#12305a;margin:0 0 4pt;}h2{font-size:13pt;color:#12305a;margin:14pt 0 4pt;}' +
+    'h1{font-size:18pt;color:#0f2747;margin:0 0 4pt;}h2{font-size:13pt;color:#0f2747;margin:14pt 0 4pt;}' +
     'p{margin:0 0 6pt;line-height:1.35;}.muted{color:#5d6475;font-size:9pt;}' +
     'table{border-collapse:collapse;width:100%;margin:4pt 0 8pt;}' +
-    'th{background:#12305a;color:#ffffff;font-weight:bold;padding:4pt 6pt;text-align:left;font-size:9.5pt;}' +
-    'td{padding:3pt 6pt;border-bottom:1px solid #e4dccb;font-size:9.5pt;}' +
-    'tr.alt td{background:#fbf6ea;}td.n,th.n{text-align:right;}' +
+    'th{background:#0f2747;color:#ffffff;font-weight:bold;padding:4pt 6pt;text-align:left;font-size:9.5pt;}' +
+    'td{padding:3pt 6pt;border-bottom:1px solid #dcd8ce;font-size:9.5pt;}' +
+    'tr.alt td{background:#faf8f3;}td.n,th.n{text-align:right;}' +
     '.draft{color:#9a5b00;font-weight:bold;}';
 
   P.export = {

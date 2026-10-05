@@ -3,7 +3,7 @@
   'use strict';
   var P = root.Portal = root.Portal || {};
 
-  var COLORS = { current: '#12305a', previous: '#e0a526', grid: '#e4dccb', text: '#1d2433', muted: '#5d6475' };
+  var COLORS = { current: '#0f2747', previous: '#c8962e', grid: '#e9e6de', text: '#1d2433', muted: '#5d6475' };
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
