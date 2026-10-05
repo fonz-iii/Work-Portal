@@ -15,7 +15,33 @@
   P.getSkill = function (id) { return skills.find(function (s) { return s.id === id; }); };
 
   var GROUP_ORDER = ['Quarterly Reports', 'RIB', 'Research', 'Knowledge', 'Demo'];
-  var STATUS_LABEL = { planned: 'Planned', 'on-hold': 'On hold', demo: 'Demo', ready: 'Ready' };
+  var GROUP_META = {
+    'Quarterly Reports': { id: 'reports', icon: 'chart', blurb: 'Quarterly management reports built from BSP publications and channel data.' },
+    'RIB': { id: 'rib', icon: 'screen', blurb: 'Retail Internet Banking content: biller directories and customer advisories.' },
+    'Research': { id: 'research', icon: 'book', blurb: 'Past studies and templates for new research work.' },
+    'Knowledge': { id: 'knowledge', icon: 'bank', blurb: 'Reference information for the Marketing team.' },
+    'Demo': { id: 'demo', icon: 'flask', blurb: 'Engine check on synthetic data. Not a real report.' }
+  };
+  var STATUS_LABEL = { planned: 'In development', 'on-hold': 'On hold', demo: 'Demo', ready: 'Available' };
+
+  var ICONS = {
+    chart: '<path d="M3 21h18"/><path d="M6 17v-5M11 17V7M16 17v-8M21 17V4"/>',
+    screen: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+    book: '<path d="M4 19V5a2 2 0 0 1 2-2h14v14H6a2 2 0 0 0-2 2zm0 0a2 2 0 0 0 2 2h14"/>',
+    bank: '<path d="M3 21h18M4 10h16M12 3l9 5H3z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',
+    flask: '<path d="M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/>',
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    file: '<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    save: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+    folder: '<path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'
+  };
+  function icon(name, cls) {
+    return '<svg class="ico ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
+  }
+  var LOGO = '<svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="6" fill="#0d2240"/><path d="M11 28V20M17.5 28V14M24 28v-10M30.5 28V10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><path d="M9 31h23" stroke="#5b8fd6" stroke-width="2" stroke-linecap="round"/></svg>';
 
   /* ---------- helpers ---------- */
   function esc(s) {
@@ -27,36 +53,49 @@
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function isLive(s) { return !s.status || s.status === 'ready' || s.status === 'demo'; }
   function currentQuarter() { var d = new Date(); return 'Q' + (Math.floor(d.getMonth() / 3) + 1) + ' ' + d.getFullYear(); }
+  function meta(g) { return GROUP_META[g] || { id: String(g).toLowerCase().replace(/\W+/g, '-'), icon: 'file', blurb: '' }; }
 
-  P.ui = { esc: esc };
+  P.ui = { esc: esc, icon: icon };
 
-  /* ---------- shell header ---------- */
+  /* ---------- shell: utility bar, masthead, footer ---------- */
   function renderShell(active) {
-    var h = $('#shell');
-    h.innerHTML =
-      '<a class="brand" href="index.html"><span class="brand-mark">SBA</span><span class="brand-text"><b>Sterling Bank of Asia</b><small>Marketing Portal</small></span></a>' +
-      '<nav class="nav">' +
-      '<a href="index.html"' + (active === 'board' ? ' class="active"' : '') + '>Menu board</a>' +
-      '<a href="knowledge.html"' + (active === 'knowledge' ? ' class="active"' : '') + '>Knowledge</a>' +
-      '</nav><div class="folder" id="folder"></div>';
+    var nav = [['Home', 'index.html', 'board'], ['Reports', 'index.html#reports'], ['RIB', 'index.html#rib'], ['Research', 'index.html#research'], ['Knowledge', 'knowledge.html', 'knowledge']];
+    $('#shell').innerHTML =
+      '<div class="topbar"><div class="wrap topbar-in"><span>Sterling Bank of Asia&nbsp;&nbsp;|&nbsp;&nbsp;Marketing</span>' +
+      '<span class="topbar-note">' + icon('lock') + 'Internal use only · Works offline</span><div class="folder" id="folder"></div></div></div>' +
+      '<div class="masthead"><div class="wrap masthead-in"><a class="brand" href="index.html">' + LOGO +
+      '<span class="brand-text"><b>Marketing Portal</b><small>Sterling Bank of Asia</small></span></a><nav class="nav">' +
+      nav.map(function (n) { return '<a href="' + n[1] + '"' + (n[2] && n[2] === active ? ' class="active"' : '') + '>' + n[0] + '</a>'; }).join('') +
+      '</nav></div></div>';
     renderFolder();
+    renderFooter();
+  }
+
+  function renderFooter() {
+    var f = $('#foot');
+    if (!f) return;
+    var ks = [['Directory', 'directory'], ['Org chart', 'orgchart'], ['Branches', 'branches'], ['Products & fees', 'products'], ['P2B billers', 'billers'], ['Templates', 'templates']];
+    f.innerHTML = '<div class="wrap foot-grid"><div class="foot-brand"><div class="brand light">' + LOGO +
+      '<span class="brand-text"><b>Marketing Portal</b><small>Sterling Bank of Asia</small></span></div>' +
+      '<p>An offline workspace that turns recurring source files into draft reports for review. Files are read on this computer and never leave it.</p></div>' +
+      '<div><h4>Modules</h4><ul>' + GROUP_ORDER.filter(function (g) { return g !== 'Knowledge'; }).map(function (g) { return '<li><a href="index.html#' + meta(g).id + '">' + esc(g) + '</a></li>'; }).join('') + '</ul></div>' +
+      '<div><h4>Knowledge</h4><ul>' + ks.map(function (k) { return '<li><a href="knowledge.html#' + k[1] + '">' + esc(k[0]) + '</a></li>'; }).join('') + '</ul></div>' +
+      '<div><h4>About the figures</h4><p>Every number is calculated from the files you supply. Commentary marked DRAFT uses thresholds not yet approved by SBA. Outputs are drafts until you review and release them.</p></div></div>' +
+      '<div class="foot-base"><div class="wrap foot-base-in"><span>Sterling Bank of Asia · Marketing · For internal use only</span><span>Phase 1</span></div></div>';
   }
 
   function renderFolder() {
     var f = P.files, box = $('#folder');
     if (!box) return;
-    var st = f.status(), name = esc(f.folderName()), html;
+    var st = f.status(), name = esc(f.folderName()), html = icon('folder');
     if (st === 'connected') {
-      html = '<span class="dot ok"></span><span>Saving to <b>' + name + '</b></span>' +
-        '<button class="btn small ghost" data-act="connect">Change</button><button class="btn small ghost" data-act="disconnect">Disconnect</button>';
+      html += '<span>Saving to <b>' + name + '</b></span><button class="linkbtn" data-act="connect">Change</button><button class="linkbtn" data-act="disconnect">Disconnect</button>';
     } else if (st === 'needs-permission') {
-      html = '<span class="dot warn"></span><span>Folder <b>' + name + '</b> needs your OK</span>' +
-        '<button class="btn small" data-act="reconnect">Allow access</button>';
+      html += '<span>Folder <b>' + name + '</b> needs permission</span><button class="linkbtn strong" data-act="reconnect">Allow access</button>';
     } else if (st === 'none') {
-      html = '<span class="dot"></span><span>No folder connected. Outputs download.</span>' +
-        '<button class="btn small" data-act="connect">Connect folder</button>';
+      html += '<span>No output folder</span><button class="linkbtn strong" data-act="connect">Connect folder</button>';
     } else {
-      html = '<span class="dot"></span><span>Folder access unavailable here. Outputs download.</span>';
+      html += '<span>Outputs save to Downloads</span>';
     }
     if (f.lastError) html += '<span class="folder-err" title="' + esc(f.lastError) + '">!</span>';
     box.innerHTML = html;
@@ -71,53 +110,75 @@
     else if (act === 'disconnect') P.files.disconnect();
   });
 
-  /* ---------- menu board ---------- */
+  /* ---------- landing page ---------- */
   function renderBoard(main) {
     var groups = {};
     skills.forEach(function (s) { (groups[s.group || 'Other'] = groups[s.group || 'Other'] || []).push(s); });
-    groups.Knowledge = (groups.Knowledge || []).concat([{ id: '__knowledge', title: 'Knowledge tab', description: 'Directory, org chart, branches, products and fees, P2B billers, templates.', href: 'knowledge.html', status: 'ready' }]);
+    groups.Knowledge = (groups.Knowledge || []).concat([{ id: '__knowledge', title: 'Knowledge', description: 'Directory, org chart, branch list, product and fee summaries, P2B billers and templates.', href: 'knowledge.html', status: 'ready' }]);
     var names = GROUP_ORDER.filter(function (g) { return groups[g]; })
       .concat(Object.keys(groups).filter(function (g) { return GROUP_ORDER.indexOf(g) < 0; }));
-
+    var count = function (fn) { return skills.filter(fn).length; };
     var today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    var html = '<section class="hero"><div><p class="eyebrow">Marketing</p><h1>Reports and reference</h1>' +
-      '<p>Select a module. Each one turns a source file into a draft output for your review.</p></div>' +
-      '<p class="hero-date">' + esc(today) + '</p></section>';
-    names.forEach(function (g) {
-      html += '<section class="group"><h2>' + esc(g) + '</h2><div class="tiles">';
+
+    var html = '<section class="hero"><div class="wrap hero-in"><div class="hero-copy">' +
+      '<p class="kicker">Marketing Portal</p><h1>Management-ready reports, prepared at your desk.</h1>' +
+      '<p class="hero-lede">Turn BSP rankings, biller masterlists and channel data into decks, reports and directories for review. Every figure is calculated from the source file, and nothing leaves this computer.</p>' +
+      '<div class="hero-cta"><a class="btn primary lg" href="#reports">Browse modules ' + icon('arrow') + '</a><a class="btn ghost-light lg" href="knowledge.html">Open Knowledge</a></div></div>' +
+      '<aside class="hero-panel"><p class="panel-title">Portal status</p><dl>' +
+      '<div><dt>Available</dt><dd>' + count(isLive) + '</dd></div>' +
+      '<div><dt>In development</dt><dd>' + count(function (s) { return s.status === 'planned'; }) + '</dd></div>' +
+      '<div><dt>On hold</dt><dd>' + count(function (s) { return s.status === 'on-hold'; }) + '</dd></div>' +
+      '</dl><p class="panel-date">' + esc(today) + '</p></aside></div></section>';
+
+    html += '<section class="quick"><div class="wrap quick-in">' + names.filter(function (g) { return g !== 'Demo'; }).map(function (g) {
+      var mm = meta(g), href = g === 'Knowledge' ? 'knowledge.html' : '#' + mm.id;
+      return '<a class="quick-item" href="' + href + '">' + icon(mm.icon) + '<span><b>' + esc(g) + '</b><small>' + groups[g].length + (groups[g].length === 1 ? ' module' : ' modules') + '</small></span>' + icon('arrow', 'quick-arrow') + '</a>';
+    }).join('') + '</div></section>';
+
+    names.forEach(function (g, gi) {
+      var mm = meta(g);
+      html += '<section class="band' + (gi % 2 ? ' alt' : '') + '" id="' + mm.id + '"><div class="wrap band-in"><header class="band-head">' +
+        '<p class="kicker">' + String(gi + 1).padStart(2, '0') + '</p><h2>' + esc(g) + '</h2><p>' + esc(mm.blurb) + '</p></header><div class="cards">';
       groups[g].forEach(function (s) {
         var st = s.status || 'ready', href = s.href || ('#skill/' + encodeURIComponent(s.id));
-        html += '<a class="tile tile-' + esc(st) + '" href="' + esc(href) + '">' +
-          '<span class="badge badge-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span>' +
-          '<span class="tile-title">' + esc(s.title) + '</span>' +
-          '<span class="tile-desc">' + esc(s.description || '') + '</span>' +
-          '<span class="tile-foot">' + (isLive(s) ? 'Open' : 'View details') + ' <span aria-hidden="true">›</span></span></a>';
+        html += '<a class="mcard st-' + esc(st) + '" href="' + esc(href) + '"><div class="mcard-top"><span class="mcard-ico">' + icon(mm.icon) + '</span>' +
+          '<span class="pill pill-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span></div>' +
+          '<h3>' + esc(s.title) + '</h3><p>' + esc(s.description || '') + '</p>' +
+          '<span class="more">' + (isLive(s) ? 'Open' : 'View details') + icon('arrow') + '</span></a>';
       });
-      html += '</div></section>';
+      html += '</div></div></section>';
     });
+
+    var steps = [['file', 'Choose the source file', 'Excel or PDF from your folder. It is read in the browser only.'],
+      ['check', 'Automatic checks', 'Missing columns, wrong types and period gaps are listed before anything is calculated.'],
+      ['eye', 'Review the draft', 'Figures, charts and rule-based commentary appear on screen for your review.'],
+      ['save', 'Save and release', 'Save Excel, Word or PDF to your connected folder. You decide what gets sent.']];
+    html += '<section class="band how"><div class="wrap"><header class="band-head center"><p class="kicker">How it works</p><h2>From source file to reviewed draft</h2></header><ol class="steps">' +
+      steps.map(function (s, i) { return '<li><span class="step-ico">' + icon(s[0]) + '</span><span class="step-n">Step ' + (i + 1) + '</span><h3>' + s[1] + '</h3><p>' + s[2] + '</p></li>'; }).join('') +
+      '</ol></div></section>';
     main.innerHTML = html;
   }
 
   /* ---------- skill runner ---------- */
   function renderRunner(main, skill) {
     var state = { inputs: {}, params: {}, metrics: null };
-    var st = skill.status || 'ready';
-    var html = '<a class="back" href="index.html">← Menu board</a>' +
-      '<header class="runner-head"><div><p class="eyebrow">' + esc(skill.group || '') + '</p><h1>' + esc(skill.title) + '</h1>' +
-      '<p class="lede">' + esc(skill.description || '') + '</p></div>' +
-      '<span class="badge badge-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span></header>';
+    var st = skill.status || 'ready', g = skill.group || '';
+    var head = '<div class="page-head"><div class="wrap"><nav class="crumbs"><a href="index.html">Home</a><span>/</span><a href="index.html#' + meta(g).id + '">' + esc(g) + '</a><span>/</span><b>' + esc(skill.title) + '</b></nav>' +
+      '<div class="page-title"><div><h1>' + esc(skill.title) + '</h1><p class="lede">' + esc(skill.description || '') + '</p></div>' +
+      '<span class="pill pill-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span></div></div></div>';
 
     if (!isLive(skill)) {
-      main.innerHTML = html + '<div class="card notice"><h2>Not built yet</h2><p>' + esc(skill.note || 'This module is a placeholder.') + '</p>' +
-        listBlock('Planned inputs', skill.plannedInputs) + listBlock('Planned outputs', skill.plannedOutputs) + '</div>';
+      main.innerHTML = head + '<div class="wrap page-body"><div class="card notice"><h2>' + icon('file') + 'Module in development</h2><p>' + esc(skill.note || 'This module is a placeholder.') + '</p>' +
+        '<div class="notice-cols">' + listBlock('Planned inputs', skill.plannedInputs) + listBlock('Planned outputs', skill.plannedOutputs) + '</div>' +
+        '<a class="btn" href="index.html#' + meta(g).id + '">Back to ' + esc(g) + '</a></div></div>';
       return;
     }
 
-    html += '<div class="runner-grid"><section class="card"><h2>1. Files</h2><div id="inputs"></div></section>' +
-      '<section class="card"><h2>2. Settings</h2><div id="params"></div>' +
-      '<div class="actions"><button class="btn primary" id="run">Run</button></div>' + rulesNote(skill) + '</section></div>' +
-      '<div id="errors"></div><section id="results"></section>';
-    main.innerHTML = html;
+    main.innerHTML = head + '<div class="wrap page-body"><div class="runner-grid">' +
+      '<section class="card"><h2><span class="step">1</span>Source files</h2><div id="inputs"></div></section>' +
+      '<section class="card"><h2><span class="step">2</span>Settings</h2><div id="params"></div>' +
+      '<div class="actions"><button class="btn primary" id="run">Run analysis</button></div>' + rulesNote(skill) + '</section></div>' +
+      '<div id="errors"></div><section id="results"></section></div>';
 
     var inBox = $('#inputs');
     (skill.inputs || []).forEach(function (d) { inBox.appendChild(inputRow(d, state)); });
@@ -233,7 +294,7 @@
     var files = [], screens = [];
     (skill.outputs || []).forEach(function (o) { (o.format === 'html' ? screens : files).push(o); });
 
-    var html = '<div class="results-bar no-print"><h2>3. Outputs</h2><div class="out-buttons">';
+    var html = '<div class="results-bar no-print"><h2><span class="step">3</span>Outputs</h2><div class="out-buttons">';
     files.forEach(function (o) { html += '<button class="btn primary" data-out="' + esc(o.key) + '">Save ' + esc(o.label) + '</button>'; });
     if (screens.length) html += '<button class="btn" data-print>Print / PDF</button>';
     html += '</div><p id="save-msg" class="muted"></p></div>';
@@ -269,8 +330,9 @@
     var main = $('#main'), m = /^#skill\/(.+)$/.exec(location.hash);
     var skill = m && P.getSkill(decodeURIComponent(m[1]));
     if (skill) { renderRunner(main, skill); document.title = skill.title + ' · SBA Marketing Portal'; }
-    else { renderBoard(main); document.title = 'SBA Marketing Portal'; }
-    root.scrollTo(0, 0);
+    else { renderBoard(main); document.title = 'Marketing Portal · Sterling Bank of Asia'; }
+    var target = !skill && location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView(); else root.scrollTo(0, 0);
   }
 
   /** page: 'board' (index.html) or 'knowledge'. */

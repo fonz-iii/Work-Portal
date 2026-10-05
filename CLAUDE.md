@@ -86,8 +86,8 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 ## Design
 
 - Landing page is a **menu board**: large tiles grouped by section (Quarterly Reports, RIB, Research, Knowledge).
-- SBA navy + amber base with cream surfaces, but with its own Marketing identity (distinct from the standard deck look).
-- Components: KPI tiles with big numbers, navy-header tables with cream rows, rounded cards, process/flow visuals.
+- Corporate-website look (2026-10-05 redesign, per Fons): deep navy + corporate blue on white and cool greys; amber/cream dropped from the UI. Landing page = utility bar, sticky masthead nav, hero with status panel, quick-link strip, section bands with module cards, "How it works" steps, multi-column footer.
+- Components: KPI cards with big numbers, navy-header tables with light zebra rows, rounded cards, process/flow visuals.
 - System font stack only. Must be readable at 1366×768.
 - Every output has a print stylesheet.
 
@@ -110,6 +110,6 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [x] SheetJS upgraded to 0.20.3 in `vendor/xlsx.full.min.js` (2026-10-05); demo re-tested.
 - [x] Menu-board groups accepted for now (2026-10-05); revisit as modules are built (`skills/placeholders.js`).
 - [x] Office desktop test of milestone 1 passed (demo run, validation errors, Excel/Word save, folder connect + remembered, print).
-- [ ] UI refresh: more corporate, sleek and formal look across the menu board, runner, Knowledge tab and outputs (keep navy/amber base, system fonts, 1366×768). Mock-up first for Fons to approve, then apply in `assets/css/portal.css`.
+- [ ] UI redesign v2 (corporate website layout, navy + blue) built 2026-10-05; awaiting Fons's approval.
 - [x] Build order agreed (2026-10-05): UI refresh → Industry Ranking (thrift + UKB) → DRB Usage.
 - [x] Q1 2026 thrift Stockholders' Equity figures come from the predecessor's workbook `samples/industry-ranking/2026-Q1-march/Industry Ranking as of March 31, 2026 v2.xlsx` (no PDF).
