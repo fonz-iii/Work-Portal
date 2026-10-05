@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SBA Marketing Portal</title>
+<link rel="icon" href="assets/icons/portal.svg">
+<link rel="stylesheet" href="assets/css/portal.css">
+</head>
+<body>
+<header id="shell" class="shell no-print"></header>
+<main id="main" class="main"><p class="muted">Loading…</p></main>
+<footer class="foot no-print">Runs offline from this folder. No data leaves this computer.</footer>
+
+<!-- vendor (local copies only) -->
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<!-- core engine -->
+<script src="core/files.js"></script>
+<script src="core/parse.js"></script>
+<script src="core/validate.js"></script>
+<script src="core/calc.js"></script>
+<script src="core/rules.js"></script>
+<script src="core/charts.js"></script>
+<script src="core/export.js"></script>
+<script src="core/ui.js"></script>
+<!-- skills -->
+<script src="skills/registry.js"></script>
+<script>Portal.ui.boot('board');</script>
+</body>
+</html>

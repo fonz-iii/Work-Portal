@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge · SBA Marketing Portal</title>
+<link rel="icon" href="assets/icons/portal.svg">
+<link rel="stylesheet" href="assets/css/portal.css">
+</head>
+<body>
+<header id="shell" class="shell no-print"></header>
+<main id="main" class="main">
+  <section class="hero"><h1>Knowledge</h1><p>Reference hub. Each section will be imported from its Excel/PDF source into a local <code>data/*.js</code> file.</p></section>
+  <nav class="ktabs no-print">
+    <a href="#directory">Directory</a><a href="#orgchart">Org chart</a><a href="#branches">Branches</a>
+    <a href="#products">Products &amp; fees</a><a href="#billers">P2B billers</a><a href="#templates">Templates</a>
+  </nav>
+  <section class="card ksec" id="directory"><h2>Directory</h2><p class="muted">Not set up yet. Planned source: staff directory Excel → <code>data/directory.js</code>.</p></section>
+  <section class="card ksec" id="orgchart"><h2>Org chart</h2><p class="muted">Not set up yet. Planned source: org chart Excel → <code>data/orgchart.js</code>.</p></section>
+  <section class="card ksec" id="branches"><h2>Branch list</h2><p class="muted">Not set up yet. Planned source: branch list Excel → <code>data/branches.js</code>.</p></section>
+  <section class="card ksec" id="products"><h2>Products &amp; fee summaries</h2><p class="muted">Not set up yet. Planned source: product/fee Excel or PDF → <code>data/products.js</code>.</p></section>
+  <section class="card ksec" id="billers"><h2>P2B biller list</h2><p class="muted">Not set up yet. Planned source: P2B Biller Masterlist Excel → <code>data/billers.js</code>.</p></section>
+  <section class="card ksec" id="templates"><h2>Templates</h2><p class="muted">Not set up yet. Planned: links to template files in the connected folder.</p></section>
+</main>
+<footer class="foot no-print">Runs offline from this folder. No data leaves this computer.</footer>
+<script src="core/files.js"></script>
+<script src="core/ui.js"></script>
+<script>Portal.ui.boot('knowledge');</script>
+</body>
+</html>
