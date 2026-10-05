@@ -19,7 +19,8 @@ Target: fully working demo by mid-December 2026.
 
 ```
 SBA-Portal/
-  index.html            menu board (landing page)
+  index.html            Home page (welcome, task shortcuts, picture slots; text in data/home.js)
+  modules.html          Modules page: section tabs + skill runner (modules.html#skill/<id>)
   knowledge.html        Knowledge tab (directory, org chart, branches, products, billers, templates)
   assets/               css, images, icons (all local)
   core/                 shared engine (see below)
@@ -85,8 +86,9 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 
 ## Design
 
-- Landing page is a **menu board**: large tiles grouped by section (Quarterly Reports, RIB, Research, Knowledge).
-- Corporate-website look (2026-10-05 redesign, per Fons): deep navy + corporate blue on white and cool greys; amber/cream dropped from the UI. Landing page = utility bar, sticky masthead nav, hero with status panel, quick-link strip, section bands with module cards, "How it works" steps, multi-column footer.
+- **Home** (`index.html`) is separate from the module tabs (`modules.html`). Home has picture slots: files in `assets/images/` named in `data/home.js` (missing file = labelled placeholder). Plain, layman wording throughout.
+- The site is for the **Marketing Group only**; say so in the top bar, Home hero and footer.
+- Corporate-website look (2026-10-05 redesign, per Fons): deep navy + corporate blue on white and cool greys; only a hint of SBA yellow (#f0b323: active nav/tab underline, Home primary button, footer rule, restricted badge). Every page: utility bar, sticky masthead nav, multi-column footer.
 - Components: KPI cards with big numbers, navy-header tables with light zebra rows, rounded cards, process/flow visuals.
 - System font stack only. Must be readable at 1366×768.
 - Every output has a print stylesheet.
@@ -110,6 +112,6 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [x] SheetJS upgraded to 0.20.3 in `vendor/xlsx.full.min.js` (2026-10-05); demo re-tested.
 - [x] Menu-board groups accepted for now (2026-10-05); revisit as modules are built (`skills/placeholders.js`).
 - [x] Office desktop test of milestone 1 passed (demo run, validation errors, Excel/Word save, folder connect + remembered, print).
-- [ ] UI redesign v2 (corporate website layout, navy + blue) built 2026-10-05; awaiting Fons's approval.
+- [ ] UI redesign v3 (separate Home with picture slots, Modules tabs, plain wording, yellow hint, Marketing-Group-only notices) built 2026-10-05; awaiting Fons's approval.
 - [x] Build order agreed (2026-10-05): UI refresh → Industry Ranking (thrift + UKB) → DRB Usage.
 - [x] Q1 2026 thrift Stockholders' Equity figures come from the predecessor's workbook `samples/industry-ranking/2026-Q1-march/Industry Ranking as of March 31, 2026 v2.xlsx` (no PDF).
