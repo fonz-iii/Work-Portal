@@ -72,7 +72,7 @@ Portal.registerSkill({
 
 | # | Skill | Inputs | Outputs | Status |
 |---|---|---|---|---|
-| 1 | Industry Ranking | BSP ranking PDFs (public) | HTML slide deck, 2-page Word report | Logic exists as a Claude skill; port it |
+| 1 | Industry Ranking | BSP ranking PDFs (public): Thrift Bank Group **and** Universal & Commercial Bank (UKB) Group | HTML slide deck, 2-page Word report | Logic exists as a Claude skill; port it |
 | 2 | QR Ph P2B Biller Directory | Biller masterlist Excel | Alphabetized Word directory | Logic exists as a Claude skill; port it |
 | 3 | DRB Usage | Excel | Report + charts | Needs column spec |
 | 4 | DRB Enrollees | Excel | Report + charts | Needs column spec |
@@ -111,3 +111,5 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [x] Menu-board groups accepted for now (2026-10-05); revisit as modules are built (`skills/placeholders.js`).
 - [x] Office desktop test of milestone 1 passed (demo run, validation errors, Excel/Word save, folder connect + remembered, print).
 - [ ] UI refresh: more corporate, sleek and formal look across the menu board, runner, Knowledge tab and outputs (keep navy/amber base, system fonts, 1366×768). Mock-up first for Fons to approve, then apply in `assets/css/portal.css`.
+- [x] Build order agreed (2026-10-05): UI refresh → Industry Ranking (thrift + UKB) → DRB Usage.
+- [x] Q1 2026 thrift Stockholders' Equity figures come from the predecessor's workbook `samples/industry-ranking/2026-Q1-march/Industry Ranking as of March 31, 2026 v2.xlsx` (no PDF).
