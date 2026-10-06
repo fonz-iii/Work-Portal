@@ -80,6 +80,7 @@
     (f.pages || []).join('\n').split('\n').forEach(function (line) {
       var s = line.trim(); if (!s) return;
       var low = s.toLowerCase();
+      if (low.indexOf('synthetic test data') >= 0) { out.synthetic = true; return; }
       if (low.indexOf('ranking as to') === 0 && !out.metric) { out.metric = metricFor(s); out.title = s; }
       else if (low.indexOf('thrift bank group') >= 0) out.group = 'thrift';
       else if (low.indexOf('universal and commercial') >= 0) out.group = 'ukb';
@@ -123,50 +124,72 @@
     return { file: f.name, asOf: cdate, data: cur };
   }
 
-  /** Both boxes -> periods + tables per metric, with plain-language errors and warnings. Pure. */
+  /** Both boxes -> periods + tables per metric, with plain-language errors and warnings. Pure.
+      Files may sit in either box: PDFs are sorted by their "As of" date (latest = this quarter,
+      next = previous quarter). Workbooks only fill gaps in the previous quarter. */
   function collect(inputs) {
     var errors = [], warnings = [], list = function (v) { return v ? (Array.isArray(v) ? v : [v]) : []; };
-    function box(files, label, allowBook) {
-      var res = { data: {}, source: {}, files: {}, asOf: null, posted: null, books: [] };
-      files.forEach(function (f) {
-        if (f.kind === 'excel') {
-          if (!allowBook) { errors.push(f.name + ' is a workbook. ' + label + ' needs the four BSP PDFs.'); return; }
-          var w = readWorkbook(f);
-          if (w.error) errors.push(w.error); else res.books.push(w);
-          return;
-        }
-        if (f.kind !== 'pdf') { errors.push(f.name + ' could not be read as a PDF.'); return; }
-        var p = readPdf(f);
-        if (p.group === 'ukb') { errors.push(f.name + ' is a universal and commercial bank page. Only thrift bank pages are used; remove it from ' + label + '.'); return; }
-        if (!p.metric) { errors.push('Could not tell which ranking ' + f.name + ' is. It should be a BSP "Ranking as to ..." page saved as PDF.'); return; }
-        if (!p.rows.length) { errors.push(f.name + ' has no bank rows. Re-save the BSP page as PDF and try again.'); return; }
-        if (res.data[p.metric]) { errors.push('Two files in ' + label + ' are the ' + metricOf(p.metric).label + ' ranking (' + res.files[p.metric] + ' and ' + f.name + '). Keep one.'); return; }
-        if (p.asOf && res.asOf && cmpDate(p.asOf, res.asOf) !== 0) { errors.push(label + ' mixes periods: ' + f.name + ' is as of ' + longDate(p.asOf) + ' but another file is as of ' + longDate(res.asOf) + '. Each box must hold one quarter.'); return; }
-        if (p.asOf) res.asOf = p.asOf;
-        if (p.posted && !res.posted) res.posted = p.posted;
-        res.data[p.metric] = p.rows; res.source[p.metric] = 'pdf'; res.files[p.metric] = f.name;
-      });
-      return res;
+    var inCur = list(inputs.current), inPri = list(inputs.prior), pdfs = [], books = [], synthetic = [];
+    inCur.concat(inPri).forEach(function (f, i) {
+      var box = i < inCur.length ? 'cur' : 'pri';
+      if (f.kind === 'excel') { var w = readWorkbook(f); if (w.error) errors.push(w.error); else books.push(w); return; }
+      if (f.kind !== 'pdf') { errors.push(f.name + ' could not be read as a PDF.'); return; }
+      var p = readPdf(f); p.box = box;
+      if (p.group === 'ukb') { errors.push(f.name + ' is a universal and commercial bank page. Only thrift bank pages are used; remove it.'); return; }
+      if (!p.metric) { errors.push('Could not tell which ranking ' + f.name + ' is. It should be a BSP "Ranking as to ..." page saved as PDF.'); return; }
+      if (!p.rows.length) { errors.push(f.name + ' has no bank rows. Re-save the BSP page as PDF and try again.'); return; }
+      if (!p.asOf) { errors.push('Could not find the "As of" date in ' + f.name + '. Save the whole BSP page as PDF.'); return; }
+      if (p.synthetic) synthetic.push(f.name);
+      pdfs.push(p);
+    });
+    var byDate = {};
+    pdfs.forEach(function (p) { (byDate[iso(p.asOf)] = byDate[iso(p.asOf)] || []).push(p); });
+    var dates = Object.keys(byDate).sort().reverse();
+    if (dates.length > 2) {
+      errors.push('These PDFs cover ' + dates.length + ' different quarters. Keep only this quarter and the previous one. Remove: ' +
+        dates.slice(2).map(function (d) { return longDate(byDate[d][0].asOf) + ' (' + byDate[d].map(function (p) { return p.file; }).join(', ') + ')'; }).join('; ') + '.');
     }
-    var cur = box(list(inputs.current), 'This quarter', false), pri = box(list(inputs.prior), 'Previous quarter', true);
-    var missCur = METRICS.filter(function (m) { return !cur.data[m.key]; });
-    if (missCur.length) errors.push('This quarter is missing: ' + missCur.map(function (m) { return m.label + ' (BSP "' + bspTitle(m.key) + '")'; }).join('; ') + '.');
-    if (!cur.asOf && Object.keys(cur.data).length) errors.push('Could not find the "As of" date in the This quarter PDFs.');
-    if (Object.keys(cur.data).length && !cur.posted) errors.push('Could not find the "Posted as of" line at the foot of the This quarter PDFs. Save the whole BSP page, including the last page.');
-    // fill prior gaps from a workbook
-    pri.books.forEach(function (w) {
+    var curD = dates[0] || null, priD = dates[1] || null;
+    if (curD && !priD) {
+      var older = books.filter(function (w) { return w.asOf && iso(w.asOf) < curD; })[0];
+      if (older) priD = iso(older.asOf);
+    }
+    function emptyBox() { return { data: {}, source: {}, files: {}, asOf: null, posted: null }; }
+    var cur = emptyBox(), pri = emptyBox();
+    pdfs.forEach(function (p) {
+      var d = iso(p.asOf), box = d === curD ? cur : d === priD ? pri : null;
+      if (!box) return;
+      var which = box === cur ? 'this quarter (' + longDate(p.asOf) + ')' : 'the previous quarter (' + longDate(p.asOf) + ')';
+      if (box.data[p.metric]) { errors.push('Two files are the ' + metricOf(p.metric).label + ' ranking for ' + which + ': ' + box.files[p.metric] + ' and ' + p.file + '. Keep one.'); return; }
+      box.asOf = p.asOf;
+      if (p.posted && !box.posted) box.posted = p.posted;
+      box.data[p.metric] = p.rows; box.source[p.metric] = 'pdf'; box.files[p.metric] = p.file;
+    });
+    books.forEach(function (w) {
+      if (!priD || !w.asOf || iso(w.asOf) !== priD) {
+        if (w.asOf) warnings.push(w.file + ' is as of ' + longDate(w.asOf) + ', not the previous quarter, so it was not used.');
+        return;
+      }
       METRICS.forEach(function (m) {
-        if (!pri.data[m.key] && w.data[m.key]) {
-          if (pri.asOf && w.asOf && cmpDate(pri.asOf, w.asOf) !== 0) { errors.push(w.file + ' is as of ' + longDate(w.asOf) + ' but the Previous quarter PDFs are as of ' + longDate(pri.asOf) + '.'); return; }
-          pri.data[m.key] = w.data[m.key]; pri.source[m.key] = 'workbook'; pri.files[m.key] = w.file;
-          if (!pri.asOf) pri.asOf = w.asOf;
-        }
+        if (!pri.data[m.key] && w.data[m.key]) { pri.data[m.key] = w.data[m.key]; pri.source[m.key] = 'workbook'; pri.files[m.key] = w.file; pri.asOf = w.asOf; }
       });
     });
-    var missPri = METRICS.filter(function (m) { return !pri.data[m.key]; });
-    if (missPri.length && list(inputs.prior).length) errors.push('Previous quarter is missing: ' + missPri.map(function (m) { return m.label; }).join(', ') + '. Add its BSP PDF, or the old "Industry Ranking as of ..." workbook.');
-    if (cur.asOf && pri.asOf && cmpDate(pri.asOf, cur.asOf) >= 0) errors.push('The Previous quarter files (' + longDate(pri.asOf) + ') are not earlier than This quarter (' + longDate(cur.asOf) + '). Check the two boxes are not swapped.');
-    return { cur: cur, pri: pri, errors: errors, warnings: warnings };
+    if (!curD) { if (!errors.length) errors.push('No BSP thrift ranking PDFs were found. Add the four PDFs for this quarter.'); return { cur: cur, pri: pri, errors: errors, warnings: warnings, synthetic: synthetic }; }
+    if (!priD) errors.push('Only one quarter was found (' + longDate(cur.asOf) + '). Add the previous quarter’s four PDFs, or the old "Industry Ranking as of ..." workbook.');
+    var missCur = METRICS.filter(function (m) { return !cur.data[m.key]; });
+    if (missCur.length) errors.push('This quarter (' + longDate(cur.asOf) + ') is missing: ' + missCur.map(function (m) { return m.label + ' (BSP "' + bspTitle(m.key) + '")'; }).join('; ') + '.');
+    if (!cur.posted) errors.push('Could not find the "Posted as of" line at the foot of the ' + longDate(cur.asOf) + ' PDFs. Save the whole BSP page, including the last page.');
+    if (priD) {
+      var missPri = METRICS.filter(function (m) { return !pri.data[m.key]; });
+      if (missPri.length) errors.push('The previous quarter (' + longDate(pri.asOf) + ') is missing: ' + missPri.map(function (m) { return m.label; }).join(', ') + '. Add its BSP PDF, or the old "Industry Ranking as of ..." workbook.');
+    }
+    var swapped = pdfs.some(function (p) { return (p.box === 'cur' && iso(p.asOf) !== curD) || (p.box === 'pri' && iso(p.asOf) === curD); });
+    if (swapped && !errors.length) {
+      var count = function (box, d) { return pdfs.filter(function (p) { return iso(p.asOf) === d; }).length + ' PDF' + (box ? 's' : ''); };
+      warnings.unshift('Files were sorted by date: this quarter = ' + longDate(cur.asOf) + ' (' + count(1, curD) + '), previous quarter = ' + longDate(pri.asOf) + ' (' + count(1, priD) +
+        (METRICS.some(function (m) { return pri.source[m.key] === 'workbook'; }) ? ' + workbook' : '') + '). Nothing else to do.');
+    }
+    return { cur: cur, pri: pri, errors: errors, warnings: warnings, synthetic: synthetic };
   }
 
   /* ======================= analysis (compute.py) ======================= */
@@ -325,6 +348,7 @@
     var out = analyse(c);
     if (out.errors.length) return out;
     out.meta.presented_by = (params && params.presented_by) || 'Marketing';
+    out.meta.synthetic = c.synthetic.slice();
     out.ratios = ratios(out);
     out.warnings = c.warnings.concat(out.warnings);
     out.draft = draftNarrative(out);
@@ -376,6 +400,7 @@
         '<td class="n">' + (a.above ? esc(a.above.gap_fmt) + ' to ' + esc(a.above.rank_fmt) : '—') + '</td><td class="n">' + (a.below ? esc(a.below.cushion_fmt) + ' over ' + esc(a.below.rank_fmt) : '—') + '</td></tr>';
     }).join('');
     var src = METRICS.filter(function (x) { return M.prior_source[x.key] === 'workbook'; }).map(function (x) { return x.label; });
+    var danger = M.synthetic.length ? '<div class="ir-danger"><b>This run uses synthetic test data. Do not circulate the outputs.</b> Test file(s): ' + esc(M.synthetic.join(', ')) + '. The deck and report are marked TEST DATA.</div>' : '';
     var warn = m.warnings.length ? '<div class="ir-warn"><b>Check before sending</b><ul>' + m.warnings.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul></div>' : '';
     var edits = EDITS.map(function (e) {
       var v = narrValue(m.narrative, e[0]);
@@ -384,7 +409,7 @@
     return '<div class="report ir-screen"><p class="eyebrow">BSP thrift bank rankings · posted ' + esc(M.posting_long) + '</p>' +
       '<h2>' + esc(M.doc_title) + ', as of ' + esc(M.current_long) + '</h2>' +
       '<p class="muted">Compared with ' + esc(M.prior_long) + ' · ' + M.bank_count + ' thrift banks · ₱ million' + (src.length ? ' · previous ' + esc(src.join(', ')) + ' from the old workbook (top 10)' : '') + '</p>' +
-      warn + '<h3>Where SBA ranks</h3><div class="kpis">' + kpis + '</div>' +
+      danger + warn + '<h3>Where SBA ranks</h3><div class="kpis">' + kpis + '</div>' +
       '<h3>Scorecard</h3><table><thead><tr><th>Metric</th><th class="n">₱ million</th><th>Rank of ' + M.bank_count + '</th><th>Stand-alone rank</th><th class="n">Growth since ' + esc(M.prior_q) +
       '</th><th class="n">Peer median</th><th class="n">Gap to rank above</th><th class="n">Lead over rank below</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<h3>Wording for the deck and report</h3><p class="muted">Drafted from the figures above. Edit freely; your wording is used when you save the slide deck and the Word report. Keep every figure exactly as shown.</p>' +
@@ -408,6 +433,8 @@
     var M = m.meta, N = m.narrative, LOGO = (root.SBA_LOGOS || {}).color || '', LOGO_REV = (root.SBA_LOGOS || {}).reverse || '';
     var FOOT = ['As of ' + M.current_long, M.bank_count + ' Thrift Banks | Amounts in Million Pesos', 'Source: BSP website', 'BSP posting date: ' + M.posting_long]
       .map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('');
+    var TEST = M.synthetic.length ? '<span class="testflag">TEST DATA – NOT FOR CIRCULATION</span>' : '';
+    FOOT += TEST;
     function contentSlide(view, eyebrow, title, subline, body) {
       var band = view === 'sa' ? 'band-sa' : 'band-all';
       var sub = subline ? '<p class="subline">' + esc(subline).replace(/\n/g, '<br>') + '</p>' : '';
@@ -465,7 +492,7 @@
     slides.push(navyBlock('<p class="eyebrow amber">Finance Industry &middot; Thrift Bank Ranking</p><h1 class="cover-title">' + esc(M.doc_title) + '</h1><div class="rule-amber"></div>' +
       '<div class="pill"><span class="pill-a">Presented by</span><span class="pill-b">' + esc(M.presented_by) + '</span></div>' +
       '<p class="cover-line">As of ' + esc(M.current_long) + ' &middot; ' + M.bank_count + ' Thrift Banks &middot; Amounts in Million Pesos</p>' +
-      '<p class="cover-src">Source: BSP website &middot; BSP posting date ' + esc(M.posting_long) + '</p>', true));
+      '<p class="cover-src">Source: BSP website &middot; BSP posting date ' + esc(M.posting_long) + '</p>' + (TEST ? '<p class="cover-test">' + TEST + '</p>' : ''), true));
     var items = ['Where Sterling Bank of Asia sits among all thrift banks', 'Standing among stand-alone thrift banks'];
     slides.push(contentSlide('all', 'What we will cover', 'Agenda', M.current_q + ' thrift bank rankings,\nas of ' + M.current_long,
       '<div class="card card-grow agenda">' + items.map(function (t, i) { return '<div class="agrow"><span class="agnum">' + String(i + 1).padStart(2, '0') + '</span><span class="agtxt">' + esc(t) + '</span></div>'; }).join('') + '</div>'));
@@ -614,6 +641,7 @@
       '.cover-line{font-size:19px;color:#fff;margin-top:8px}.cover-src{font-size:17px;color:var(--steel);margin-top:8px}.sect-lede{font-size:21px;color:var(--mist);line-height:1.45;max-width:700px}' +
       '.dstats{display:flex;gap:56px;margin-top:30px}.dlab{font-size:14px;font-weight:bold;letter-spacing:.18em;text-transform:uppercase;color:var(--steel)}.dval{font-size:34px;font-weight:bold;color:#fff;margin-top:6px}' +
       '.conf-cover{margin-top:26px}.amber{color:var(--amber)}.logo-cover{width:330px;position:absolute;top:72px;right:62px}.cover{justify-content:center}' +
+      '.testflag{color:#B3261E;font-weight:bold;letter-spacing:.08em}.cover-test{margin-top:16px;font-size:20px}.cover-test .testflag{background:#fff;padding:6px 12px}' +
       '@media print{@page{size:1280px 720px;margin:0}html,body{background:#fff}.slide{margin:0;page-break-after:always;break-after:page}.slide:last-child{page-break-after:auto;break-after:auto}}';
   }
 
@@ -703,7 +731,7 @@
       var logo = (root.SBA_LOGOS || {}).color;
       var html = '<table style="width:100%;border-collapse:collapse"><tr><td style="width:40%;border:0">' + (logo ? '<img src="logo.png" width="170" height="84">' : '') + '</td>' +
         '<td style="text-align:right;border:0"><p style="font-size:7.5pt;font-weight:bold;letter-spacing:1.5pt;color:' + col('muted') + '">' + esc(M.doc_title.toUpperCase()) + '</p>' +
-        '<p style="font-size:11pt;font-weight:bold">Thrift bank group, as of ' + esc(M.current_long) + '</p><p style="font-size:7.5pt;font-weight:bold;letter-spacing:1.5pt;color:' + col('slate') + '">CONFIDENTIAL</p></td></tr></table>' +
+        '<p style="font-size:11pt;font-weight:bold">Thrift bank group, as of ' + esc(M.current_long) + '</p><p style="font-size:7.5pt;font-weight:bold;letter-spacing:1.5pt;color:' + (M.synthetic.length ? col('negative') + '">TEST DATA – NOT FOR CIRCULATION' : col('slate') + '">CONFIDENTIAL') + '</p></td></tr></table>' +
         '<p style="border-bottom:2.25pt solid ' + col('amber') + ';margin:0 0 6pt"></p>' +
         label('Summary', 'margin-top:3pt') + '<p style="font-size:15pt;font-weight:bold;margin-bottom:4.5pt">' + esc(N.headline) + '</p>' +
         (N.summary ? '<p style="font-size:9.5pt">' + esc(N.summary) + '</p>' : '') +
@@ -726,7 +754,7 @@
   /* ======================= Excel figures (audit trail) ======================= */
   function buildExcel(m) {
     var M = m.meta, sheets = [{ name: 'Summary', cols: [34, 22, 22], rows: [
-      [M.doc_title + ' · Sterling Bank of Asia'], [],
+      [M.doc_title + ' · Sterling Bank of Asia'], M.synthetic.length ? ['TEST DATA - NOT FOR CIRCULATION (synthetic file: ' + M.synthetic.join(', ') + ')'] : [],
       ['As of', M.current_long], ['Compared with', M.prior_long], ['BSP posting date', M.posting_long], ['Thrift banks in table', M.bank_count], [],
       ['Metric', 'Rank (all thrift)', 'Rank (stand-alone)', '₱ million', 'Growth %', 'Peer median %', 'Peer median banks']
     ].concat(METRICS.map(function (x) {
@@ -754,10 +782,10 @@
     status: 'ready',
     description: 'Thrift-bank ranking slide deck and 2-page President’s report from the BSP ranking PDFs.',
     inputs: [
-      { key: 'current', label: 'This quarter: the four BSP thrift-bank PDFs', type: 'pdf', multiple: true, required: true,
-        help: 'On the BSP website, open each thrift-bank ranking page (Total Assets, Stockholder’s Equity, Deposit Liabilities, Loans and Receivables), press Ctrl+P and choose Save as PDF. Add all four here. Keep a copy: BSP replaces these pages every quarter.' },
-      { key: 'prior', label: 'Previous quarter: its four PDFs (or the old workbook)', type: 'pdf-or-excel', multiple: true, required: true,
-        help: 'The same four pages saved last quarter. If one is missing, also add the old “Industry Ranking as of …” workbook; it fills the gap with its top 10 banks.' }
+      { key: 'current', label: 'Files for this quarter: the four BSP thrift-bank PDFs', type: 'pdf-or-excel', multiple: true, required: true,
+        help: 'On the BSP website, open each thrift-bank ranking page (Total Assets, Stockholder’s Equity, Deposit Liabilities, Loans and Receivables), press Ctrl+P and choose Save as PDF. Add all four here. Keep a copy: BSP replaces these pages every quarter. Not sure which box? Use either: the portal sorts the files by their \u201CAs of\u201D date.' },
+      { key: 'prior', label: 'Files for the previous quarter: its four PDFs (or the old workbook)', type: 'pdf-or-excel', multiple: true, required: true,
+        help: 'The same four pages saved last quarter. If one is missing, also add the old “Industry Ranking as of …” workbook; it fills the gap with its top 10 banks. Practice files: samples/industry-ranking/2026-Q2-june is this quarter; 2026-Q1-march is the previous quarter.' }
     ],
     params: [{ key: 'presented_by', label: 'Presented by (shown on the cover slide)', type: 'text', default: 'Marketing' }],
     validate: function (inputs, params) { var m = analyze(inputs, params); return m.errors || []; },
