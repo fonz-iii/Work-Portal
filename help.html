@@ -29,7 +29,7 @@
     <nav class="kside no-print" aria-label="Guide sections"><p>On this page</p>
       <a href="#around">Finding your way around</a><a href="#reports">Making a report</a><a href="#saving">Saving your files</a>
       <a href="#errors">Fixing file errors</a><a href="#theme">Light and dark mode</a><a href="#home-pics">Pictures on Home</a>
-      <a href="#privacy">Privacy and sharing</a><a href="#faq">Common questions</a></nav>
+      <a href="#privacy">Privacy and sharing</a><a href="#suggest">Suggesting a change</a><a href="#faq">Common questions</a></nav>
     <div>
       <section class="card hsec reveal" id="around"><h2><span class="num">1</span>Finding your way around</h2>
         <ul>
@@ -92,6 +92,15 @@
         </ul>
       </section>
 
+      <section class="card hsec reveal" id="suggest"><h2><span class="num">8</span>Suggesting a change</h2>
+        <ol>
+          <li>Click <span class="ui-chip">Suggest a change</span> in the bottom-right corner of any page.</li>
+          <li>Pick what kind of change it is and describe it. The page you were on is filled in for you.</li>
+          <li>Click <span class="ui-chip">Open email</span>. Your email app (Outlook) opens with the message ready. Check it and click <b>Send</b>.</li>
+        </ol>
+        <p class="tip"><b>Email app didn't open?</b> Click <b>Copy text</b> instead and paste it into a new email to the address shown in the form.</p>
+      </section>
+
       <section class="hsec faq reveal" id="faq"><h2><span class="num">?</span>Common questions</h2>
         <details><summary>Do I need internet or to install anything?</summary><p>No. Double-click <code>index.html</code> in the portal folder and it opens in Chrome or Edge.</p></details>
         <details><summary>A card says “Coming soon”. Can I use it?</summary><p>Not yet. Click it to see what it will need and what it will produce. It opens once it is built and tested.</p></details>
@@ -99,6 +108,7 @@
         <details><summary>Where did my saved file go?</summary><p>Into the folder shown at the top (“Saving to …”). If no folder is shown, look in Downloads.</p></details>
         <details><summary>The comments say DRAFT thresholds. What does that mean?</summary><p>The growth and decline bands used for the wording are placeholders until SBA approves them. The numbers themselves are calculated exactly from your file.</p></details>
         <details><summary>Can I break anything?</summary><p>No. The portal never changes your source files and never sends anything. The worst case is a red box asking you to fix the file.</p></details>
+        <details><summary>How do I suggest an improvement?</summary><p>Use the <b>Suggest a change</b> button at the bottom right of any page. It prepares an email to the portal owner; you click Send.</p></details>
         <details><summary>Who do I ask for help?</summary><p>The Product Management Officer who maintains the portal (Marketing Group).</p></details>
       </section>
     </div>
@@ -106,6 +116,7 @@
 </main>
 <footer id="foot" class="foot no-print"></footer>
 <script src="core/files.js"></script>
+<script src="data/feedback.js"></script>
 <script src="core/ui.js"></script>
 <script>Portal.ui.boot('help');</script>
 </body>

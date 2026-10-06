@@ -130,7 +130,8 @@
     renderNav();
     renderFolder();
     renderFooter();
-    if (page !== 'help') document.body.insertAdjacentHTML('beforeend', '<a class="help-fab no-print" href="help.html" title="How to use this site">' + icon('help') + '<span>How to use</span></a>');
+    document.body.insertAdjacentHTML('beforeend', '<div class="fab-stack no-print"><button class="suggest-fab" type="button" data-suggest title="Suggest a change to this portal">' + icon('chat') + '<span>Suggest a change</span></button>' +
+      (page !== 'help' ? '<a class="help-fab" href="help.html" title="How to use this site">' + icon('help') + '<span>How to use</span></a>' : '') + '</div>');
   }
 
   function renderFooter() {
@@ -171,6 +172,71 @@
     if (act === 'connect') P.files.connect();
     else if (act === 'reconnect') P.files.reconnect();
     else if (act === 'disconnect') P.files.disconnect();
+  });
+
+
+  /* ---------- "Suggest a change" (opens the user's own mail app; the portal sends nothing) ---------- */
+  var MAILTO_MAX = 1800;
+  function suggestPage() {
+    var c = document.querySelector('.crumbs');
+    if (c) return c.textContent.replace(/\s*›\s*/g, ' › ').replace(/\s+/g, ' ').trim();
+    return page === 'home' ? 'Home' : document.title.replace(/ · Marketing Portal$/, '');
+  }
+  function suggestText(f) {
+    var lines = ['Page: ' + f.page, 'Kind: ' + f.kind, '', 'What should change:', f.what, ''];
+    if (f.why) lines.push('Why it helps:', f.why, '');
+    lines.push('From: ' + (f.name || '(not given)'), 'Date: ' + new Date().toLocaleString('en-US'), 'Browser: ' + navigator.userAgent.replace(/^.*(Edg|Chrome)\/(\d+).*$/, '$1 $2'));
+    return lines.join('\n');
+  }
+  function suggestDialog() {
+    var d = $('#suggest-dialog');
+    if (d) return d;
+    var FB = root.SBA_FEEDBACK || { to: '', subject: '[Marketing Portal] Suggestion' };
+    document.body.insertAdjacentHTML('beforeend',
+      '<dialog id="suggest-dialog" class="suggest-dialog" aria-labelledby="suggest-title"><form method="dialog" class="suggest-form" novalidate>' +
+      '<h2 id="suggest-title">' + icon('chat') + 'Suggest a change</h2>' +
+      '<p class="muted">Tell us what to improve. Your email app opens with the message ready for <b>' + esc(FB.to || 'the portal owner') + '</b>; check it, then click Send.</p>' +
+      '<label><span>Which page?</span><input name="page" type="text"></label>' +
+      '<label><span>What kind?</span><select name="kind"><option>Something isn’t working</option><option>Wording or design</option><option>New idea</option><option>Other</option></select></label>' +
+      '<label><span>What should change? <span class="req">*</span></span><textarea name="what" rows="3" placeholder="For example: the Save button is hard to find on small screens"></textarea></label>' +
+      '<label><span>Why does it help? <small>(optional)</small></span><textarea name="why" rows="2"></textarea></label>' +
+      '<label><span>Your name <small>(optional)</small></span><input name="name" type="text"></label>' +
+      '<p class="suggest-note">The portal does not send anything by itself. Please don’t include customer or confidential data.</p>' +
+      '<p class="suggest-msg" role="status"></p>' +
+      '<div class="suggest-actions"><button class="btn primary" type="button" data-sg="mail">Open email ' + icon('arrow') + '</button><button class="btn" type="button" data-sg="copy">Copy text</button><button class="btn" type="button" data-sg="cancel">Cancel</button></div>' +
+      '<a id="suggest-mailto" hidden></a></form></dialog>');
+    d = $('#suggest-dialog');
+    var form = $('form', d), msg = $('.suggest-msg', d);
+    function fields() { return { page: form.page.value.trim(), kind: form.kind.value, what: form.what.value.trim(), why: form.why.value.trim(), name: form.name.value.trim() }; }
+    function check() { var f = fields(); if (!f.what) { msg.textContent = 'Please describe what should change.'; msg.className = 'suggest-msg bad'; form.what.focus(); return null; } return f; }
+    function copy(text) {
+      var done = function () { msg.textContent = 'Copied. Paste it into a new email to ' + FB.to + '.'; msg.className = 'suggest-msg ok'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(done, function () { legacyCopy(text); done(); });
+      legacyCopy(text); done();
+    }
+    function legacyCopy(text) { var t = document.createElement('textarea'); t.value = text; d.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e) { /* ignore */ } t.remove(); }
+    d.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-sg]');
+      if (!b) { if (e.target === d) d.close(); return; }
+      var act = b.getAttribute('data-sg');
+      if (act === 'cancel') { d.close(); return; }
+      var f = check(); if (!f) return;
+      var body = suggestText(f);
+      if (act === 'copy') { copy(body); return; }
+      var subject = FB.subject + ' – ' + f.kind + ' – ' + f.page;
+      var href = 'mailto:' + encodeURIComponent(FB.to).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      if (href.length > MAILTO_MAX) { msg.textContent = 'This message is too long to open in email directly. Click Copy text, then paste it into a new email to ' + FB.to + '.'; msg.className = 'suggest-msg bad'; return; }
+      var a = $('#suggest-mailto'); a.href = href; a.click();
+      msg.textContent = 'Your email app should open now. Check the message and click Send.'; msg.className = 'suggest-msg ok';
+    });
+    return d;
+  }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest || !e.target.closest('[data-suggest]')) return;
+    var d = suggestDialog(), form = $('form', d);
+    form.reset(); form.page.value = suggestPage(); $('.suggest-msg', d).textContent = '';
+    if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+    form.what.focus();
   });
 
   /* ---------- scroll-reactive background + reveal ---------- */
