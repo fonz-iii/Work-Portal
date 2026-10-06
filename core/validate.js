@@ -11,7 +11,8 @@
     required: function (skill, inputs, params) {
       var errs = [];
       (skill.inputs || []).forEach(function (d) {
-        if (d.required && !inputs[d.key]) errs.push('Missing input: ' + d.label + '.');
+        var v = inputs[d.key];
+        if (d.required && (!v || (Array.isArray(v) && !v.length))) errs.push('Missing input: ' + d.label + '.');
       });
       (skill.params || []).forEach(function (d) {
         if (d.required !== false && (params[d.key] === undefined || params[d.key] === '')) errs.push('Missing setting: ' + d.label + '.');

@@ -393,23 +393,44 @@
       line.appendChild(ta);
       return row;
     }
-    var btn = el('<button class="btn">Choose file…</button>'), info = el('<span class="file-info muted">No file chosen</span>');
-    btn.addEventListener('click', function () {
-      P.files.pick({ accept: P.files.acceptFor(d.type) }).then(function (list) {
-        if (!list.length) return;
-        var file = list[0];
-        info.textContent = 'Reading ' + file.name + '…';
-        state.inputs[d.key] = undefined;
-        P.parse.input(d, file).then(function (data) {
-          state.inputs[d.key] = data;
-          info.innerHTML = '<b>' + esc(file.name) + '</b> · ' + esc(summary(data));
-          info.className = 'file-info ok';
-        }, function (e) {
-          info.textContent = 'Could not read ' + file.name + ': ' + (e && e.message || e);
-          info.className = 'file-info bad';
+    var many = !!d.multiple;
+    var btn = el('<button class="btn">' + (many ? 'Choose files…' : 'Choose file…') + '</button>');
+    var info = el('<span class="file-info muted">' + (many ? 'No files chosen. You can also drag files here.' : 'No file chosen. You can also drag the file here.') + '</span>');
+    /* Reads the chosen files. A multiple input keeps every file as an array (adding to what is already there). */
+    function load(list) {
+      list = Array.prototype.slice.call(list || []);
+      if (!list.length) return;
+      if (!many) list = list.slice(0, 1);
+      info.className = 'file-info muted';
+      info.textContent = 'Reading ' + list.map(function (f) { return f.name; }).join(', ') + '…';
+      Promise.all(list.map(function (file) {
+        return P.parse.input(d, file).then(function (data) { return data; }, function (e) {
+          return { kind: 'error', name: file.name, error: String(e && e.message || e) };
         });
+      })).then(function (res) {
+        var ok = res.filter(function (r) { return r.kind !== 'error'; }), bad = res.filter(function (r) { return r.kind === 'error'; });
+        if (many) {
+          var prev = (state.inputs[d.key] || []).filter(function (p) { return !ok.some(function (n) { return n.name === p.name; }); });
+          state.inputs[d.key] = prev.concat(ok);
+        } else state.inputs[d.key] = ok[0];
+        var cur = many ? state.inputs[d.key] : (ok[0] ? [ok[0]] : []);
+        info.innerHTML = (cur.length ? '<span class="ok">' + cur.map(function (r) { return '<b>' + esc(r.name) + '</b> · ' + esc(summary(r)); }).join('<br>') + '</span>' : '') +
+          (bad.length ? '<span class="bad">' + bad.map(function (r) { return 'Could not read ' + esc(r.name) + ': ' + esc(r.error); }).join('<br>') + '</span>' : '') +
+          (many && cur.length ? '<button class="linkbtn-dark" data-clear>Clear files</button>' : '');
+        info.className = 'file-info' + (bad.length || !cur.length ? ' bad' : ' ok');
+        if (!many && !ok.length) state.inputs[d.key] = undefined;
       });
+    }
+    btn.addEventListener('click', function () { P.files.pick({ accept: P.files.acceptFor(d.type), multiple: many }).then(load); });
+    info.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-clear]')) return;
+      state.inputs[d.key] = undefined;
+      info.className = 'file-info muted'; info.textContent = 'No files chosen. You can also drag files here.';
     });
+    row.classList.add('dropzone');
+    row.addEventListener('dragover', function (e) { e.preventDefault(); row.classList.add('over'); });
+    row.addEventListener('dragleave', function (e) { if (!row.contains(e.relatedTarget)) row.classList.remove('over'); });
+    row.addEventListener('drop', function (e) { e.preventDefault(); row.classList.remove('over'); load(e.dataTransfer && e.dataTransfer.files); });
     line.appendChild(btn); line.appendChild(info);
     return row;
   }

@@ -46,14 +46,26 @@
     });
   }
 
+  /** Raw cell values as rows x columns, always starting at A1 (for layouts without a header row). */
+  function sheetGrid(ws) {
+    if (!ws || !ws['!ref']) return [];
+    var X = root.XLSX, end = X.utils.decode_range(ws['!ref']).e, out = [];
+    for (var r = 0; r <= end.r; r++) {
+      var row = [];
+      for (var c = 0; c <= end.c; c++) { var cell = ws[X.utils.encode_cell({ r: r, c: c })]; row.push(cell && cell.v !== undefined ? cell.v : null); }
+      out.push(row);
+    }
+    return out;
+  }
+
   var parse = P.parse = {
-    /** -> { kind:'excel', name, sheetNames, sheets:{name:rows[]}, rows (first sheet) } */
+    /** -> { kind:'excel', name, sheetNames, sheets:{name:rows[]}, grids:{name:cells[][]}, rows (first sheet) } */
     excel: function (file) {
       return readBuffer(file).then(function (buf) {
         var wb = root.XLSX.read(buf, { type: 'array', cellDates: true });
-        var sheets = {};
-        wb.SheetNames.forEach(function (n) { sheets[n] = sheetRows(wb.Sheets[n]); });
-        return { kind: 'excel', name: file.name, sheetNames: wb.SheetNames, sheets: sheets, rows: sheets[wb.SheetNames[0]] || [] };
+        var sheets = {}, grids = {};
+        wb.SheetNames.forEach(function (n) { sheets[n] = sheetRows(wb.Sheets[n]); grids[n] = sheetGrid(wb.Sheets[n]); });
+        return { kind: 'excel', name: file.name, sheetNames: wb.SheetNames, sheets: sheets, grids: grids, rows: sheets[wb.SheetNames[0]] || [] };
       });
     },
 
@@ -80,6 +92,7 @@
     input: function (def, file) {
       if (def.type === 'excel' || def.type === 'csv') return parse.excel(file);
       if (def.type === 'pdf') return parse.pdf(file);
+      if (def.type === 'pdf-or-excel') return /\.pdf$/i.test(file.name) ? parse.pdf(file) : parse.excel(file);
       return parse.text(file);
     }
   };

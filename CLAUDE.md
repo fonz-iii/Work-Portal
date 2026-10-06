@@ -74,7 +74,7 @@ Portal.registerSkill({
 
 | # | Skill | Inputs | Outputs | Status |
 |---|---|---|---|---|
-| 1 | Industry Ranking | BSP ranking PDFs (public): Thrift Bank Group **and** Universal & Commercial Bank (UKB) Group | HTML slide deck, 2-page Word report | Logic exists as a Claude skill; port it |
+| 1 | Industry Ranking | BSP thrift-bank ranking PDFs (public), this + previous quarter; old workbook fills prior gaps | HTML slide deck (14 slides), 2-page Word report, Excel figures | **Done 2026-10-06** (`skills/industry-ranking.js`; thrift only) |
 | 2 | QR Ph P2B Biller Directory | Biller masterlist Excel | Alphabetized Word directory | Logic exists as a Claude skill; port it |
 | 3 | DRB Usage | Excel | Report + charts | Needs column spec |
 | 4 | DRB Enrollees | Excel | Report + charts | Needs column spec |
@@ -120,3 +120,6 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [x] Q1 2026 thrift Stockholders' Equity figures come from the predecessor's workbook `samples/industry-ranking/2026-Q1-march/Industry Ranking as of March 31, 2026 v2.xlsx` (no PDF).
 - [ ] **Later (Fons, 2026-10-06):** revisit how modules/documents are categorized under Product Management.
 - [ ] **Later (Fons, 2026-10-06):** floating "Suggest a change" button next to "How to use". Proposed design (needs Fons's OK + work email): a short in-portal form (page, what to change, why, name) that opens a pre-filled email to Fons via a `mailto:` link, so the user's own mail app sends it (portal makes no network call; human clicks Send). Fallbacks: "Copy text" button; in Phase 2, save the suggestion as a file in a shared-drive folder.
+- [x] Industry Ranking built 2026-10-06 (Fons's decisions): thrift banks only (no UKB); no "What we're watching"; no Recommendations slide; thin-cushion rule removed; editable wording on screen; Word via HTML-as-.doc; logos in `data/brand-logos.js`; bank groupings in `data/industry-ranking-config.js`. Verified against the original Python skill on Q2 2026 vs Q1 2026: every rank, amount, growth, median, gap and drafted sentence identical (only difference: "Northpoint Dev't Bank" capitalisation, deliberate).
+- [ ] Reminder for Fons each quarter: save all four BSP thrift PDFs (BSP replaces the pages), and keep them with the outputs.
+- [ ] Office test of Industry Ranking (Chrome via file://): run Q2 2026, open the deck in Chrome, print to PDF (landscape, no margins, background graphics on), open the .doc in Word.

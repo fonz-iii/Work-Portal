@@ -140,6 +140,7 @@
         excel: '.xlsx,.xls,.xlsm,.csv',
         csv: '.csv',
         pdf: '.pdf,application/pdf',
+        'pdf-or-excel': '.pdf,application/pdf,.xlsx,.xls,.xlsm',
         text: '.txt'
       })[type] || '';
     }

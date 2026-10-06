@@ -1,7 +1,8 @@
 /* core/export.js — turns an output's render() result into a downloadable/saveable Blob.
    excel: { sheets:[{ name, rows:[[...]], cols?:[widths] }] }        -> .xlsx (SheetJS)
    word:  { title, html, images?:[{ name, dataUrl }] }                -> .doc  (MHTML; Word opens it, images embedded)
-   html:  string                                                      -> shown on screen; printable via print stylesheet */
+   html:  string                                                      -> shown on screen; printable via print stylesheet
+   html-file: string (or { html })                                    -> self-contained .html file (e.g. a slide deck) */
 (function (root) {
   'use strict';
   var P = root.Portal = root.Portal || {};
@@ -60,6 +61,7 @@
     build: function (format, spec) {
       if (format === 'excel') return { blob: P.export.excelBlob(spec), ext: 'xlsx' };
       if (format === 'word') return { blob: P.export.wordBlob(spec), ext: 'doc' };
+      if (format === 'html-file') return { blob: new Blob([typeof spec === 'string' ? spec : spec.html], { type: 'text/html;charset=utf-8' }), ext: 'html' };
       throw new Error('Unknown export format: ' + format);
     },
 

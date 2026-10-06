@@ -1,13 +1,9 @@
 /* skills/placeholders.js — menu tiles for every module in the CLAUDE.md table that is not built yet.
-   When a real skill is built, it registers the same id and replaces its placeholder here.
+   When a real skill is built, remove its entry here (Industry Ranking: built 2026-10-06).
    All sit under the Product Management team (category 'pm', the default). Sections set 2026-10-06. */
 (function () {
   'use strict';
   [
-    { id: 'industry-ranking', title: 'Industry Ranking', group: 'Benchmarking', status: 'planned',
-      description: 'BSP thrift-bank ranking deck and President\'s report.',
-      note: 'Logic exists as a Claude skill; to be ported.',
-      plannedInputs: ['BSP "Ranking as to ..." PDFs (public)'], plannedOutputs: ['HTML slide deck', '2-page Word report'] },
     { id: 'qrph-p2b-directory', title: 'QR Ph P2B Biller Directory', group: 'RIB', status: 'planned',
       description: 'Alphabetized Word directory from the biller masterlist.',
       note: 'Logic exists as a Claude skill; to be ported.',
