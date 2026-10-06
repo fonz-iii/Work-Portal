@@ -1,0 +1,95 @@
+/* assets/tokens.css — design tokens. Every color in app.css comes from here.
+   Light is the default; :root[data-theme="dark"] redefines the same properties.
+   Generated outputs (.output-light) always re-apply the light set. */
+
+@font-face { font-family: "Source Serif 4"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/source-serif-4-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Source Serif 4"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/source-serif-4-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Source Serif 4"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/source-serif-4-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Source Serif 4"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/source-serif-4-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Source Sans 3"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/source-sans-3-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Source Sans 3"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/source-sans-3-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Source Sans 3"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/source-sans-3-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Source Sans 3"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/source-sans-3-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Source Sans 3"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/source-sans-3-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Source Sans 3"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/source-sans-3-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+:root,
+.output-light {
+  /* brand */
+  --navy: #0A2A66; --amber: #F5A623; --deep-slate: #16324F;
+  /* neutrals */
+  --ink: #16181D; --surface: #FFFFFF; --cream: #FFF6E6; --canvas: #EFF1F5; --peer: #E4E8EE;
+  --slate: #5A626E; --muted: #8A919C; --rule: #D8DCE2;
+  /* on navy */
+  --on-navy: #FFFFFF; --mist: #C8D2E4; --steel: #8FA2C2;
+  /* semantic (text and borders only) */
+  --positive: #1F7A4D; --negative: #B3261E; --warning: #8F5300; --info: #2563A8;
+  /* roles */
+  --fill-strong: var(--navy); --fill-strong-hover: var(--deep-slate);
+  --insight-bg: var(--cream); --insight-ink: var(--ink);
+  --table-head: var(--navy); --table-row: var(--cream); --table-hover: var(--peer);
+  --focus: var(--navy); --focus-on-dark: #FFFFFF;
+  --link: var(--navy);
+  /* charts */
+  --chart-sba: #F5A623; --chart-primary: #0A2A66; --chart-3: #2E8B8B; --chart-4: #7A5CA8; --chart-5: #C0603A; --chart-6: #8A919C;
+  --chart-grid: #DDE2E9; --chart-peer: #C7CCD4; --chart-text: #5A626E; --chart-ink: #16181D; --chart-bg: #FFFFFF;
+  /* rail (same in both themes) */
+  --rail-amber: #F5A623; --rail-navy: #0A2A66; --rail-hover: #16324F; --rail-ink: #16181D;
+  --rail-toggle-hover: rgba(22, 24, 29, .08); --rail-divider: rgba(200, 210, 228, .18);
+
+  /* type */
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "Source Sans 3", Arial, "Helvetica Neue", sans-serif;
+  --fs-hero: 56px; --fs-kpi: 40px; --fs-page: 32px; --fs-section: 24px; --fs-card: 18px; --fs-body: 15px; --fs-label: 12px; --fs-note: 12px;
+  --tracking-label: .14em;
+
+  /* space (4, 8, 12, 16, 24, 32 only) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+
+  /* shape */
+  --r-card: 14px; --r-tile: 10px; --r-btn: 8px; --r-chip: 6px; --r-pill: 999px; --r-bar: 3px;
+
+  /* layout */
+  --rail-w: 232px; --rail-w-collapsed: 56px; --content-max: 1280px; --gutter: 16px; --outer: 32px;
+
+  /* motion */
+  --t-fast: 120ms ease; --t-panel: 200ms ease;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --ink: #EEF1F6; --surface: #151C2B; --cream: #2A2416; --canvas: #0C111B; --peer: #263043;
+  --slate: #B4BDCB; --muted: #8A93A3; --rule: #2C3648;
+  --steel: #A3B4D1;               /* adjusted from #8FA2C2: 4.12:1 on #123A85 failed AA */
+  --positive: #5FC08E; --negative: #F0837B; --warning: #E3A857; --info: #7FB0EA;
+  --fill-strong: #123A85; --fill-strong-hover: #16324F;
+  --insight-bg: #2A2416; --insight-ink: #F3EAD6;
+  --table-head: #123A85; --table-row: var(--surface); --table-hover: var(--peer);
+  --focus: #C8D2E4; --focus-on-dark: #C8D2E4;
+  --link: #C8D2E4;
+  --chart-primary: #C8D2E4; --chart-grid: #2C3648; --chart-peer: #4A566B; --chart-text: #B4BDCB; --chart-ink: #EEF1F6; --chart-bg: #151C2B;
+  color-scheme: dark;
+}
+
+/* Outputs are official documents: always light, whatever the screen theme. */
+:root[data-theme="dark"] .output-light {
+  --steel: #8FA2C2; color-scheme: light;
+}
+
+/* Print is an official output: always the light set. */
+@media print {
+  :root[data-theme="dark"] {
+    --ink: #16181D; --surface: #FFFFFF; --cream: #FFF6E6; --canvas: #FFFFFF; --peer: #E4E8EE; --slate: #5A626E; --muted: #8A919C; --rule: #D8DCE2;
+    --steel: #8FA2C2; --positive: #1F7A4D; --negative: #B3261E; --warning: #8F5300; --info: #2563A8;
+    --fill-strong: #0A2A66; --fill-strong-hover: #16324F; --insight-bg: #FFF6E6; --insight-ink: #16181D;
+    --table-head: #0A2A66; --table-row: #FFF6E6; --table-hover: #E4E8EE; --focus: #0A2A66; --link: #0A2A66;
+    --chart-primary: #0A2A66; --chart-grid: #DDE2E9; --chart-peer: #C7CCD4; --chart-text: #5A626E; --chart-ink: #16181D; --chart-bg: #FFFFFF;
+    color-scheme: light;
+  }
+  :root { --t-fast: 0ms linear; --t-panel: 0ms linear; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-fast: 0ms linear; --t-panel: 0ms linear; }
+}

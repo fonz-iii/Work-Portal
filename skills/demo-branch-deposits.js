@@ -91,13 +91,14 @@
       title: 'Deposits by branch (PHP M)',
       data: m.branches.map(function (b) { return { label: b.branch, value: b.value, prev: b.prev }; }),
       seriesLabels: [m.period, m.prevPeriod],
-      format: function (v) { return F.num(v, 0); }
+      format: function (v) { return F.num(v, 0); },
+      source: 'Source: ' + m.source + ' (synthetic demo data), ' + m.branchCount + ' branches, ' + m.period + ' vs ' + m.prevPeriod + '.'
     });
   }
 
   function branchTable(m) {
-    var h = '<table><thead><tr><th class="n">Rank</th><th>Branch</th><th>Region</th><th class="n">' + esc(m.period) + '</th>' +
-      '<th class="n">' + esc(m.prevPeriod) + '</th><th class="n">Change</th><th class="n">Share</th><th class="n">Move</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th class="n">Rank</th><th>Branch</th><th>Region</th><th class="n">' + esc(m.period) + ' (₱M)</th>' +
+      '<th class="n">' + esc(m.prevPeriod) + ' (₱M)</th><th class="n">Change (%)</th><th class="n">Share (%)</th><th class="n">Rank move</th></tr></thead><tbody>';
     m.branches.forEach(function (b, i) {
       h += '<tr' + (i % 2 ? ' class="alt"' : '') + '><td class="n">' + b.rank + '</td><td>' + esc(b.branch) + '</td><td>' + esc(b.region) + '</td>' +
         '<td class="n">' + F.num(b.value, 1) + '</td><td class="n">' + F.num(b.prev, 1) + '</td><td class="n">' + F.signedPct(b.pct) + '</td>' +
@@ -146,13 +147,14 @@
 
     outputs: [
       { key: 'screen', label: 'On-screen report', format: 'html', render: function (m) {
-        var kpi = function (label, value, sub) { return '<div class="kpi"><span class="kpi-label">' + esc(label) + '</span><span class="kpi-value">' + value + '</span><span class="kpi-sub">' + sub + '</span></div>'; };
+        var kpi = function (label, value, sub, cls) { return '<div class="kpi"><span class="kpi-label">' + esc(label) + '</span><span class="kpi-value' + (cls ? ' ' + cls : '') + '">' + value + '</span><span class="kpi-sub">' + sub + '</span></div>'; };
+        var arrow = m.totalAbs === null ? '' : m.totalAbs >= 0 ? '▲ ' : '▼ ';
         return '<div class="report"><p class="eyebrow">Synthetic demo · ' + esc(m.source) + '</p><h2>Branch deposits, ' + esc(m.period) + '</h2>' +
           '<div class="kpis">' +
-          kpi('Total deposits', 'PHP ' + F.num(m.total, 1) + 'M', 'vs ' + F.num(m.prevTotal, 1) + 'M in ' + esc(m.prevPeriod)) +
-          kpi('QoQ change', F.signedPct(m.totalPct), (m.totalAbs === null ? '—' : F.signed(m.totalAbs, 1) + 'M')) +
+          kpi('Total deposits', F.peso(m.total), arrow + F.peso(m.prevTotal) + ' in ' + esc(m.prevPeriod)) +
+          kpi('Quarter-on-quarter', F.signedPct(m.totalPct), arrow + (m.totalAbs === null ? '—' : F.signed(m.totalAbs, 1) + 'M')) +
           kpi('Branches', String(m.branchCount), m.regions.length + ' regions') +
-          kpi('Top branch', esc(m.branches[0] ? m.branches[0].branch : '—'), m.branches[0] ? F.pct(m.branches[0].share) + ' share' : '') +
+          kpi('Largest branch', esc(m.branches[0] ? m.branches[0].branch : '—'), m.branches[0] ? F.pct(m.branches[0].share) + ' share' : '', 'text') +
           '</div><h3>Highlights</h3>' + commentaryHtml(m) + '<div class="chart">' + chartSvg(m) + '</div><h3>Branch detail</h3>' + branchTable(m) + '</div>';
       } },
 

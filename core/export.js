@@ -16,14 +16,14 @@
   var WORD_CSS =
     '@page Section1{size:595.3pt 841.9pt;margin:54pt 54pt 54pt 54pt;}' +
     'div.Section1{page:Section1;}' +
-    'body{font-family:"Segoe UI",Calibri,Arial,sans-serif;font-size:10.5pt;color:#1a2433;}' +
-    'h1{font-size:18pt;color:#0d2240;margin:0 0 4pt;}h2{font-size:13pt;color:#0d2240;margin:14pt 0 4pt;}' +
-    'p{margin:0 0 6pt;line-height:1.35;}.muted{color:#5b6676;font-size:9pt;}' +
+    'body{font-family:"Source Sans 3",Arial,sans-serif;font-size:10.5pt;color:#16181D;}' +
+    'h1,h2{font-family:"Source Serif 4",Georgia,serif;font-weight:600;}h1{font-size:18pt;color:#0A2A66;margin:0 0 4pt;}h2{font-size:13pt;color:#0A2A66;margin:14pt 0 4pt;}' +
+    'p{margin:0 0 6pt;line-height:1.35;}.muted{color:#5A626E;font-size:9pt;}' +
     'table{border-collapse:collapse;width:100%;margin:4pt 0 8pt;}' +
-    'th{background:#0d2240;color:#ffffff;font-weight:bold;padding:4pt 6pt;text-align:left;font-size:9.5pt;}' +
-    'td{padding:3pt 6pt;border-bottom:1px solid #dfe5ed;font-size:9.5pt;}' +
-    'tr.alt td{background:#f5f7fa;}td.n,th.n{text-align:right;}' +
-    '.draft{color:#9a5b00;font-weight:bold;}';
+    'th{background:#0A2A66;color:#ffffff;font-weight:bold;padding:4pt 6pt;text-align:left;font-size:9.5pt;}' +
+    'td{padding:3pt 6pt;border-bottom:1px solid #D8DCE2;font-size:9.5pt;}' +
+    'td{background:#FFF6E6;}td.n,th.n{text-align:right;}' +
+    '.draft{color:#8F5300;font-weight:bold;}';
 
   P.export = {
     excelBlob: function (spec) {

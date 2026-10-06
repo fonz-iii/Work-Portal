@@ -52,11 +52,16 @@
   P.fmt = {
     num: function (v, dp) {
       if (v === null || v === undefined || !isFinite(v)) return '—';
-      return Number(v).toLocaleString('en-US', { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 });
+      // typographic minus (U+2212) for negatives
+      return Number(v).toLocaleString('en-US', { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }).replace(/^-/, '\u2212');
     },
     pct: function (v, dp) { return (v === null || v === undefined) ? '—' : P.fmt.num(v, dp === undefined ? 1 : dp) + '%'; },
     signedPct: function (v, dp) { return (v === null || v === undefined) ? '—' : (v > 0 ? '+' : '') + P.fmt.pct(v, dp); },
     signed: function (v, dp) { return (v === null || v === undefined) ? '—' : (v > 0 ? '+' : '') + P.fmt.num(v, dp); },
+    /** ₱24,902.6M style (value already in millions). */
+    peso: function (v, dp) { return (v === null || v === undefined) ? '—' : '\u20B1' + P.fmt.num(v, dp === undefined ? 1 : dp) + 'M'; },
+    /** 1st, 2nd, 3rd, 10th */
+    ordinal: function (n) { var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); },
     move: function (v) { return v === null || v === undefined ? '—' : v > 0 ? '▲' + v : v < 0 ? '▼' + (-v) : '—'; }
   };
 

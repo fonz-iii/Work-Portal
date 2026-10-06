@@ -7,4 +7,4 @@ Offline, browser-only portal. See `CLAUDE.md` for the full spec.
 **Try the demo:** Modules → *Demo: Branch Deposits* → choose `samples/demo-branch-deposits.xlsx` → Run → Save Excel / Save Word / Print.
 Use "Connect folder" in the header to save outputs straight into a folder; otherwise files go to Downloads.
 
-Vendored libraries (`vendor/`): SheetJS 0.20.3 (`xlsx.full.min.js`), PDF.js 3.11.174 (`pdf.min.js`, worker wrapped as `pdf.worker.fn.js`).
+Fonts: Source Serif 4 and Source Sans 3 (OFL) in `assets/fonts/`. Vendored libraries (`vendor/`): SheetJS 0.20.3 (`xlsx.full.min.js`), PDF.js 3.11.174 (`pdf.min.js`, worker wrapped as `pdf.worker.fn.js`).

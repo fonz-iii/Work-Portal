@@ -3,14 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Modules · Marketing Portal</title>
+<title>Marketing Portal</title>
+<script>(function(){var d=document.documentElement,t='light',r='';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';r=localStorage.getItem('portal-rail');}catch(e){}d.setAttribute('data-theme',t);if(r==='collapsed')d.setAttribute('data-rail','collapsed');})();</script>
 <link rel="icon" href="assets/icons/portal.svg">
-<link rel="stylesheet" href="assets/css/portal.css">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
 </head>
 <body>
-<header id="shell" class="no-print"></header>
+<aside id="rail" class="rail no-print"></aside>
+<div class="app">
+<header id="shell" class="topline no-print"></header>
 <main id="main"><p class="muted">Loading…</p></main>
 <footer id="foot" class="foot no-print"></footer>
+</div>
 
 <!-- vendor (local copies only) -->
 <script src="vendor/xlsx.full.min.js"></script>
