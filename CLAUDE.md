@@ -118,3 +118,5 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [ ] UI v5 (teams, help page, search, scroll-reactive background; v3 colors + Light/Dark) built 2026-10-06; awaiting Fons's approval.
 - [x] Build order agreed (2026-10-05): UI refresh → Industry Ranking (thrift + UKB) → DRB Usage.
 - [x] Q1 2026 thrift Stockholders' Equity figures come from the predecessor's workbook `samples/industry-ranking/2026-Q1-march/Industry Ranking as of March 31, 2026 v2.xlsx` (no PDF).
+- [ ] **Later (Fons, 2026-10-06):** revisit how modules/documents are categorized under Product Management.
+- [ ] **Later (Fons, 2026-10-06):** floating "Suggest a change" button next to "How to use". Proposed design (needs Fons's OK + work email): a short in-portal form (page, what to change, why, name) that opens a pre-filled email to Fons via a `mailto:` link, so the user's own mail app sends it (portal makes no network call; human clicks Send). Fallbacks: "Copy text" button; in Phase 2, save the suggestion as a file in a shared-drive folder.
