@@ -1,4 +1,4 @@
-/* core/ui.js — skill registry, app shell (left rail, theme), Home, Modules and the generic skill runner.
+/* core/ui.js — skill registry, shell header, menu board, and the generic skill runner screen.
    Skills only call Portal.registerSkill(); nothing here is specific to any one skill. */
 (function (root) {
   'use strict';
@@ -16,38 +16,34 @@
 
   var GROUP_ORDER = ['Quarterly Reports', 'RIB', 'Research', 'Knowledge', 'Demo'];
   var GROUP_META = {
-    'Quarterly Reports': { id: 'reports', icon: 'chart', label: 'Quarterly reports', blurb: 'Management reports from BSP publications and channel data.' },
-    'RIB': { id: 'rib', icon: 'screen', label: 'RIB', blurb: 'Retail Internet Banking: biller directory and customer advisories.' },
-    'Research': { id: 'research', icon: 'book', label: 'Research', blurb: 'Past studies and templates for new research.' },
-    'Knowledge': { id: 'knowledge', icon: 'bank', label: 'Knowledge', blurb: 'Reference information for the Marketing Group.' },
-    'Demo': { id: 'demo', icon: 'flask', label: 'Demo', blurb: 'Engine check on synthetic data. Not a real report.' }
+    'Quarterly Reports': { id: 'reports', icon: 'chart', blurb: 'Quarterly management reports built from BSP publications and channel data.' },
+    'RIB': { id: 'rib', icon: 'screen', blurb: 'Retail Internet Banking content: biller directories and customer advisories.' },
+    'Research': { id: 'research', icon: 'book', blurb: 'Past studies and templates for new research work.' },
+    'Knowledge': { id: 'knowledge', icon: 'bank', blurb: 'Reference information for the Marketing team.' },
+    'Demo': { id: 'demo', icon: 'flask', blurb: 'Engine check on synthetic data. Not a real report.' }
   };
-  /* Pill words (Ready / Draft / On hold) and the plain label above each tile title. */
-  var PILL = { ready: 'Ready', demo: 'Ready', planned: 'Draft', 'on-hold': 'On hold' };
-  var PILL_CLASS = { ready: 'ok', demo: 'ok', planned: 'draft', 'on-hold': 'hold' };
-  var TILE_LABEL = { ready: 'Available', demo: 'Demo · synthetic data', planned: 'Coming soon', 'on-hold': 'Waiting on source data' };
+  var STATUS_LABEL = { planned: 'Coming soon', 'on-hold': 'On hold', demo: 'Demo', ready: 'Ready to use' };
 
   var ICONS = {
-    home: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
-    grid: '<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
     chart: '<path d="M3 21h18"/><path d="M6 17v-5M11 17V7M16 17v-8M21 17V4"/>',
     screen: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
     book: '<path d="M4 19V5a2 2 0 0 1 2-2h14v14H6a2 2 0 0 0-2 2zm0 0a2 2 0 0 0 2 2h14"/>',
     bank: '<path d="M3 21h18M4 10h16M12 3l9 5H3z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',
     flask: '<path d="M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/>',
     arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-    back: '<path d="M19 12H5M11 18l-6-6 6-6"/>',
     file: '<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/>',
-    upload: '<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
     save: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
-    print: '<path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><path d="M7 14h10v7H7z"/>',
     folder: '<path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
-    lock: '<rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-    collapse: '<path d="M15 6l-6 6 6 6"/>'
+    image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/>',
+    back: '<path d="M19 12H5M11 18l-6-6 6-6"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'
   };
   function icon(name, cls) {
-    return '<svg class="ico ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
+    return '<svg class="ico ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
   }
+  var LOGO = '<svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="6" fill="#0d2240"/><path d="M11 28V20M17.5 28V14M24 28v-10M30.5 28V10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><path d="M9 31h23" stroke="#f0b323" stroke-width="2" stroke-linecap="round"/></svg>';
 
   /* ---------- helpers ---------- */
   function esc(s) {
@@ -59,33 +55,13 @@
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function isLive(s) { return !s.status || s.status === 'ready' || s.status === 'demo'; }
   function currentQuarter() { var d = new Date(); return 'Q' + (Math.floor(d.getMonth() / 3) + 1) + ' ' + d.getFullYear(); }
-  function meta(g) { return GROUP_META[g] || { id: String(g).toLowerCase().replace(/\W+/g, '-'), icon: 'file', label: g, blurb: '' }; }
-  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
-  function fileSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
-  function pill(st) { st = st || 'ready'; return '<span class="pill pill-' + PILL_CLASS[st] + '">' + esc(PILL[st] || st) + '</span>'; }
+  function meta(g) { return GROUP_META[g] || { id: String(g).toLowerCase().replace(/\W+/g, '-'), icon: 'file', blurb: '' }; }
 
   P.ui = { esc: esc, icon: icon };
 
-  /* ---------- theme ---------- */
-  function setTheme(t) {
-    t = t === 'dark' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', t);
-    store('portal-theme', t);
-    document.querySelectorAll('[data-theme-set]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-set') === t)); });
-    root.dispatchEvent(new CustomEvent('portal:themechange', { detail: { theme: t } }));
-  }
-  function setRail(collapsed) {
-    var d = document.documentElement;
-    if (collapsed) d.setAttribute('data-rail', 'collapsed'); else d.removeAttribute('data-rail');
-    store('portal-rail', collapsed ? 'collapsed' : 'expanded');
-    var b = $('#rail-toggle');
-    if (b) { b.setAttribute('aria-expanded', String(!collapsed)); b.setAttribute('aria-label', collapsed ? 'Expand menu' : 'Collapse menu'); }
-  }
-
-  /* ---------- shell: rail, top line, footer ---------- */
-  var NAV = [['Home', 'index.html', 'home', 'home'], ['All modules', 'modules.html', 'modules:', 'grid'],
-    ['Quarterly reports', 'modules.html#reports', 'modules:reports', 'chart'], ['RIB', 'modules.html#rib', 'modules:rib', 'screen'],
-    ['Research', 'modules.html#research', 'modules:research', 'book'], ['Knowledge', 'knowledge.html', 'knowledge', 'bank']];
+  /* ---------- shell: utility bar, masthead, footer ---------- */
+  var NAV = [['Home', 'index.html', 'home'], ['All modules', 'modules.html', 'modules:'], ['Reports', 'modules.html#reports', 'modules:reports'],
+    ['RIB', 'modules.html#rib', 'modules:rib'], ['Research', 'modules.html#research', 'modules:research'], ['Knowledge', 'knowledge.html', 'knowledge']];
   var page = '';
 
   function navKey() {
@@ -95,29 +71,32 @@
     return 'modules:' + h;
   }
   function renderNav() {
-    var nav = $('#rail-nav'), key = navKey();
-    if (!nav) return;
-    nav.innerHTML = NAV.map(function (n) {
-      var on = n[2] === key;
-      return '<a href="' + n[1] + '"' + (on ? ' class="active" aria-current="page"' : '') + ' title="' + n[0] + '">' + icon(n[3]) + '<span>' + n[0] + '</span></a>';
-    }).join('');
+    var nav = $('#nav'), key = navKey();
+    if (nav) nav.innerHTML = NAV.map(function (n) { return '<a href="' + n[1] + '"' + (n[2] === key ? ' class="active"' : '') + '>' + n[0] + '</a>'; }).join('');
   }
 
   function renderShell() {
-    var theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-    var collapsed = document.documentElement.getAttribute('data-rail') === 'collapsed';
-    $('#rail').innerHTML =
-      '<div class="rail-top"><a class="wordmark" href="index.html"><span class="wm-eyebrow">Sterling Bank of Asia</span><span class="wm-title">Marketing Portal</span><span class="wm-short" aria-hidden="true">MP</span></a>' +
-      '<button class="rail-toggle" id="rail-toggle" aria-expanded="' + !collapsed + '" aria-label="' + (collapsed ? 'Expand menu' : 'Collapse menu') + '">' + icon('collapse') + '</button></div>' +
-      '<nav class="rail-nav" id="rail-nav" aria-label="Main"></nav>' +
-      '<div class="rail-foot"><p class="rail-label">Theme</p><div class="theme-toggle" role="group" aria-label="Theme">' +
-      '<button data-theme-set="light" aria-pressed="' + (theme === 'light') + '"><span class="long">Light</span><span class="short">L</span></button>' +
-      '<button data-theme-set="dark" aria-pressed="' + (theme === 'dark') + '"><span class="long">Dark</span><span class="short">D</span></button></div></div>';
-    $('#shell').innerHTML = '<span class="restricted">' + icon('lock') + 'For the Marketing Group only</span><div class="folder" id="folder"></div>';
-    var f = $('#foot');
-    if (f) f.innerHTML = '<p>Sterling Bank of Asia · Restricted to the Marketing Group. Do not share this portal or its outputs outside the group without approval.</p><p>Works offline. Every figure is calculated from the files you supply; outputs are drafts until you release them.</p>';
+    $('#shell').innerHTML =
+      '<div class="topbar"><div class="wrap topbar-in"><span>Sterling Bank of Asia&nbsp;&nbsp;|&nbsp;&nbsp;Marketing</span>' +
+      '<span class="topbar-note">' + icon('lock') + '<b>For the Marketing Group only</b>&nbsp;· Works offline</span><div class="folder" id="folder"></div>' + themeToggle() + '</div></div>' +
+      '<div class="masthead"><div class="wrap masthead-in"><a class="brand" href="index.html">' + LOGO +
+      '<span class="brand-text"><b>Marketing Portal</b><small>Sterling Bank of Asia</small></span></a><nav class="nav" id="nav"></nav></div></div>';
     renderNav();
     renderFolder();
+    renderFooter();
+  }
+
+  function renderFooter() {
+    var f = $('#foot');
+    if (!f) return;
+    var ks = [['Directory', 'directory'], ['Org chart', 'orgchart'], ['Branches', 'branches'], ['Products & fees', 'products'], ['P2B billers', 'billers'], ['Templates', 'templates']];
+    f.innerHTML = '<div class="wrap foot-grid"><div class="foot-brand"><div class="brand light">' + LOGO +
+      '<span class="brand-text"><b>Marketing Portal</b><small>Sterling Bank of Asia</small></span></div>' +
+      '<p>An offline workspace that turns recurring files into draft reports for your review. Files are read on this computer and never leave it.</p></div>' +
+      '<div><h4>Modules</h4><ul><li><a href="modules.html">All modules</a></li>' + GROUP_ORDER.filter(function (g) { return g !== 'Knowledge'; }).map(function (g) { return '<li><a href="modules.html#' + meta(g).id + '">' + esc(g) + '</a></li>'; }).join('') + '</ul></div>' +
+      '<div><h4>Knowledge</h4><ul>' + ks.map(function (k) { return '<li><a href="knowledge.html#' + k[1] + '">' + esc(k[0]) + '</a></li>'; }).join('') + '</ul></div>' +
+      '<div><h4>About the figures</h4><p>Every number is calculated from the files you supply. Commentary marked DRAFT uses thresholds not yet approved by SBA. Outputs are drafts until you review and release them.</p></div></div>' +
+      '<div class="foot-base"><div class="wrap foot-base-in"><span>Sterling Bank of Asia · Restricted to the Marketing Group. Do not share this portal or its outputs outside the group without approval.</span><span>Phase 1</span></div></div>';
   }
 
   function renderFolder() {
@@ -125,33 +104,45 @@
     if (!box) return;
     var st = f.status(), name = esc(f.folderName()), html = icon('folder');
     if (st === 'connected') {
-      html += '<span>Saving to <b>' + name + '</b></span><button class="btn tertiary sm" data-act="connect">Change</button><button class="btn tertiary sm" data-act="disconnect">Disconnect</button>';
+      html += '<span>Saving to <b>' + name + '</b></span><button class="linkbtn" data-act="connect">Change</button><button class="linkbtn" data-act="disconnect">Disconnect</button>';
     } else if (st === 'needs-permission') {
-      html += '<span>Folder <b>' + name + '</b> needs permission</span><button class="btn secondary sm" data-act="reconnect">Allow access</button>';
+      html += '<span>Folder <b>' + name + '</b> needs permission</span><button class="linkbtn strong" data-act="reconnect">Allow access</button>';
     } else if (st === 'none') {
-      html += '<span>Files save to Downloads</span><button class="btn secondary sm" data-act="connect">Choose a save folder</button>';
+      html += '<span title="Pick a folder so finished files save straight into it. Otherwise they go to Downloads.">Where should files be saved?</span><button class="linkbtn strong" data-act="connect">Choose folder</button>';
     } else {
       html += '<span>Files save to your Downloads folder</span>';
     }
-    if (f.lastError) html += '<span class="folder-err" role="img" aria-label="Folder error" title="' + esc(f.lastError) + '">!</span>';
+    if (f.lastError) html += '<span class="folder-err" title="' + esc(f.lastError) + '">!</span>';
     box.innerHTML = html;
   }
 
+  /* ---------- light / dark theme ---------- */
+  function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+  function themeToggle() {
+    var t = currentTheme();
+    return '<div class="theme-toggle" role="group" aria-label="Color theme"><button data-theme-set="light" aria-pressed="' + (t === 'light') + '">Light</button><button data-theme-set="dark" aria-pressed="' + (t === 'dark') + '">Dark</button></div>';
+  }
+  function setTheme(t) {
+    t = t === 'dark' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('portal-theme', t); } catch (e) { /* storage blocked: theme lasts for this page only */ }
+    document.querySelectorAll('[data-theme-set]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-set') === t)); });
+  }
+  P.ui.setTheme = setTheme;
   document.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-act]');
-    if (b) {
-      var act = b.getAttribute('data-act');
-      if (act === 'connect') P.files.connect();
-      else if (act === 'reconnect') P.files.reconnect();
-      else if (act === 'disconnect') P.files.disconnect();
-      return;
-    }
     var t = e.target.closest('[data-theme-set]');
-    if (t) return setTheme(t.getAttribute('data-theme-set'));
-    if (e.target.closest('#rail-toggle')) setRail(document.documentElement.getAttribute('data-rail') !== 'collapsed');
+    if (t) setTheme(t.getAttribute('data-theme-set'));
   });
 
-  /* ---------- menu board (shared by Home and Modules) ---------- */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('#folder [data-act]');
+    if (!b) return;
+    var act = b.getAttribute('data-act');
+    if (act === 'connect') P.files.connect();
+    else if (act === 'reconnect') P.files.reconnect();
+    else if (act === 'disconnect') P.files.disconnect();
+  });
+
   function groupsMap() {
     var groups = {};
     skills.forEach(function (s) { (groups[s.group || 'Other'] = groups[s.group || 'Other'] || []).push(s); });
@@ -159,190 +150,156 @@
       .concat(Object.keys(groups).filter(function (g) { return GROUP_ORDER.indexOf(g) < 0; }));
     return { groups: groups, names: names };
   }
-  /** Mixed widths on a 12-column grid: featured tile 6, next two 3, the rest 4. */
-  function span(i, n) {
-    if (n === 1) return 6;
-    if (n === 2) return i === 0 ? 7 : 5;
-    return i === 0 ? 6 : i < 3 ? 3 : 4;
-  }
-  function boardSection(g, list) {
-    var mm = meta(g);
-    return '<section class="board-section" id="' + mm.id + '"><div class="section-head"><p class="label">' + esc(mm.label) + '</p><p class="section-blurb">' + esc(mm.blurb) + '</p></div><div class="grid">' +
-      list.map(function (s, i) {
-        var st = s.status || 'ready', href = s.href || ('modules.html#skill/' + encodeURIComponent(s.id));
-        return '<a class="tile' + (i === 0 ? ' tile-featured' : '') + '" style="--span:' + span(i, list.length) + '" href="' + esc(href) + '">' +
-          '<span class="label">' + esc(TILE_LABEL[st] || '') + '</span><span class="tile-title">' + esc(s.title) + '</span>' +
-          '<span class="tile-desc">' + esc(s.description || '') + '</span><span class="tile-foot">' + pill(st) + '</span></a>';
-      }).join('') + '</div></section>';
+  function count(fn) { return skills.filter(fn).length; }
+
+  /** Picture slot: shows the image if the file exists, otherwise a labelled placeholder naming the file to add. */
+  function imgSlot(src, label, cls) {
+    return '<figure class="imgslot ' + (cls || '') + '"><img src="' + esc(src) + '" alt="' + esc(label) + '" onerror="this.parentNode.classList.add(\'empty\')">' +
+      '<figcaption class="imgslot-ph">' + icon('image') + '<b>' + esc(label) + '</b><span>Add a picture named</span><code>' + esc(src) + '</code></figcaption></figure>';
   }
 
-  /** Picture slot: shows the image if the file exists, otherwise an empty state naming the file to add. */
-  function imgSlot(src, label, extra) {
-    return '<figure class="imgslot ' + (extra || '') + '"><img src="' + esc(src) + '" alt="' + esc(label) + '" onerror="this.parentNode.classList.add(\'empty\')">' +
-      '<figcaption class="empty-state"><p class="empty-title">' + esc(label) + ' goes here</p><p>Add a picture named <code>' + esc(src) + '</code>.</p></figcaption></figure>';
-  }
-
-  /* ---------- home ---------- */
+  /* ---------- home page ---------- */
   function renderHome(main) {
-    var H = root.SBA_HOME || {}, gm = groupsMap();
-    var html = '<div class="page"><header class="page-head"><p class="label">Home</p><h1>' + esc(H.headline || 'Make a report or look something up') + '</h1>' +
-      '<p class="lede">' + esc(H.intro || 'Pick a task below. Files are read on this computer and never leave it.') + '</p></header>' +
-      '<div class="grid">' +
-      '<section class="card" style="--span:7"><p class="label">Start here</p><h2 class="card-title">Three ways to begin</h2><ol class="start-list">' +
-      '<li><b>Make a report.</b> Open a module, add the source file, review the draft.</li>' +
-      '<li><b>Look something up.</b> Contacts, branches, products and billers are in Knowledge.</li>' +
-      '<li><b>Choose a save folder</b> at the top right so finished files land in one place.</li></ol>' +
-      '<div class="btn-row"><a class="btn primary" href="modules.html">Start a report ' + icon('arrow') + '</a><a class="btn secondary" href="knowledge.html">Find information</a></div></section>' +
-      '<div class="pic-cell" style="--span:5">' + imgSlot(H.heroImage || 'assets/images/home-hero.jpg', 'Main picture', 'pic-hero') + '</div></div>';
+    var H = root.SBA_HOME || {}, today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    var tasks = [
+      ['chart', 'Make a quarterly report', 'Industry ranking, DRB usage and other management reports.', 'modules.html#reports'],
+      ['screen', 'Prepare RIB content', 'Biller directory and customer advisories for internet banking.', 'modules.html#rib'],
+      ['book', 'Look up past research', 'Browse earlier studies or start a new one from a template.', 'modules.html#research'],
+      ['bank', 'Find people and branches', 'Directory, org chart, branch list, products and fees.', 'knowledge.html']];
 
-    html += gm.names.map(function (g) { return boardSection(g, gm.groups[g]); }).join('');
-    html += boardSection('Knowledge', [{ id: '__k', title: 'Knowledge', description: 'Directory, org chart, branches, products and fees, P2B billers, templates.', href: 'knowledge.html', status: 'ready' }]).replace('id="knowledge"', 'id="knowledge-board"');
+    var html = '<section class="home-hero"><div class="wrap home-hero-in"><div class="home-hero-copy">' +
+      '<p class="restricted">' + icon('lock') + 'For the Marketing Group only</p><p class="kicker gold">' + esc(H.kicker || 'Marketing Portal') + '</p><h1>' + esc(H.headline || 'Welcome to the Marketing Portal') + '</h1>' +
+      '<p class="hero-lede">' + esc(H.intro || 'Create reports and find reference information in a few clicks. Everything stays on this computer.') + '</p>' +
+      '<div class="hero-cta"><a class="btn gold lg" href="modules.html">Start a report ' + icon('arrow') + '</a><a class="btn ghost-light lg" href="knowledge.html">Find information</a></div>' +
+      '<dl class="hero-stats"><div><dt>Ready to use</dt><dd>' + count(isLive) + '</dd></div><div><dt>Coming soon</dt><dd>' + count(function (s) { return s.status === 'planned'; }) + '</dd></div>' +
+      '<div><dt>Today</dt><dd class="small">' + esc(today) + '</dd></div></dl></div>' +
+      imgSlot(H.heroImage || 'assets/images/home-hero.jpg', 'Main picture', 'hero-img') + '</div></section>';
+
+    html += '<section class="band"><div class="wrap"><header class="band-head center"><p class="kicker">Start here</p><h2>What would you like to do?</h2>' +
+      '<p>Pick a task. You can always come back here with the <b>Home</b> link at the top.</p></header><div class="tasks">' +
+      tasks.map(function (t) { return '<a class="task" href="' + t[3] + '"><span class="task-ico">' + icon(t[0]) + '</span><h3>' + t[1] + '</h3><p>' + t[2] + '</p><span class="more">Go ' + icon('arrow') + '</span></a>'; }).join('') +
+      '</div></div></section>';
 
     var feats = H.features || [];
     if (feats.length) {
-      html += '<section class="board-section"><div class="section-head"><p class="label">' + esc(H.featuresKicker || 'Highlights') + '</p><p class="section-blurb">' + esc(H.featuresTitle || 'From the Marketing Group') + '</p></div><div class="grid">' +
-        feats.map(function (f, i) { return '<article class="card feature" style="--span:' + (i === 0 ? 6 : 3) + '">' + imgSlot(f.image, 'Picture ' + (i + 1)) + '<h3 class="card-title">' + esc(f.title) + '</h3><p>' + esc(f.text) + '</p></article>'; }).join('') +
-        '</div></section>';
+      html += '<section class="band alt"><div class="wrap"><header class="band-head center"><p class="kicker">' + esc(H.featuresKicker || 'Highlights') + '</p><h2>' + esc(H.featuresTitle || 'From the Marketing team') + '</h2></header><div class="features">' +
+        feats.map(function (f, i) { return '<article class="feature">' + imgSlot(f.image, 'Picture ' + (i + 1)) + '<div class="feature-body"><h3>' + esc(f.title) + '</h3><p>' + esc(f.text) + '</p></div></article>'; }).join('') +
+        '</div></div></section>';
     }
 
-    html += '<section class="board-section"><div class="section-head"><p class="label">How it works</p><p class="section-blurb">Every module follows the same four steps.</p></div>' +
-      '<div class="card"><ol class="stepper static">' + ['Inputs: add the source file', 'Check: the portal lists anything missing', 'Results: review figures and commentary', 'Export: save Excel, Word or PDF'].map(function (s, i) {
-        var p = s.split(': ');
-        return '<li><span class="step-n">' + (i + 1) + '</span><span class="step-name">' + p[0] + '</span><span class="step-hint">' + p[1] + '</span></li>';
-      }).join('') + '</ol></div></section></div>';
+    var steps = [['file', 'Choose your file', 'Open a module and pick the Excel or PDF file. It is read on this computer only.'],
+      ['check', 'The portal checks it', 'If something is missing or wrong in the file, you get a plain list of what to fix.'],
+      ['eye', 'Review the draft', 'Figures, charts and comments appear on screen for you to check.'],
+      ['save', 'Save and send', 'Save as Excel, Word or PDF. You decide what gets sent, and to whom.']];
+    html += '<section class="band how"><div class="wrap"><header class="band-head center"><p class="kicker">New here?</p><h2>How it works</h2></header><ol class="steps">' +
+      steps.map(function (s, i) { return '<li><span class="step-ico">' + icon(s[0]) + '</span><span class="step-n">Step ' + (i + 1) + '</span><h3>' + s[1] + '</h3><p>' + s[2] + '</p></li>'; }).join('') +
+      '</ol></div></section>';
     main.innerHTML = html;
   }
 
-  /* ---------- modules page ---------- */
+  /* ---------- modules page (tabs) ---------- */
   function renderModules(main, tab) {
     var gm = groupsMap(), names = gm.names, groups = gm.groups;
     var shown = names.filter(function (g) { return !tab || meta(g).id === tab; });
     if (!shown.length) { shown = names; tab = ''; }
-    var html = '<div class="page"><header class="page-head"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>Modules</span></nav>' +
-      '<h1>Pick the report you need</h1><p class="lede">Each module turns one kind of file into a draft. Draft modules are still being built.</p>' +
-      '<nav class="chips" aria-label="Module sections"><a href="modules.html"' + (!tab ? ' class="on" aria-current="true"' : '') + '>All</a>' +
-      names.map(function (g) { var id = meta(g).id; return '<a href="modules.html#' + id + '"' + (tab === id ? ' class="on" aria-current="true"' : '') + '>' + esc(meta(g).label) + ' <span class="num">' + groups[g].length + '</span></a>'; }).join('') +
-      '</nav></header>' + shown.map(function (g) { return boardSection(g, groups[g]); }).join('') + '</div>';
+    var html = '<div class="page-head"><div class="wrap"><nav class="crumbs"><a href="index.html">Home</a><span>/</span><b>Modules</b></nav>' +
+      '<div class="page-title"><div><h1>Modules</h1><p class="lede">Each module turns one kind of file into a draft report. Click a card to open it. Cards marked <b>Coming soon</b> are still being built.</p></div></div>' +
+      '<nav class="tabs" aria-label="Module sections"><a href="modules.html"' + (!tab ? ' class="active"' : '') + '>All</a>' +
+      names.map(function (g) { var id = meta(g).id; return '<a href="modules.html#' + id + '"' + (tab === id ? ' class="active"' : '') + '>' + esc(g) + ' <span class="tab-n">' + groups[g].length + '</span></a>'; }).join('') +
+      '<a href="knowledge.html">Knowledge ' + icon('arrow') + '</a></nav></div></div>';
+
+    shown.forEach(function (g, gi) {
+      var mm = meta(g);
+      html += '<section class="band' + (gi % 2 ? ' alt' : '') + '" id="' + mm.id + '"><div class="wrap band-in"><header class="band-head">' +
+        '<span class="band-ico">' + icon(mm.icon) + '</span><h2>' + esc(g) + '</h2><p>' + esc(mm.blurb) + '</p></header><div class="cards">';
+      groups[g].forEach(function (s) {
+        var st = s.status || 'ready', href = s.href || ('modules.html#skill/' + encodeURIComponent(s.id));
+        html += '<a class="mcard st-' + esc(st) + '" href="' + esc(href) + '"><div class="mcard-top"><span class="mcard-ico">' + icon(mm.icon) + '</span>' +
+          '<span class="pill pill-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span></div>' +
+          '<h3>' + esc(s.title) + '</h3><p>' + esc(s.description || '') + '</p>' +
+          '<span class="more">' + (isLive(s) ? 'Open' : 'See what it will do') + icon('arrow') + '</span></a>';
+      });
+      html += '</div></div></section>';
+    });
     main.innerHTML = html;
   }
 
   /* ---------- skill runner ---------- */
-  var STEPS = ['Inputs', 'Check', 'Results', 'Export'];
-  function setStep(n) {
-    document.querySelectorAll('.stepper.live li').forEach(function (li, i) {
-      li.className = i + 1 < n ? 'done' : i + 1 === n ? 'current' : '';
-      if (i + 1 === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
-    });
-  }
-
   function renderRunner(main, skill) {
     var state = { inputs: {}, params: {}, metrics: null };
     var st = skill.status || 'ready', g = skill.group || '', gid = meta(g).id;
-    var head = '<header class="page-head"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><a href="modules.html#' + gid + '">' + esc(meta(g).label) + '</a><span aria-hidden="true">/</span><span>' + esc(skill.title) + '</span></nav>' +
-      '<div class="title-row"><h1>' + esc(skill.title) + '</h1>' + pill(st) + '</div><p class="lede">' + esc(skill.description || '') + '</p></header>';
+    var head = '<div class="page-head"><div class="wrap"><nav class="crumbs"><a href="index.html">Home</a><span>/</span><a href="modules.html">Modules</a><span>/</span><a href="modules.html#' + gid + '">' + esc(g) + '</a><span>/</span><b>' + esc(skill.title) + '</b></nav>' +
+      '<div class="page-title"><div><h1>' + esc(skill.title) + '</h1><p class="lede">' + esc(skill.description || '') + '</p></div>' +
+      '<span class="pill pill-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span></div></div></div>';
 
     if (!isLive(skill)) {
-      main.innerHTML = '<div class="page">' + head + '<div class="grid"><section class="card" style="--span:8"><p class="label">Coming soon</p><h2 class="card-title">This module is still being built</h2><p>' + esc(skill.note || '') + '</p>' +
-        '<div class="two-col">' + listBlock('You will provide', skill.plannedInputs) + listBlock('You will get', skill.plannedOutputs) + '</div>' +
-        '<a class="btn secondary" href="modules.html#' + gid + '">' + icon('back') + 'Back to ' + esc(meta(g).label) + '</a></section></div></div>';
+      main.innerHTML = head + '<div class="wrap page-body"><div class="card notice"><h2>' + icon('file') + 'This module is coming soon</h2><p>' + esc(skill.note || 'It is still being built.') + '</p>' +
+        '<div class="notice-cols">' + listBlock('You will provide', skill.plannedInputs) + listBlock('You will get', skill.plannedOutputs) + '</div>' +
+        '<a class="btn" href="modules.html#' + gid + '">' + icon('back') + 'Back to ' + esc(g) + '</a></div></div>';
       return;
     }
 
-    document.body.setAttribute('data-amber', 'step');
-    main.innerHTML = '<div class="page">' + head +
-      '<ol class="stepper live" aria-label="Progress">' + STEPS.map(function (s, i) { return '<li><span class="step-n">' + (i + 1) + '</span><span class="step-name">' + s + '</span></li>'; }).join('') + '</ol>' +
-      '<div class="grid">' +
-      '<section class="card" style="--span:7"><p class="label">Step 1</p><h2 class="card-title">Add the source file</h2><div id="inputs"></div></section>' +
-      '<section class="card" style="--span:5"><p class="label">Step 2</p><h2 class="card-title">Check the settings</h2><div id="params"></div>' +
-      '<div id="check-result" class="check-result" aria-live="polite"></div>' +
-      '<div class="btn-row"><button class="btn primary" id="run">Create report ' + icon('arrow') + '</button></div></section></div>' +
-      rulesNote(skill) + '<div id="errors" aria-live="polite"></div><section id="results">' + emptyResults() + '</section></div>';
-    setStep(1);
+    main.innerHTML = head + '<div class="wrap page-body">' +
+      '<div class="guide no-print"><b>How to use this page:</b><ol><li>Choose your file</li><li>Check the settings</li><li>Click <b>Create report</b></li><li>Review it, then save</li></ol></div>' +
+      '<div class="runner-grid">' +
+      '<section class="card"><h2><span class="step">1</span>Choose your file</h2><div id="inputs"></div></section>' +
+      '<section class="card"><h2><span class="step">2</span>Check the settings</h2><div id="params"></div>' +
+      '<div class="actions"><button class="btn primary lg" id="run">Create report ' + icon('arrow') + '</button></div>' + rulesNote(skill) + '</section></div>' +
+      '<div id="errors"></div><section id="results"></section></div>';
 
     var inBox = $('#inputs');
-    (skill.inputs || []).forEach(function (d) { inBox.appendChild(inputRow(d, state, skill)); });
-    if (!(skill.inputs || []).length) inBox.innerHTML = '<p>No files needed.</p>';
+    (skill.inputs || []).forEach(function (d) { inBox.appendChild(inputRow(d, state)); });
+    if (!(skill.inputs || []).length) inBox.innerHTML = '<p class="muted">No files needed.</p>';
 
     var pBox = $('#params');
     (skill.params || []).forEach(function (d) { pBox.appendChild(paramRow(d, state)); });
-    if (!(skill.params || []).length) pBox.innerHTML = '<p>No settings.</p>';
-    pBox.addEventListener('change', function () { checkNow(skill, state); });
+    if (!(skill.params || []).length) pBox.innerHTML = '<p class="muted">No settings.</p>';
 
     $('#run').addEventListener('click', function () { run(skill, state); });
-    main.addEventListener('click', function (e) {
-      if (e.target.closest('[data-pick-first]')) { var z = $('.dropzone'); if (z) z.click(); }
-    });
-  }
-
-  function emptyResults() {
-    return '<div class="card empty-state"><p class="empty-title">Your report appears here</p><p>Add the source file in step 1, check the settings, then select Create report.</p>' +
-      '<button class="btn secondary" data-pick-first>' + icon('upload') + 'Choose file</button></div>';
   }
 
   function listBlock(title, items) {
     if (!items || !items.length) return '';
-    return '<div><p class="label">' + esc(title) + '</p><ul>' + items.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul></div>';
+    return '<h3>' + esc(title) + '</h3><ul>' + items.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul>';
   }
 
   function rulesNote(skill) {
-    if (!skill.rules || !P.rules.isDraft(skill.rules)) return '';
-    return '<div class="callout warning" role="note"><p class="label">Warning</p><p>Commentary thresholds are <b>' + esc(skill.rules.status || 'DRAFT') + '</b> and not yet approved by SBA. ' + esc(skill.rules.note || '') + '</p></div>';
+    if (!skill.rules) return '';
+    return P.rules.isDraft(skill.rules)
+      ? '<p class="rules-note draft">Commentary thresholds: <b>' + esc(skill.rules.status || 'DRAFT') + '</b>, not yet approved by SBA. ' + esc(skill.rules.note || '') + '</p>'
+      : '<p class="rules-note">Commentary thresholds: approved.</p>';
   }
 
-  /** Drop zone: click, keyboard or drag a file in. Shows name, size and the check result. */
-  function inputRow(d, state, skill) {
-    var row = el('<div class="field"><p class="field-label">' + esc(d.label) + (d.required ? ' <span class="req">(required)</span>' : '') + '</p>' +
-      (d.help ? '<p class="help">' + esc(d.help) + '</p>' : '') + '<div class="file-slot"></div></div>');
-    var slot = $('.file-slot', row);
+  function inputRow(d, state) {
+    var row = el('<div class="field"><label>' + esc(d.label) + (d.required ? ' <span class="req">*</span>' : '') + '</label>' +
+      (d.help ? '<p class="help">' + esc(d.help) + '</p>' : '') + '<div class="file-line"></div></div>');
+    var line = $('.file-line', row);
 
     if (d.type === 'paste') {
-      var ta = el('<textarea rows="6" aria-label="' + esc(d.label) + '" placeholder="Paste text here"></textarea>');
-      ta.addEventListener('input', function () { state.inputs[d.key] = ta.value ? { kind: 'text', name: 'pasted', text: ta.value } : undefined; checkNow(skill, state); });
-      slot.appendChild(ta);
+      var ta = el('<textarea rows="6" placeholder="Paste text here"></textarea>');
+      ta.addEventListener('input', function () { state.inputs[d.key] = ta.value ? { kind: 'text', name: 'pasted', text: ta.value } : undefined; });
+      line.appendChild(ta);
       return row;
     }
-    var zone = el('<div class="dropzone" role="button" tabindex="0" aria-label="Choose ' + esc(d.label) + '">' +
-      '<p class="dz-main">' + icon('upload') + '<span>Drop the file here, or <u>choose a file</u></span></p><p class="dz-sub">' + esc(P.files.acceptFor(d.type).replace(/,/g, ', ')) + '</p><p class="dz-file" hidden></p></div>');
-    var info = $('.dz-file', zone);
-    function load(file) {
-      if (!file) return;
-      info.hidden = false;
-      info.innerHTML = '<b>' + esc(file.name) + '</b> · ' + fileSize(file.size) + ' · reading…';
-      state.inputs[d.key] = undefined;
-      P.parse.input(d, file).then(function (data) {
-        state.inputs[d.key] = data;
-        zone.classList.add('has-file');
-        info.innerHTML = '<b>' + esc(file.name) + '</b> · ' + fileSize(file.size) + ' · ' + esc(summary(data)) + '<span class="dz-check" data-check></span>';
-        checkNow(skill, state);
-      }, function (e) {
-        info.innerHTML = '<b>' + esc(file.name) + '</b> · <span class="t-neg">could not be read: ' + esc(e && e.message || e) + '</span>';
+    var btn = el('<button class="btn">Choose file…</button>'), info = el('<span class="file-info muted">No file chosen</span>');
+    btn.addEventListener('click', function () {
+      P.files.pick({ accept: P.files.acceptFor(d.type) }).then(function (list) {
+        if (!list.length) return;
+        var file = list[0];
+        info.textContent = 'Reading ' + file.name + '…';
+        state.inputs[d.key] = undefined;
+        P.parse.input(d, file).then(function (data) {
+          state.inputs[d.key] = data;
+          info.innerHTML = '<b>' + esc(file.name) + '</b> · ' + esc(summary(data));
+          info.className = 'file-info ok';
+        }, function (e) {
+          info.textContent = 'Could not read ' + file.name + ': ' + (e && e.message || e);
+          info.className = 'file-info bad';
+        });
       });
-    }
-    function pick() { P.files.pick({ accept: P.files.acceptFor(d.type) }).then(function (l) { load(l[0]); }); }
-    zone.addEventListener('click', pick);
-    zone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
-    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('over'); });
-    zone.addEventListener('dragleave', function () { zone.classList.remove('over'); });
-    zone.addEventListener('drop', function (e) { e.preventDefault(); zone.classList.remove('over'); load(e.dataTransfer.files[0]); });
-    slot.appendChild(zone);
+    });
+    line.appendChild(btn); line.appendChild(info);
     return row;
-  }
-
-  /** Runs the same checks as Create report, as soon as every required input is present. */
-  function checkNow(skill, state) {
-    var box = $('#check-result');
-    if (!box) return;
-    var missing = (skill.inputs || []).some(function (d) { return d.required && !state.inputs[d.key]; });
-    if (missing) { box.innerHTML = ''; return; }
-    var errs = P.validate.required(skill, state.inputs, state.params);
-    try { if (!errs.length && skill.validate) errs = skill.validate(state.inputs, state.params) || []; }
-    catch (e) { errs = ['The check could not finish: ' + (e && e.message || e)]; }
-    box.innerHTML = errs.length
-      ? '<p class="t-neg"><b>' + errs.length + (errs.length === 1 ? ' problem' : ' problems') + ' found.</b> Details below.</p>'
-      : '<p class="t-pos"><b>Checks passed.</b> Ready to create the report.</p>';
-    document.querySelectorAll('[data-check]').forEach(function (c) { c.className = 'dz-check ' + (errs.length ? 't-neg' : 't-pos'); c.textContent = errs.length ? ' · ' + errs.length + ' to fix' : ' · checks passed'; });
-    showErrors(errs);
-    setStep(2);
   }
 
   function summary(data) {
@@ -352,26 +309,25 @@
   }
 
   function paramRow(d, state) {
-    var id = 'p-' + d.key;
-    var row = el('<div class="field"><label class="field-label" for="' + id + '">' + esc(d.label) + '</label><div class="param-line"></div></div>');
+    var row = el('<div class="field"><label>' + esc(d.label) + '</label><div class="param-line"></div></div>');
     var line = $('.param-line', row), set = function (v) { state.params[d.key] = v; };
 
     if (d.type === 'quarter') {
       var init = /^Q[1-4] \d{4}$/.test(d.default || '') ? d.default : currentQuarter();
-      var q = el('<select id="' + id + '">' + [1, 2, 3, 4].map(function (n) { return '<option>Q' + n + '</option>'; }).join('') + '</select>');
-      var y = el('<input type="number" min="2000" max="2100" step="1" class="year" aria-label="Year">');
+      var q = el('<select>' + [1, 2, 3, 4].map(function (n) { return '<option>Q' + n + '</option>'; }).join('') + '</select>');
+      var y = el('<input type="number" min="2000" max="2100" step="1" class="year">');
       q.value = init.split(' ')[0]; y.value = init.split(' ')[1];
       var upd = function () { set(q.value + ' ' + y.value); };
       q.addEventListener('change', upd); y.addEventListener('input', upd); upd();
       line.appendChild(q); line.appendChild(y);
     } else if (d.type === 'select') {
-      var s = el('<select id="' + id + '">' + (d.options || []).map(function (o) { return '<option>' + esc(o) + '</option>'; }).join('') + '</select>');
+      var s = el('<select>' + (d.options || []).map(function (o) { return '<option>' + esc(o) + '</option>'; }).join('') + '</select>');
       if (d.default) s.value = d.default;
       s.addEventListener('change', function () { set(s.value); }); set(s.value);
       line.appendChild(s);
     } else {
       var type = { month: 'month', date: 'date', number: 'number' }[d.type] || 'text';
-      var inp = el('<input id="' + id + '" type="' + type + '">');
+      var inp = el('<input type="' + type + '">');
       if (d.default !== undefined) inp.value = d.default;
       inp.addEventListener('input', function () { set(type === 'number' ? (inp.value === '' ? '' : Number(inp.value)) : inp.value); });
       set(type === 'number' ? (inp.value === '' ? '' : Number(inp.value)) : inp.value);
@@ -383,18 +339,19 @@
   function showErrors(errs, title) {
     var box = $('#errors');
     if (!errs.length) { box.innerHTML = ''; return; }
-    box.innerHTML = '<div class="callout error" role="alert"><p class="label">' + esc(title || 'Errors') + '</p><p>Fix these in the file, then choose it again.</p><ul>' +
+    box.innerHTML = '<div class="card errors"><h2>' + esc(title || 'A few things need fixing in your file') + '</h2><ul>' +
       errs.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul></div>';
   }
 
   function run(skill, state) {
     var results = $('#results');
+    results.innerHTML = '';
     var errs = P.validate.required(skill, state.inputs, state.params);
     try {
       if (!errs.length && skill.validate) errs = skill.validate(state.inputs, state.params) || [];
     } catch (e) { errs = ['Validation failed: ' + (e && e.message || e)]; }
     showErrors(errs);
-    if (errs.length) { results.innerHTML = emptyResults(); setStep(state.inputs && Object.keys(state.inputs).length ? 2 : 1); $('#errors').scrollIntoView({ block: 'start' }); return; }
+    if (errs.length) { $('#errors').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
 
     var m;
     try { m = skill.analyze(state.inputs, state.params); }
@@ -404,11 +361,11 @@
     var files = [], screens = [];
     (skill.outputs || []).forEach(function (o) { (o.format === 'html' ? screens : files).push(o); });
 
-    var html = '<div class="results-bar no-print"><div><p class="label">Steps 3 and 4</p><h2 class="card-title">Review the draft, then export</h2></div><div class="btn-row">';
-    files.forEach(function (o, i) { html += '<button class="btn ' + (i === 0 ? 'primary' : 'secondary') + '" data-out="' + esc(o.key) + '">' + icon('save') + 'Save ' + esc(o.label) + '</button>'; });
-    if (screens.length) html += '<button class="btn tertiary" data-print>' + icon('print') + 'Print or save as PDF</button>';
-    html += '</div><p id="save-msg" class="save-msg" aria-live="polite"></p></div>';
-    screens.forEach(function (o) { html += '<article class="output-html output-light" data-screen="' + esc(o.key) + '"></article>'; });
+    var html = '<div class="results-bar no-print"><h2><span class="step">3</span>Review, then save</h2><div class="out-buttons">';
+    files.forEach(function (o) { html += '<button class="btn primary" data-out="' + esc(o.key) + '">' + icon('save') + 'Save ' + esc(o.label) + '</button>'; });
+    if (screens.length) html += '<button class="btn" data-print>Print / PDF</button>';
+    html += '</div><p id="save-msg" class="muted"></p></div>';
+    screens.forEach(function (o) { html += '<article class="output-html" data-screen="' + esc(o.key) + '"></article>'; });
     results.innerHTML = html;
 
     screens.forEach(function (o) {
@@ -418,9 +375,8 @@
       $('[data-out="' + o.key + '"]', results).addEventListener('click', function () { saveOutput(skill, o, m, state.params); });
     });
     var pb = $('[data-print]', results);
-    if (pb) pb.addEventListener('click', function () { setStep(4); root.print(); });
-    setStep(3);
-    results.scrollIntoView({ block: 'start' });
+    if (pb) pb.addEventListener('click', function () { root.print(); });
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function saveOutput(skill, o, m, params) {
@@ -432,7 +388,6 @@
       return P.files.save(P.export.safeName(base) + '.' + built.ext, built.blob);
     }).then(function (r) {
       msg.textContent = r.where === 'folder' ? 'Saved "' + r.name + '" to folder ' + r.folder + '.' : 'Downloaded "' + r.name + '".' + (r.error ? ' ' + r.error : '');
-      setStep(4);
       renderFolder();
     }, function (e) { msg.textContent = 'Export failed: ' + (e && e.message || e); });
   }
@@ -441,8 +396,8 @@
   function route() {
     var main = $('#main'), h = location.hash.slice(1), m = /^skill\/(.+)$/.exec(h);
     var skill = m && P.getSkill(decodeURIComponent(m[1]));
-    document.body.removeAttribute('data-amber');
-    if (skill) renderRunner(main, skill); else renderModules(main, h);
+    if (skill) { renderRunner(main, skill); document.title = skill.title + ' · Marketing Portal'; }
+    else { renderModules(main, h); document.title = 'Modules · Marketing Portal'; }
     renderNav();
     root.scrollTo(0, 0);
   }
@@ -450,7 +405,6 @@
   /** p: 'home' (index.html), 'modules' (modules.html) or 'knowledge'. */
   P.ui.boot = function (p) {
     page = p;
-    document.title = 'Marketing Portal';
     renderShell();
     P.files.onChange(renderFolder);
     P.files.init();
@@ -458,5 +412,4 @@
     if (p === 'home') ready.then(function () { renderHome($('#main')); });
     if (p === 'modules') ready.then(function () { root.addEventListener('hashchange', route); route(); });
   };
-  P.ui.setTheme = setTheme;
 })(typeof window !== 'undefined' ? window : globalThis);

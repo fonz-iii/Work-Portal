@@ -3,42 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Marketing Portal</title>
-<script>(function(){var d=document.documentElement,t='light',r='';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';r=localStorage.getItem('portal-rail');}catch(e){}d.setAttribute('data-theme',t);if(r==='collapsed')d.setAttribute('data-rail','collapsed');})();</script>
+<title>Knowledge · Marketing Portal</title>
+<script>(function(){var t='light';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
 <link rel="icon" href="assets/icons/portal.svg">
-<link rel="stylesheet" href="assets/tokens.css">
-<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/css/portal.css">
 </head>
 <body>
-<aside id="rail" class="rail no-print"></aside>
-<div class="app">
-<header id="shell" class="topline no-print"></header>
+<header id="shell" class="no-print"></header>
 <main id="main">
-  <div class="page">
-    <header class="page-head">
-      <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>Knowledge</span></nav>
-      <h1>Find people, branches and products</h1>
-      <p class="lede">Reference information for the Marketing Group. Each section is imported from its Excel or PDF source into a local file.</p>
-      <nav class="chips" aria-label="Knowledge sections"><a href="#directory">Directory</a><a href="#orgchart">Org chart</a><a href="#branches">Branches</a><a href="#products">Products and fees</a><a href="#billers">P2B billers</a><a href="#templates">Templates</a></nav>
-    </header>
-    <div class="grid">
-      <section class="card ksec" id="directory" style="--span:8"><p class="label">Directory</p>
-        <div class="empty-state"><p class="empty-title">The staff directory goes here</p><p>Import the staff directory Excel to fill this section.</p><button class="btn secondary" disabled>Import · coming soon</button></div></section>
-      <section class="card ksec" id="orgchart" style="--span:4"><p class="label">Org chart</p>
-        <div class="empty-state"><p class="empty-title">The org chart goes here</p><p>Import the org chart Excel to fill this section.</p><button class="btn secondary" disabled>Import · coming soon</button></div></section>
-      <section class="card ksec" id="branches" style="--span:4"><p class="label">Branches</p>
-        <div class="empty-state"><p class="empty-title">The branch list goes here</p><p>Import the branch list Excel to fill this section.</p><button class="btn secondary" disabled>Import · coming soon</button></div></section>
-      <section class="card ksec" id="products" style="--span:8"><p class="label">Products and fees</p>
-        <div class="empty-state"><p class="empty-title">Product and fee summaries go here</p><p>Import the product and fee Excel or PDF to fill this section.</p><button class="btn secondary" disabled>Import · coming soon</button></div></section>
-      <section class="card ksec" id="billers" style="--span:6"><p class="label">P2B billers</p>
-        <div class="empty-state"><p class="empty-title">The QR Ph P2B biller list goes here</p><p>Import the P2B Biller Masterlist Excel to fill this section.</p><button class="btn secondary" disabled>Import · coming soon</button></div></section>
-      <section class="card ksec" id="templates" style="--span:6"><p class="label">Templates</p>
-        <div class="empty-state"><p class="empty-title">Templates go here</p><p>Put template files in your save folder to list them here.</p><button class="btn secondary" disabled>Import · coming soon</button></div></section>
-    </div>
+  <div class="page-head"><div class="wrap">
+    <nav class="crumbs"><a href="index.html">Home</a><span>/</span><b>Knowledge</b></nav>
+    <div class="page-title"><div><h1>Knowledge</h1><p class="lede">Reference information for the Marketing team. Each section is imported from its Excel or PDF source into a local <code>data/*.js</code> file.</p></div></div>
+  </div></div>
+  <div class="wrap page-body kgrid">
+    <nav class="kside no-print"><p>Sections</p><a href="#directory">Directory</a><a href="#orgchart">Org chart</a><a href="#branches">Branches</a><a href="#products">Products & fees</a><a href="#billers">P2B billers</a><a href="#templates">Templates</a></nav>
+    <div class="kcontent"><section class="card ksec" id="directory"><h2>Staff directory</h2><p class="muted">Not set up yet. Planned source: staff directory Excel → <code>data/directory.js</code>.</p></section><section class="card ksec" id="orgchart"><h2>Organization chart</h2><p class="muted">Not set up yet. Planned source: org chart Excel → <code>data/orgchart.js</code>.</p></section><section class="card ksec" id="branches"><h2>Branch list</h2><p class="muted">Not set up yet. Planned source: branch list Excel → <code>data/branches.js</code>.</p></section><section class="card ksec" id="products"><h2>Product and fee summaries</h2><p class="muted">Not set up yet. Planned source: product/fee Excel or PDF → <code>data/products.js</code>.</p></section><section class="card ksec" id="billers"><h2>QR Ph P2B biller list</h2><p class="muted">Not set up yet. Planned source: P2B Biller Masterlist Excel → <code>data/billers.js</code>.</p></section><section class="card ksec" id="templates"><h2>Templates</h2><p class="muted">Not set up yet. Planned source: template files in the connected folder.</p></section></div>
   </div>
 </main>
 <footer id="foot" class="foot no-print"></footer>
-</div>
 <script src="core/files.js"></script>
 <script src="core/ui.js"></script>
 <script>Portal.ui.boot('knowledge');</script>
