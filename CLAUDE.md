@@ -20,7 +20,8 @@ Target: fully working demo by mid-December 2026.
 ```
 SBA-Portal/
   index.html            Home page (welcome, task shortcuts, picture slots; text in data/home.js)
-  modules.html          Modules page: section tabs + skill runner (modules.html#skill/<id>)
+  modules.html          Product Management page (section tabs) + skill runner (#skill/<id>) + coming-soon team pages (#cat/<id>)
+  help.html             How to use the site (plain-language guide, error table, FAQ)
   knowledge.html        Knowledge tab (directory, org chart, branches, products, billers, templates)
   assets/               css, images, icons (all local)
   core/                 shared engine (see below)
@@ -86,13 +87,13 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 
 ## Design
 
-- **Home** (`index.html`) is separate from the module tabs (`modules.html`). Home has picture slots: files in `assets/images/` named in `data/home.js` (missing file = labelled placeholder). Plain, layman wording throughout.
+- **Site structure (2026-10-06, per Fons):** four teams. **Product Management** (live) holds every module, in sections Benchmarking, DRB Reports, RIB, Research, Customer Insights and Demo. **Creatives**, **Customer Service** and **Fraud Management System** are "Coming soon" pages. A skill may set optional `category` (default `'pm'`); `group` is its section. Teams and section order live in `core/ui.js` (`TEAMS`, `SECTION_ORDER`).
+- **Pages:** Home (`index.html`: search box, team picker, section shortcuts, picture slots from `data/home.js` + `assets/images/`, how-it-works), Product Management (`modules.html`), Knowledge, How to use (`help.html`). Every page has breadcrumbs ("You are here"), back links on report pages and a floating "How to use" button. Plain, layman wording throughout.
 - The site is for the **Marketing Group only**; say so in the top bar, Home hero and footer.
-- Corporate-website look (2026-10-05 redesign, per Fons): deep navy + corporate blue on white and cool greys; only a hint of SBA yellow (#f0b323: active nav/tab underline, Home primary button, footer rule, restricted badge). Every page: utility bar, sticky masthead nav, multi-column footer.
-- Components: KPI cards with big numbers, navy-header tables with light zebra rows, rounded cards, process/flow visuals.
-- System font stack only. Must be readable at 1366×768.
-- Every output has a print stylesheet.
+- **Look:** modern corporate, a little playful. Deep navy + corporate blue on soft cool greys, a hint of SBA yellow (#f0b323: active menu underline, Home primary button, footer rule, restricted badge, icon accents). Rounded cards (16px), pill buttons, soft shadows, hover lift. System font stack only. Readable at 1366×768.
+- **Scroll-reactive background:** fixed layer of soft blurred shapes + dot grid behind the content. Each section has `data-scene` (hero, sky, gold, mint, navy, calm); the scene of the section most on screen colors the shapes, and they drift with scroll. Cards fade up as they come into view. All motion is off under `prefers-reduced-motion` and in print.
 - **Light / Dark toggle** in the top utility bar (default Light, never follows the OS). Choice stored in localStorage (try/catch) and applied as `data-theme` on `<html>` by an inline head script, so there is no flash. Dark values redefine the same CSS custom properties under `:root[data-theme="dark"]` in `assets/css/portal.css`. Generated reports, Word/Excel exports and print always stay light.
+- Components: KPI cards with big numbers, navy-header tables with light zebra rows, rounded cards, process/flow visuals. Every output has a print stylesheet.
 
 ## Working rules for Claude Code
 
@@ -114,6 +115,6 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [x] Menu-board groups accepted for now (2026-10-05); revisit as modules are built (`skills/placeholders.js`).
 - [x] Office desktop test of milestone 1 passed (demo run, validation errors, Excel/Word save, folder connect + remembered, print).
 - [x] UI v4 "Regulatory clarity" design system tried 2026-10-06 and reverted at Fons's request; kept only the Light/Dark toggle on top of v3.
-- [ ] UI v3 + Light/Dark toggle (2026-10-06); awaiting Fons's approval.
+- [ ] UI v5 (teams, help page, search, scroll-reactive background; v3 colors + Light/Dark) built 2026-10-06; awaiting Fons's approval.
 - [x] Build order agreed (2026-10-05): UI refresh → Industry Ranking (thrift + UKB) → DRB Usage.
 - [x] Q1 2026 thrift Stockholders' Equity figures come from the predecessor's workbook `samples/industry-ranking/2026-Q1-march/Industry Ranking as of March 31, 2026 v2.xlsx` (no PDF).

@@ -11,13 +11,20 @@
 <body>
 <header id="shell" class="no-print"></header>
 <main id="main">
-  <div class="page-head"><div class="wrap">
-    <nav class="crumbs"><a href="index.html">Home</a><span>/</span><b>Knowledge</b></nav>
-    <div class="page-title"><div><h1>Knowledge</h1><p class="lede">Reference information for the Marketing team. Each section is imported from its Excel or PDF source into a local <code>data/*.js</code> file.</p></div></div>
-  </div></div>
-  <div class="wrap page-body kgrid">
-    <nav class="kside no-print"><p>Sections</p><a href="#directory">Directory</a><a href="#orgchart">Org chart</a><a href="#branches">Branches</a><a href="#products">Products & fees</a><a href="#billers">P2B billers</a><a href="#templates">Templates</a></nav>
-    <div class="kcontent"><section class="card ksec" id="directory"><h2>Staff directory</h2><p class="muted">Not set up yet. Planned source: staff directory Excel → <code>data/directory.js</code>.</p></section><section class="card ksec" id="orgchart"><h2>Organization chart</h2><p class="muted">Not set up yet. Planned source: org chart Excel → <code>data/orgchart.js</code>.</p></section><section class="card ksec" id="branches"><h2>Branch list</h2><p class="muted">Not set up yet. Planned source: branch list Excel → <code>data/branches.js</code>.</p></section><section class="card ksec" id="products"><h2>Product and fee summaries</h2><p class="muted">Not set up yet. Planned source: product/fee Excel or PDF → <code>data/products.js</code>.</p></section><section class="card ksec" id="billers"><h2>QR Ph P2B biller list</h2><p class="muted">Not set up yet. Planned source: P2B Biller Masterlist Excel → <code>data/billers.js</code>.</p></section><section class="card ksec" id="templates"><h2>Templates</h2><p class="muted">Not set up yet. Planned source: template files in the connected folder.</p></section></div>
+  <header class="page-head" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="index.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><b>Knowledge</b></nav>
+    <div class="page-title"><div><h1>Knowledge</h1><p class="lede">Reference information for the Marketing Group. Each section is imported from its Excel or PDF source into a local <code>data/*.js</code> file.</p></div></div>
+  </div></header>
+  <div class="wrap page-body kgrid" data-scene="sky">
+    <nav class="kside no-print" aria-label="Knowledge sections"><p>Sections</p><a href="#directory">Directory</a><a href="#orgchart">Org chart</a><a href="#branches">Branches</a><a href="#products">Products & fees</a><a href="#billers">P2B billers</a><a href="#templates">Templates</a></nav>
+    <div class="kcontent">
+      <section class="card ksec reveal" id="directory"><h2>Staff directory</h2><p class="muted">Not set up yet. Planned source: staff directory Excel → <code>data/directory.js</code>.</p></section>
+      <section class="card ksec reveal" id="orgchart"><h2>Organization chart</h2><p class="muted">Not set up yet. Planned source: org chart Excel → <code>data/orgchart.js</code>.</p></section>
+      <section class="card ksec reveal" id="branches"><h2>Branch list</h2><p class="muted">Not set up yet. Planned source: branch list Excel → <code>data/branches.js</code>.</p></section>
+      <section class="card ksec reveal" id="products"><h2>Product and fee summaries</h2><p class="muted">Not set up yet. Planned source: product/fee Excel or PDF → <code>data/products.js</code>.</p></section>
+      <section class="card ksec reveal" id="billers"><h2>QR Ph P2B biller list</h2><p class="muted">Not set up yet. Planned source: P2B Biller Masterlist Excel → <code>data/billers.js</code>.</p></section>
+      <section class="card ksec reveal" id="templates"><h2>Templates</h2><p class="muted">Not set up yet. Planned source: template files in the connected folder.</p></section>
+    </div>
   </div>
 </main>
 <footer id="foot" class="foot no-print"></footer>
