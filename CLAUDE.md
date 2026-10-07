@@ -22,7 +22,7 @@ SBA-Portal/
   index.html            Home page (welcome, task shortcuts, picture slots; text in data/home.js)
   modules.html          Product Management page (section tabs) + skill runner (#skill/<id>) + coming-soon team pages (#cat/<id>)
   help.html             How to use the site (plain-language guide, error table, FAQ)
-  knowledge.html        Knowledge tab (directory, org chart, branches, products, billers, templates)
+  knowledge.html        Employee Info page (phone directory + Code of Conduct; more sections later). Logic in core/knowledge.js
   assets/               css, images, icons (all local)
   core/                 shared engine (see below)
   skills/               one .js file per skill module
@@ -43,6 +43,7 @@ SBA-Portal/
 - `charts.js` — chart rendering (local library or inline SVG).
 - `export.js` — Excel (SheetJS), Word (HTML-as-.doc first, real .docx later), print-to-PDF stylesheet, HTML slide deck.
 - `ui.js` — shell, navigation, skill runner screen.
+- `knowledge.js` — Employee Info page: pure parsers `parseDirectory(book)` / `parseCode(pages)`, IndexedDB cache (`sba-portal-reference`), search UI.
 
 ## Skill module contract
 
@@ -76,19 +77,19 @@ Portal.registerSkill({
 |---|---|---|---|---|
 | 1 | Industry Ranking | BSP thrift-bank ranking PDFs (public), this + previous quarter; old workbook fills prior gaps | HTML slide deck (14 slides), 2-page Word report, Excel figures | **Done 2026-10-06** (`skills/industry-ranking.js`; thrift only) |
 | 2 | QR Ph P2B Biller Directory | Biller masterlist Excel | Alphabetized Word directory | Logic exists as a Claude skill; port it |
-| 3 | DRB Usage | Excel | Report + charts | Needs column spec |
+| 3 | DRB Usage | Excel | Report + charts | **On hold** (2026-10-07): Fons is writing the skill |
 | 4 | DRB Enrollees | Excel | Report + charts | Needs column spec |
 | 5 | DRB Idle Accounts | Excel | Report + charts | Needs column spec |
 | 6 | RIB Advisory Formatter | Pasted advisory text | Clean plain text for the UAT editor, plus a status tracker (received / drafted in UAT / for approval / posted to Prod) | Needs format rules |
 | 7 | Research Library | Past studies + templates | Browse, search, new-study template | — |
 | 8 | Types of Complaints | TBD | Report + charts | **On hold** pending Customer Service |
 
-Knowledge tab (separate page, not a skill): directory, org chart, branch list, product/fee summaries, P2B biller list, templates. Source data is Excel/PDF; the portal imports Excel and writes a `data/*.js` file.
+**Employee Info** page (`knowledge.html`, renamed from Knowledge 2026-10-07; not a skill): searchable Phone Directory (SBA phone directory .xls: Name/Local/Direct block sheets, Branches sheet, Globe mobile list) and Code of Conduct reader (PDF split into Article/Chapter/Section with page numbers). **These are real internal files: they are loaded on the office PC and cached only in that browser's IndexedDB; never commit them or anything derived from them.** Practice files: `samples/employee-info/` (synthetic). Later sections: org chart, products/fees, P2B billers, templates.
 
 ## Design
 
 - **Site structure (2026-10-06, per Fons):** four teams. **Product Management** (live) holds every module, in sections Benchmarking, DRB Reports, RIB, Research, Customer Insights and Demo. **Creatives**, **Customer Service** and **Fraud Management System** are "Coming soon" pages. A skill may set optional `category` (default `'pm'`); `group` is its section. Teams and section order live in `core/ui.js` (`TEAMS`, `SECTION_ORDER`).
-- **Pages:** Home (`index.html`: search box, team picker, section shortcuts, picture slots from `data/home.js` + `assets/images/`, how-it-works), Product Management (`modules.html`), Knowledge, How to use (`help.html`). Every page has breadcrumbs ("You are here"), back links on report pages and a floating "How to use" button. Plain, layman wording throughout.
+- **Pages:** Home (`index.html`: search box, team picker, section shortcuts, picture slots from `data/home.js` + `assets/images/`, how-it-works), Product Management (`modules.html`), Employee Info (`knowledge.html`), How to use (`help.html`). Every page has breadcrumbs ("You are here"), back links on report pages and a floating "How to use" button. Plain, layman wording throughout.
 - The site is for the **Marketing Group only**; say so in the top bar, Home hero and footer.
 - **Look:** modern corporate, a little playful. Deep navy + corporate blue on soft cool greys, a hint of SBA yellow (#f0b323: active menu underline, Home primary button, footer rule, restricted badge, icon accents). Rounded cards (16px), pill buttons, soft shadows, hover lift. System font stack only. Readable at 1366×768.
 - **Scroll-reactive background:** fixed layer of soft blurred shapes + dot grid behind the content. Each section has `data-scene` (hero, sky, gold, mint, navy, calm); the scene of the section most on screen colors the shapes, and they drift with scroll. Cards fade up as they come into view. All motion is off under `prefers-reduced-motion` and in print.
@@ -106,7 +107,7 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 ## Open items
 
 - [x] Feasibility test passed on the office desktop, Chrome 154 via `file://` (2026-10-05): Excel read, PDF text read, folder connect + write, folder remembered after reopen, Excel/Word/PDF exports. Chrome is the reference browser; Edge not yet tested.
-- [ ] Column layouts for DRB Usage, Enrollees, Idle Accounts
+- [ ] Column layouts for DRB Usage, Enrollees, Idle Accounts (DRB Usage on hold 2026-10-07 while Fons writes its skill)
 - [ ] RIB advisory formatting rules and a before/after example
 - [ ] Complaints data format (Customer Service)
 - [ ] SBA-approved interpretation thresholds
@@ -124,3 +125,5 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 - [ ] Reminder for Fons each quarter: save all four BSP thrift PDFs (BSP replaces the pages), and keep them with the outputs.
 - [x] Office test of Industry Ranking passed 2026-10-06 (Chrome via file://): run Q2 2026, open the deck in Chrome, print to PDF (landscape, no margins, background graphics on), open the .doc in Word.
 - [x] Industry Ranking hardened 2026-10-06 after Fons's office test (files were in swapped boxes): both boxes accept PDFs or the workbook, and files are sorted by their "As of" date with a note. Synthetic Q1 Capital test PDF added in samples; any file containing "SYNTHETIC TEST DATA" triggers a red warning and TEST DATA stamps on all outputs.
+- [x] Employee Info page built 2026-10-07: Phone Directory + Code of Conduct, searchable; files loaded locally and cached in the browser only. Parser checked locally against Fons's real files (July 2026 directory: 619 people, 47 branches, 0 unplaced rows; Code of Conduct rev. 2016: 62 sections) without committing them.
+- [ ] Office test of Employee Info: load both real files in Chrome, search, reopen (remembered), Replace, Remove.

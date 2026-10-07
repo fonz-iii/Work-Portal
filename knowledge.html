@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Knowledge · Marketing Portal</title>
+<title>Employee Info · Marketing Portal</title>
 <script>(function(){var t='light';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
 <link rel="icon" href="assets/icons/portal.svg">
 <link rel="stylesheet" href="assets/css/portal.css">
@@ -12,25 +12,36 @@
 <header id="shell" class="no-print"></header>
 <main id="main">
   <header class="page-head" data-scene="calm"><div class="wrap">
-    <nav class="crumbs" aria-label="You are here"><a href="index.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><b>Knowledge</b></nav>
-    <div class="page-title"><div><h1>Knowledge</h1><p class="lede">Reference information for the Marketing Group. Each section is imported from its Excel or PDF source into a local <code>data/*.js</code> file.</p></div></div>
+    <nav class="crumbs" aria-label="You are here"><a href="index.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><b>Employee Info</b></nav>
+    <div class="page-title"><div><h1>Employee Info</h1><p class="lede">Phone numbers, policies and other staff reference. Files you load here stay on this computer.</p></div></div>
+    <div class="finder k-search"><label for="k-q" class="sr-only">Search Employee Info</label><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="k-q" type="search" autocomplete="off" placeholder="Search a name, department, branch, number or policy word"></div>
   </div></header>
-  <div class="wrap page-body kgrid" data-scene="sky">
-    <nav class="kside no-print" aria-label="Knowledge sections"><p>Sections</p><a href="#directory">Directory</a><a href="#orgchart">Org chart</a><a href="#branches">Branches</a><a href="#products">Products & fees</a><a href="#billers">P2B billers</a><a href="#templates">Templates</a></nav>
-    <div class="kcontent">
-      <section class="card ksec reveal" id="directory"><h2>Staff directory</h2><p class="muted">Not set up yet. Planned source: staff directory Excel → <code>data/directory.js</code>.</p></section>
-      <section class="card ksec reveal" id="orgchart"><h2>Organization chart</h2><p class="muted">Not set up yet. Planned source: org chart Excel → <code>data/orgchart.js</code>.</p></section>
-      <section class="card ksec reveal" id="branches"><h2>Branch list</h2><p class="muted">Not set up yet. Planned source: branch list Excel → <code>data/branches.js</code>.</p></section>
-      <section class="card ksec reveal" id="products"><h2>Product and fee summaries</h2><p class="muted">Not set up yet. Planned source: product/fee Excel or PDF → <code>data/products.js</code>.</p></section>
-      <section class="card ksec reveal" id="billers"><h2>QR Ph P2B biller list</h2><p class="muted">Not set up yet. Planned source: P2B Biller Masterlist Excel → <code>data/billers.js</code>.</p></section>
-      <section class="card ksec reveal" id="templates"><h2>Templates</h2><p class="muted">Not set up yet. Planned source: template files in the connected folder.</p></section>
+  <div id="k-app">
+    <div class="tabs-bar"><div class="wrap"><nav class="tabs" id="k-tabs" aria-label="Employee Info sections">
+      <a href="#directory" data-tab="directory" class="active">Phone Directory <span class="tab-n" hidden></span></a>
+      <a href="#code" data-tab="code">Code of Conduct <span class="tab-n" hidden></span></a>
+      <a href="#soon" data-tab="soon">Coming soon</a>
+    </nav></div></div>
+    <div class="wrap page-body" data-scene="sky">
+      <section class="k-panel" data-panel="directory" id="k-directory"></section>
+      <section class="k-panel" data-panel="code" id="k-code" hidden></section>
+      <section class="k-panel" data-panel="soon" hidden><div class="k-soon">
+        <div class="card"><h2>Organization chart</h2><p class="muted">Planned. Send the source file when ready.</p></div>
+        <div class="card"><h2>Product and fee summaries</h2><p class="muted">Planned.</p></div>
+        <div class="card"><h2>QR Ph P2B biller list</h2><p class="muted">Planned, from the P2B Biller Masterlist.</p></div>
+        <div class="card"><h2>Templates</h2><p class="muted">Planned.</p></div>
+      </div></section>
     </div>
   </div>
 </main>
 <footer id="foot" class="foot no-print"></footer>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<script src="core/parse.js"></script>
 <script src="core/files.js"></script>
 <script src="data/feedback.js"></script>
 <script src="core/ui.js"></script>
-<script>Portal.ui.boot('knowledge');</script>
+<script src="core/knowledge.js"></script>
+<script>Portal.ui.boot('knowledge'); Portal.knowledge.init();</script>
 </body>
 </html>

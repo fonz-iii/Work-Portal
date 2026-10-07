@@ -112,7 +112,7 @@
     if (!nav) return;
     var items = [['Home', 'index.html', 'home', '']].concat(TEAMS.map(function (t) {
       return [t.short, t.live ? 'modules.html' : 'modules.html#cat/' + t.id, 'team:' + t.id, t.live ? '' : '<span class="soon">Soon</span>'];
-    })).concat([['Knowledge', 'knowledge.html', 'knowledge', ''], ['How to use', 'help.html', 'help', '']]);
+    })).concat([['Employee Info', 'knowledge.html', 'knowledge', ''], ['How to use', 'help.html', 'help', '']]);
     nav.innerHTML = items.map(function (n) {
       var on = n[2] === key;
       return '<a href="' + n[1] + '"' + (on ? ' class="active" aria-current="page"' : '') + '>' + n[0] + n[3] + '</a>';
@@ -141,7 +141,7 @@
       '<span class="brand-text"><b>Marketing Portal</b><small>Sterling Bank of Asia</small></span></div>' +
       '<p>An offline workspace that turns recurring files into draft reports for your review. Files are read on this computer and never leave it.</p></div>' +
       '<div><h4>Teams</h4><ul>' + TEAMS.map(function (t) { return '<li><a href="' + (t.live ? 'modules.html' : 'modules.html#cat/' + t.id) + '">' + esc(t.name) + (t.live ? '' : ' <small>(soon)</small>') + '</a></li>'; }).join('') + '</ul></div>' +
-      '<div><h4>Help</h4><ul><li><a href="help.html">How to use this site</a></li><li><a href="help.html#reports">Making a report</a></li><li><a href="help.html#errors">Fixing file errors</a></li><li><a href="help.html#faq">Common questions</a></li><li><a href="knowledge.html">Knowledge</a></li></ul></div>' +
+      '<div><h4>Help</h4><ul><li><a href="help.html">How to use this site</a></li><li><a href="help.html#reports">Making a report</a></li><li><a href="help.html#errors">Fixing file errors</a></li><li><a href="help.html#faq">Common questions</a></li><li><a href="knowledge.html">Employee Info</a></li></ul></div>' +
       '<div><h4>About the figures</h4><p>Every number is calculated from the files you supply. Commentary marked DRAFT uses thresholds not yet approved by SBA. Outputs are drafts until you review and release them.</p></div></div>' +
       '<div class="foot-base"><div class="wrap foot-base-in"><span>Sterling Bank of Asia · Restricted to the Marketing Group. Do not share this portal or its outputs outside the group without approval.</span><span>Phase 1</span></div></div>';
   }
@@ -304,12 +304,13 @@
     var input = $('#finder'), list = $('#finder-list');
     if (!input) return;
     var all = skills.map(function (s) { return { t: s.title, d: s.description || '', h: skillHref(s), st: s.status || 'ready', g: s.group || '' }; })
-      .concat([{ t: 'Knowledge', d: 'Directory, org chart, branches, products and fees, billers, templates', h: 'knowledge.html', st: 'ready', g: 'Reference' },
+      .concat([{ t: 'Employee Info', d: 'Phone directory, branch numbers, Code of Conduct', h: 'knowledge.html', st: 'ready', g: 'Reference' },
         { t: 'How to use this site', d: 'Step-by-step guide and common questions', h: 'help.html', st: 'ready', g: 'Help' }]);
     function show() {
       var q = input.value.trim().toLowerCase();
       if (!q) { list.hidden = true; list.innerHTML = ''; return; }
       var hits = all.filter(function (x) { return (x.t + ' ' + x.d + ' ' + x.g).toLowerCase().indexOf(q) >= 0; }).slice(0, 6);
+      hits.push({ t: 'Search Employee Info for “' + input.value.trim() + '”', d: '', h: 'knowledge.html#q=' + encodeURIComponent(input.value.trim()), st: 'ready', g: 'Phone directory and Code of Conduct' });
       list.innerHTML = hits.length ? hits.map(function (x) {
         return '<li><a href="' + esc(x.h) + '"><b>' + esc(x.t) + '</b><span>' + esc(x.g) + ' · ' + esc(STATUS_LABEL[x.st] || '') + '</span></a></li>';
       }).join('') : '<li class="none">Nothing matches "' + esc(input.value) + '". Try a simpler word, or open <a href="help.html">How to use</a>.</li>';
@@ -349,7 +350,7 @@
       gm.names.map(function (g) {
         var mm = meta(g), n = gm.groups[g].length, live = gm.groups[g].filter(isLive).length;
         return '<a class="shortcut reveal" href="modules.html#' + mm.id + '"><span class="shortcut-ico">' + icon(mm.icon) + '</span><span class="shortcut-txt"><b>' + esc(g) + '</b><small>' + n + (n === 1 ? ' module' : ' modules') + (live ? ' · ' + live + ' ready' : '') + '</small></span>' + icon('arrow', 'shortcut-arrow') + '</a>';
-      }).join('') + '<a class="shortcut reveal" href="knowledge.html"><span class="shortcut-ico">' + icon('bank') + '</span><span class="shortcut-txt"><b>Knowledge</b><small>Directory, branches, products</small></span>' + icon('arrow', 'shortcut-arrow') + '</a></div></div></section>';
+      }).join('') + '<a class="shortcut reveal" href="knowledge.html"><span class="shortcut-ico">' + icon('bank') + '</span><span class="shortcut-txt"><b>Employee Info</b><small>Phone directory, Code of Conduct</small></span>' + icon('arrow', 'shortcut-arrow') + '</a></div></div></section>';
 
     var feats = H.features || [];
     if (feats.length) {
