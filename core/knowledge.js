@@ -1,4 +1,4 @@
-/* core/knowledge.js — Employee Info page (knowledge.html): Phone Directory + Code of Conduct.
+/* core/knowledge.js — Employee Info page (knowledge.html): Employee Directory + Code of Conduct.
    PRIVACY: the real files hold staff names and numbers. They are read in the browser on the office PC
    and kept only in this browser's IndexedDB on that PC. Nothing here is written to the repo or sent anywhere.
    parseDirectory() and parseCode() are pure functions (no DOM) so they can be tested with sample data. */
@@ -249,7 +249,7 @@
   };
 
   /* ---------- page ---------- */
-  var esc, icon, state = { tab: 'directory', q: '', loc: '', dept: '', vacant: false, dir: null, code: null, saved: { directory: true, code: true }, hit: 0 };
+  var esc, icon, state = { tab: 'directory', q: '', dq: '', loc: '', dept: '', vacant: false, dir: null, code: null, saved: { directory: true, code: true }, hit: 0 };
   function $(s, c) { return (c || document).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); }
   function terms(q) { return fold(q).split(/[\s,]+/).filter(Boolean); }
@@ -284,7 +284,7 @@
   }
 
   function loader(kind) {
-    var d = kind === 'directory' ? state.dir : state.code, label = kind === 'directory' ? 'phone directory Excel (.xls or .xlsx)' : 'Code of Conduct PDF';
+    var d = kind === 'directory' ? state.dir : state.code, label = kind === 'directory' ? 'Employee Directory (phone directory Excel, .xls or .xlsx)' : 'Code of Conduct PDF';
     var accept = kind === 'directory' ? '.xls,.xlsx,.xlsm' : '.pdf';
     if (!d) return '<div class="card k-empty dropzone" data-drop="' + kind + '">' + icon(kind === 'directory' ? 'chat' : 'book') +
       '<h2>Load the ' + label + '</h2><p class="muted">Choose the file or drag it here. It is read on this computer and remembered in this browser only. It is never uploaded.</p>' +
@@ -299,8 +299,10 @@
   }
 
   /* --- directory view --- */
+  function dirTerms() { return terms(state.q + ' ' + state.dq); }
+  function dirQuery() { return [state.q, state.dq].map(function (x) { return x.trim(); }).filter(Boolean).join(' + '); }
   function dirResults() {
-    var d = state.dir, ts = terms(state.q);
+    var d = state.dir, ts = dirTerms();
     var list = d.people.filter(function (p) {
       if (!state.vacant && p.kind === 'vacant') return false;
       if (state.loc && p.loc !== state.loc) return false;
@@ -320,10 +322,10 @@
     return { people: list, branches: br };
   }
   function numBtn(label, val) {
-    return val ? '<button type="button" class="k-num" data-copy="' + esc(val) + '" title="Click to copy"><small>' + label + '</small>' + mark(val, terms(state.q)) + '</button>' : '';
+    return val ? '<button type="button" class="k-num" data-copy="' + esc(val) + '" title="Click to copy"><small>' + label + '</small>' + mark(val, dirTerms()) + '</button>' : '';
   }
   function personCard(p) {
-    var ts = terms(state.q);
+    var ts = dirTerms();
     return '<article class="k-person k-' + p.kind + '"><div class="k-person-head"><span class="k-avatar" aria-hidden="true">' + (p.kind === 'person' ? esc(initials(p.name)) : icon(p.kind === 'vacant' ? 'clock' : 'chat')) + '</span>' +
       '<div><h3>' + mark(p.name, ts) + (p.kind === 'vacant' ? ' <span class="pill">Vacant</span>' : '') + '</h3><p>' + mark(p.dept || '—', ts) + ' · ' + esc(p.loc) + '</p></div></div>' +
       '<div class="k-nums">' + numBtn('Local', p.local) + numBtn('Direct', p.direct) + p.mobile.map(function (m) { return numBtn('Mobile', m); }).join('') + '</div>' +
@@ -331,7 +333,7 @@
   }
   function initials(n) { var p = n.replace(/^\(.*?\)\s*|^atty\.?\s*/i, '').split(','); var a = (p[1] || '').trim()[0] || '', b = (p[0] || '').trim()[0] || ''; return (a + b).toUpperCase(); }
   function branchCard(b) {
-    var ts = terms(state.q);
+    var ts = dirTerms();
     return '<article class="k-branch"><h3>' + icon('bank') + mark(b.name, ts) + ' <span class="pill">' + mark(b.code, ts) + '</span></h3><dl>' +
       b.lines.map(function (l) { return '<dt>' + esc(l.label) + '</dt><dd>' + (l.number ? '<button type="button" class="k-num plain" data-copy="' + esc(l.number) + '">' + mark(l.number, ts) + '</button>' : '<span class="muted">—</span>') + '</dd>'; }).join('') + '</dl></article>';
   }
@@ -349,11 +351,14 @@
     d.people.forEach(function (p) { if ((!state.loc || p.loc === state.loc) && p.dept && depts.indexOf(p.dept) < 0) depts.push(p.dept); });
     depts.sort();
     if (state.dept && depts.indexOf(state.dept) < 0) state.dept = '';
-    var res = dirResults(), browsing = !state.q && !state.dept;
+    var res = dirResults(), browsing = !dirTerms().length && !state.dept;
     var info = d.info.filter(function (i) { return !state.loc || i.loc === state.loc; });
     var notes = d.groupNotes.filter(function (n) { return state.dept && n.group === state.dept && (!state.loc || n.loc === state.loc); });
     var html = loader('directory') +
-      '<div class="k-filters"><div class="chips" role="group" aria-label="Location"><button type="button" class="chip' + (!state.loc ? ' on' : '') + '" data-loc="">All locations</button>' +
+      '<div class="k-filters"><div class="finder k-dsearch"><label for="k-dq" class="sr-only">Search the Employee Directory</label>' + icon('search') +
+      '<input id="k-dq" type="search" autocomplete="off" placeholder="Search the Employee Directory: name, department, branch or local / mobile number" value="' + esc(state.dq) + '">' +
+      (dirTerms().length ? '<span class="k-found">' + (res.people.length + res.branches.length) + ' found</span>' : '') + '</div>' +
+      '<div class="chips" role="group" aria-label="Location"><button type="button" class="chip' + (!state.loc ? ' on' : '') + '" data-loc="">All locations</button>' +
       locs.map(function (l) { return '<button type="button" class="chip' + (state.loc === l ? ' on' : '') + '" data-loc="' + esc(l) + '">' + esc(l) + '</button>'; }).join('') + '</div>' +
       '<div class="k-filter-row"><label>Department <select id="k-dept"><option value="">All departments</option>' + depts.map(function (x) { return '<option' + (x === state.dept ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></label>' +
       '<label class="k-check"><input type="checkbox" id="k-vacant"' + (state.vacant ? ' checked' : '') + '> Show vacant lines</label>' +
@@ -371,10 +376,13 @@
       html += (res.branches.length ? '<h3 class="k-sub">Branches (' + res.branches.length + ')</h3><div class="k-grid">' + res.branches.map(branchCard).join('') + '</div>' : '') +
         (res.people.length ? '<h3 class="k-sub">People and lines (' + res.people.length + ')</h3><div class="k-grid">' + shown.map(personCard).join('') + '</div>' +
           (res.people.length > shown.length ? '<p class="k-hint">Showing the first ' + shown.length + '. Type more of the name to narrow it down.</p>' : '') : '') +
-        (!res.people.length && !res.branches.length ? '<div class="k-none">No match for “' + esc(state.q) + '”. Check the spelling, try only the surname, or clear the filters.</div>' : '');
+        (!res.people.length && !res.branches.length ? '<div class="k-none">No match for “' + esc(dirQuery()) + '”. Check the spelling, try only the surname, or clear the filters.</div>' : '');
     }
     if (d.skipped.length) html += '<details class="k-skipped"><summary>' + d.skipped.length + ' row(s) in the file could not be placed</summary><ul>' + d.skipped.map(function (s) { return '<li>' + esc(s.loc) + ', row ' + s.row + ': ' + esc(s.text) + '</li>'; }).join('') + '</ul></details>';
+    var had = document.activeElement && document.activeElement.id === 'k-dq' ? document.activeElement.selectionStart : -1;
     box.innerHTML = html;
+    if (had >= 0) { var i = $('#k-dq'); i.focus(); i.setSelectionRange(had, had); }
+    renderTabs();
   }
 
   /* --- code of conduct view --- */
@@ -424,7 +432,7 @@
   /* --- tabs / counts --- */
   function renderTabs() {
     var ts = terms(state.q), dc = '', cc = '';
-    if (ts.length && state.dir) { var r = dirResults(); dc = r.people.length + r.branches.length; }
+    if (dirTerms().length && state.dir) { var r = dirResults(); dc = r.people.length + r.branches.length; }
     if (ts.length && state.code) { var h = codeHits(ts); cc = Object.keys(h).length; }
     $$('#k-tabs a').forEach(function (a) {
       var t = a.getAttribute('data-tab'), n = t === 'directory' ? dc : t === 'code' ? cc : '';
@@ -477,13 +485,21 @@
       var r = e.target.closest('[data-remove]');
       if (r) {
         var k = r.getAttribute('data-remove');
-        if (!confirm('Remove the ' + (k === 'directory' ? 'phone directory' : 'Code of Conduct') + ' from this PC? You can load the file again any time.')) return;
+        if (!confirm('Remove the ' + (k === 'directory' ? 'Employee Directory' : 'Code of Conduct') + ' from this PC? You can load the file again any time.')) return;
         K.store.del(k).then(function () { if (k === 'directory') state.dir = null; else state.code = null; render(); });
         return;
       }
       var j = e.target.closest('[data-jump]');
       if (j) { e.preventDefault(); var s = document.getElementById(j.getAttribute('data-jump')); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
       var h = e.target.closest('[data-hit]'); if (h) { stepHit(+h.getAttribute('data-hit')); return; }
+    });
+    var dt;
+    main.addEventListener('input', function (e) {
+      if (e.target.id !== 'k-dq') return;
+      clearTimeout(dt); dt = setTimeout(function () { state.dq = e.target.value; renderDirectory(); }, 120);
+    });
+    main.addEventListener('keydown', function (e) {
+      if (e.target.id === 'k-dq' && e.key === 'Escape') { e.target.value = ''; state.dq = ''; renderDirectory(); }
     });
     main.addEventListener('change', function (e) {
       if (e.target.matches('[data-load]')) { load(e.target.getAttribute('data-load'), e.target.files[0]); e.target.value = ''; }

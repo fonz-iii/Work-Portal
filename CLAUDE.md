@@ -84,7 +84,7 @@ Portal.registerSkill({
 | 7 | Research Library | Past studies + templates | Browse, search, new-study template | — |
 | 8 | Types of Complaints | TBD | Report + charts | **On hold** pending Customer Service |
 
-**Employee Info** page (`knowledge.html`, renamed from Knowledge 2026-10-07; not a skill): searchable Phone Directory (SBA phone directory .xls: Name/Local/Direct block sheets, Branches sheet, Globe mobile list) and Code of Conduct reader (PDF split into Article/Chapter/Section with page numbers). **These are real internal files: they are loaded on the office PC and cached only in that browser's IndexedDB; never commit them or anything derived from them.** Practice files: `samples/employee-info/` (synthetic). Later sections: org chart, products/fees, P2B billers, templates.
+**Employee Info** page (`knowledge.html`, renamed from Knowledge 2026-10-07; not a skill): searchable **Employee Directory** tab (renamed from Phone Directory 2026-10-07; own search box plus the page-wide one; SBA phone directory .xls: Name/Local/Direct block sheets, Branches sheet, Globe mobile list) and Code of Conduct reader (PDF split into Article/Chapter/Section with page numbers). **These are real internal files: they are loaded on the office PC and cached only in that browser's IndexedDB; never commit them or anything derived from them.** Practice files: `samples/employee-info/` (synthetic). Later sections: org chart, products/fees, P2B billers, templates.
 
 ## Design
 

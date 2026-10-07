@@ -304,13 +304,13 @@
     var input = $('#finder'), list = $('#finder-list');
     if (!input) return;
     var all = skills.map(function (s) { return { t: s.title, d: s.description || '', h: skillHref(s), st: s.status || 'ready', g: s.group || '' }; })
-      .concat([{ t: 'Employee Info', d: 'Phone directory, branch numbers, Code of Conduct', h: 'knowledge.html', st: 'ready', g: 'Reference' },
+      .concat([{ t: 'Employee Info', d: 'Employee Directory (phone numbers, branches), Code of Conduct', h: 'knowledge.html', st: 'ready', g: 'Reference' },
         { t: 'How to use this site', d: 'Step-by-step guide and common questions', h: 'help.html', st: 'ready', g: 'Help' }]);
     function show() {
       var q = input.value.trim().toLowerCase();
       if (!q) { list.hidden = true; list.innerHTML = ''; return; }
       var hits = all.filter(function (x) { return (x.t + ' ' + x.d + ' ' + x.g).toLowerCase().indexOf(q) >= 0; }).slice(0, 6);
-      hits.push({ t: 'Search Employee Info for “' + input.value.trim() + '”', d: '', h: 'knowledge.html#q=' + encodeURIComponent(input.value.trim()), st: 'ready', g: 'Phone directory and Code of Conduct' });
+      hits.push({ t: 'Search Employee Info for “' + input.value.trim() + '”', d: '', h: 'knowledge.html#q=' + encodeURIComponent(input.value.trim()), st: 'ready', g: 'Employee Directory and Code of Conduct' });
       list.innerHTML = hits.length ? hits.map(function (x) {
         return '<li><a href="' + esc(x.h) + '"><b>' + esc(x.t) + '</b><span>' + esc(x.g) + ' · ' + esc(STATUS_LABEL[x.st] || '') + '</span></a></li>';
       }).join('') : '<li class="none">Nothing matches "' + esc(input.value) + '". Try a simpler word, or open <a href="help.html">How to use</a>.</li>';
@@ -350,7 +350,7 @@
       gm.names.map(function (g) {
         var mm = meta(g), n = gm.groups[g].length, live = gm.groups[g].filter(isLive).length;
         return '<a class="shortcut reveal" href="modules.html#' + mm.id + '"><span class="shortcut-ico">' + icon(mm.icon) + '</span><span class="shortcut-txt"><b>' + esc(g) + '</b><small>' + n + (n === 1 ? ' module' : ' modules') + (live ? ' · ' + live + ' ready' : '') + '</small></span>' + icon('arrow', 'shortcut-arrow') + '</a>';
-      }).join('') + '<a class="shortcut reveal" href="knowledge.html"><span class="shortcut-ico">' + icon('bank') + '</span><span class="shortcut-txt"><b>Employee Info</b><small>Phone directory, Code of Conduct</small></span>' + icon('arrow', 'shortcut-arrow') + '</a></div></div></section>';
+      }).join('') + '<a class="shortcut reveal" href="knowledge.html"><span class="shortcut-ico">' + icon('bank') + '</span><span class="shortcut-txt"><b>Employee Info</b><small>Employee Directory, Code of Conduct</small></span>' + icon('arrow', 'shortcut-arrow') + '</a></div></div></section>';
 
     var feats = H.features || [];
     if (feats.length) {
