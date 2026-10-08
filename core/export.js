@@ -61,6 +61,7 @@
     build: function (format, spec) {
       if (format === 'excel') return { blob: P.export.excelBlob(spec), ext: 'xlsx' };
       if (format === 'word') return { blob: P.export.wordBlob(spec), ext: 'doc' };
+      if (format === 'file') return spec;   // the output built its own { blob, ext } (e.g. a .docx)
       if (format === 'html-file') return { blob: new Blob([typeof spec === 'string' ? spec : spec.html], { type: 'text/html;charset=utf-8' }), ext: 'html' };
       throw new Error('Unknown export format: ' + format);
     },

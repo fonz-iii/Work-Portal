@@ -28,7 +28,7 @@ SBA-Portal/
   skills/               one .js file per skill module
   skills/registry.js    ordered list of skill files to load
   data/                 reference data as .js globals (directory.js, orgchart.js, ...)
-  vendor/               SheetJS, PDF.js (+ worker), chart library
+  vendor/               SheetJS, PDF.js (+ worker), JSZip 3.10.1 (real .docx), chart library
   samples/              synthetic input files for testing
   outputs/              default save location (user's connected folder in practice)
 ```
@@ -41,7 +41,7 @@ SBA-Portal/
 - `calc.js` — shared metrics: totals, period-on-period change, share, rank, rank movement.
 - `rules.js` — evaluates a skill's rule set against computed metrics and returns commentary sentences.
 - `charts.js` — chart rendering (local library or inline SVG).
-- `export.js` — Excel (SheetJS), Word (HTML-as-.doc first, real .docx later), print-to-PDF stylesheet, HTML slide deck.
+- `export.js` — Excel (SheetJS), Word (HTML-as-.doc first, real .docx later), print-to-PDF stylesheet, HTML slide deck. Format `file`: the output returns its own `{blob, ext}` (e.g. a real .docx built with `vendor/jszip.min.js`). The runner also supports `format: 'action'` outputs (a button that runs `o.run(m)`, e.g. opening a print view) and `screenPrint: false` to hide the generic Print button.
 - `ui.js` — shell, navigation, skill runner screen.
 - `knowledge.js` — Employee Info page: pure parsers `parseDirectory(book)` / `parseCode(pages)`, IndexedDB cache (`sba-portal-reference`), search UI.
 
@@ -76,7 +76,7 @@ Portal.registerSkill({
 | # | Skill | Inputs | Outputs | Status |
 |---|---|---|---|---|
 | 1 | Industry Ranking | BSP thrift-bank ranking PDFs (public), this + previous quarter; old workbook fills prior gaps | HTML slide deck (14 slides), 2-page Word report, Excel figures | **Done 2026-10-06** (`skills/industry-ranking.js`; thrift only) |
-| 2 | QR Ph P2B Biller Directory | Biller masterlist Excel | Alphabetized Word directory | Logic exists as a Claude skill; port it |
+| 2 | QR Ph P2B Biller Directory | Biller masterlist Excel (+ previous, optional) | Alphabetized Word directory on SBA letterhead (.docx), PDF version (print view), Excel check sheet | **Done 2026-10-08** (`skills/qrph-p2b-directory.js`; port of the Claude skill) |
 | 3 | DRB Usage | Excel | Report + charts | **On hold** (2026-10-07): Fons is writing the skill |
 | 4 | DRB Enrollees | Excel | Report + charts | Needs column spec |
 | 5 | DRB Idle Accounts | Excel | Report + charts | Needs column spec |
@@ -127,3 +127,5 @@ Portal.registerSkill({
 - [x] Industry Ranking hardened 2026-10-06 after Fons's office test (files were in swapped boxes): both boxes accept PDFs or the workbook, and files are sorted by their "As of" date with a note. Synthetic Q1 Capital test PDF added in samples; any file containing "SYNTHETIC TEST DATA" triggers a red warning and TEST DATA stamps on all outputs.
 - [x] Employee Info page built 2026-10-07: Phone Directory + Code of Conduct, searchable; files loaded locally and cached in the browser only. Parser checked locally against Fons's real files (July 2026 directory: 619 people, 47 branches, 0 unplaced rows; Code of Conduct rev. 2016: 62 sections) without committing them.
 - [ ] Office test of Employee Info: load both real files in Chrome, search, reopen (remembered), Replace, Remove.
+- [x] QR Ph P2B Biller Directory built 2026-10-08: port of the Claude skill `qrph-p2b-directory`. Letterhead templates in `data/qrph-templates.js` (sample rows replaced, author names removed). Golden check vs `build_directory.py` on synthetic masterlists (with and without previous, with overrides, new-only template): rows, report and Word `document.xml` byte-identical after C14N.
+- [ ] Golden check of the QR Ph module on Fons's real masterlists (current + previous + the skill's .docx), local only, never committed. Then office test: open the .docx in Word, Save as PDF, and try the PDF version.

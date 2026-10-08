@@ -562,8 +562,11 @@
     (skill.outputs || []).forEach(function (o) { (o.format === 'html' ? screens : files).push(o); });
 
     var html = '<div class="results-bar no-print"><h2><span class="step">3</span>Review, then save</h2><div class="out-buttons">';
-    files.forEach(function (o) { html += '<button class="btn primary" data-out="' + esc(o.key) + '">' + icon('save') + 'Save ' + esc(o.label) + '</button>'; });
-    if (screens.length) html += '<button class="btn" data-print>Print / PDF</button>';
+    files.forEach(function (o) {
+      html += o.format === 'action' ? '<button class="btn" data-out="' + esc(o.key) + '" title="' + esc(o.note || '') + '">' + icon('file') + esc(o.label) + '</button>'
+        : '<button class="btn primary" data-out="' + esc(o.key) + '">' + icon('save') + 'Save ' + esc(o.label) + '</button>';
+    });
+    if (screens.length && skill.screenPrint !== false) html += '<button class="btn" data-print>Print / PDF</button>';
     html += '</div><p id="save-msg" class="muted"></p></div>';
     screens.forEach(function (o) { html += '<article class="output-html" data-screen="' + esc(o.key) + '"></article>'; });
     results.innerHTML = html;
@@ -572,7 +575,11 @@
       Promise.resolve(o.render(m, state.params)).then(function (h) { $('[data-screen="' + o.key + '"]', results).innerHTML = h; });
     });
     files.forEach(function (o) {
-      $('[data-out="' + o.key + '"]', results).addEventListener('click', function () { saveOutput(skill, o, m, state.params); });
+      $('[data-out="' + o.key + '"]', results).addEventListener('click', function () {
+        if (o.format !== 'action') return saveOutput(skill, o, m, state.params);
+        var msg = $('#save-msg'); msg.textContent = o.note || '';   // an output that does something itself (e.g. opens a print view)
+        Promise.resolve().then(function () { return o.run(m, state.params); }).catch(function (e) { msg.textContent = String(e && e.message || e); });
+      });
     });
     var pb = $('[data-print]', results);
     if (pb) pb.addEventListener('click', function () { root.print(); });

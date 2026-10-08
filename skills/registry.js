@@ -6,6 +6,7 @@
   var SKILL_FILES = [
     'placeholders.js',        // menu tiles for modules not built yet
     'industry-ranking.js',    // Benchmarking: BSP thrift-bank ranking deck + report
+    'qrph-p2b-directory.js',  // RIB: QR Ph P2B biller directory (Word + PDF)
     'demo-branch-deposits.js' // milestone 1 demo (synthetic data only)
   ];
 

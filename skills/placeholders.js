@@ -1,13 +1,9 @@
 /* skills/placeholders.js — menu tiles for every module in the CLAUDE.md table that is not built yet.
-   When a real skill is built, remove its entry here (Industry Ranking: built 2026-10-06).
+   When a real skill is built, remove its entry here (Industry Ranking: built 2026-10-06; QR Ph P2B Directory: built 2026-10-08).
    All sit under the Product Management team (category 'pm', the default). Sections set 2026-10-06. */
 (function () {
   'use strict';
   [
-    { id: 'qrph-p2b-directory', title: 'QR Ph P2B Biller Directory', group: 'RIB', status: 'planned',
-      description: 'Alphabetized Word directory from the biller masterlist.',
-      note: 'Logic exists as a Claude skill; to be ported.',
-      plannedInputs: ['P2B Biller Masterlist Excel'], plannedOutputs: ['Alphabetized Word directory'] },
     { id: 'drb-usage', title: 'DRB Usage', group: 'DRB Reports', status: 'planned',
       description: 'Usage report with charts.',
       note: 'Waiting for the column layout of the source Excel.',
