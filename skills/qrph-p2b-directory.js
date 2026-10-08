@@ -207,28 +207,33 @@
     return root.JSZip.loadAsync(T.newAndUpdated, { base64: true }).then(function (zip) {
       return Promise.all([zip.file('word/media/image2.jpeg').async('base64'), zip.file('word/media/image3.png').async('base64')]);
     }).then(function (img) {
-      var legend = (hasNew ? '<span><i style="background:#ffff00"></i>New Biller</span>' : '') + (hasUpd ? '<span><i style="background:#f4b083"></i>Updated Biller Details</span>' : '');
+      /* Layout measured from the official Word-to-PDF directory: Letter page, 1in side margins, Calibri 11pt,
+         table 4.13 / 1.72 / 0.93in, header row on page 1 only, numbering inside the name cell. */
+      var legend = (hasNew ? '<span><i style="background:#ffff00"></i>— New Biller</span>' : '') + (hasUpd ? '<span><i style="background:#f4b083"></i>— Updated Biller Details</span>' : '');
       return '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(fileName(meta)) + '</title><style>' +
         '@page{size:letter portrait;margin:0}*{box-sizing:border-box}html,body{margin:0;background:#fff;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
-        'body{font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:10pt}' +
-        'table.page{width:100%;border-collapse:collapse}table.page>thead td,table.page>tfoot td{padding:0}' +
+        'body{font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:11pt}' +
+        'table.page{width:8.5in;border-collapse:collapse}table.page>thead td,table.page>tfoot td,table.page>tbody>tr>td{padding:0}' +
         '.head{height:1.532in;overflow:hidden;width:8.5in}.head img{display:block;width:8.854in;margin-left:-.354in}' +   /* Word crops the letterhead to its top 13.4% (srcRect b=86626) */
-        '.foot-space{height:.55in}.foot{position:fixed;bottom:.08in;left:0;width:8.5in}.foot img{display:block;width:8.49in}' +
-        '.content{padding:.15in 1in 0}.title{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:8pt}' +
-        '.title h1{font-size:12pt;margin:0}.legend{display:flex;flex-direction:column;gap:3pt;font-size:9pt}.legend span{display:flex;align-items:center;gap:6px}' +
-        '.legend i{display:inline-block;width:12px;height:10px;border:1px solid #000}' +
-        'table.list{width:100%;border-collapse:collapse;font-size:9.5pt}table.list th{background:#2f5496;color:#fff;font-weight:bold;text-align:left;padding:4pt 6pt;border:1px solid #2f5496}' +
-        'table.list td{padding:2.5pt 6pt;border:1px solid #9cb0d6}table.list td.n{width:34pt;text-align:right;color:#333}table.list tr{break-inside:avoid}' +
-        'tr.new td{background:#ffff00}tr.updated td{background:#f4b083}.test{color:#b42318;font-weight:bold}' +
+        '.head-space{height:.47in}.foot-space{height:1in}.foot{position:fixed;bottom:.4in;left:0;width:8.5in}.foot img{display:block;width:8.49in;margin-left:.01in}' +
+        '.content{padding:0 0 0 1in}.title{position:relative;width:6.79in;height:.45in}.title.two{height:.62in}' +
+        '.title h1{position:absolute;left:0;top:.02in;font-size:12pt;font-weight:bold;margin:0}' +
+        '.legend{position:absolute;right:0;top:.12in;display:flex;flex-direction:column;gap:2pt;font-size:11pt;font-weight:bold}.legend span{display:flex;align-items:center;gap:6pt}' +
+        '.legend i{display:inline-block;width:.17in;height:.13in;border:.75pt solid #000}' +
+        'table.list{width:6.79in;table-layout:fixed;border-collapse:collapse}table.list td{border:.5pt solid #000;padding:0 5.4pt;height:15.5pt;vertical-align:middle;white-space:pre;overflow:hidden}' +
+        'table.list td.c{text-align:center}table.list tr{break-inside:avoid}table.list tr.hd td{background:#2f5496;color:#fff;font-weight:bold}' +
+        'table.list .no{display:inline-block;width:.46in;margin-left:-.055in;padding-right:.25in;text-align:right;white-space:nowrap}' +
+        'tr.new td{background:#ffff00}tr.updated td{background:#f4b083}.test{position:absolute;left:0;top:-.22in;margin:0;color:#b42318;font-weight:bold;font-size:9pt}' +
         '.bar{position:fixed;top:10px;right:10px;font:13px Arial}@media screen{body{width:8.5in;margin:0 auto;box-shadow:0 0 12px rgba(0,0,0,.25)}}@media print{.bar{display:none}}</style></head><body>' +
         '<div class="bar"><button onclick="print()">Print / Save as PDF</button></div>' +
         '<div class="foot"><img src="data:image/png;base64,' + img[1] + '" alt=""></div>' +
-        '<table class="page"><thead><tr><td><div class="head"><img src="data:image/jpeg;base64,' + img[0] + '" alt="Sterling Bank of Asia"></div></td></tr></thead>' +
+        '<table class="page"><thead><tr><td><div class="head"><img src="data:image/jpeg;base64,' + img[0] + '" alt="Sterling Bank of Asia"></div><div class="head-space"></div></td></tr></thead>' +
         '<tfoot><tr><td><div class="foot-space"></div></td></tr></tfoot><tbody><tr><td><div class="content">' +
-        (m.synthetic ? '<p class="test">TEST DATA: made from a synthetic practice masterlist. Do not circulate.</p>' : '') +
-        '<div class="title"><h1>QR PH P2B List of Billers (as of ' + esc(asofText(meta)) + ')</h1><div class="legend">' + legend + '</div></div>' +
-        '<table class="list"><thead><tr><th class="n">#</th><th>Biller Display Name</th><th>Biller Category</th><th>Biller Code</th></tr></thead><tbody>' +
-        res.rows.map(function (x, i) { return '<tr class="' + x.status + '"><td class="n">' + (i + 1) + '.</td><td>' + esc(x.name) + '</td><td>' + esc(x.category) + '</td><td>' + esc(x.code) + '</td></tr>'; }).join('') +
+        '<div class="title' + (hasNew && hasUpd ? ' two' : '') + '">' + (m.synthetic ? '<p class="test">TEST DATA: made from a synthetic practice masterlist. Do not circulate.</p>' : '') +
+        '<h1>QR PH P2B List of Billers (as of ' + esc(asofText(meta)) + ')</h1><div class="legend">' + legend + '</div></div>' +
+        '<table class="list"><colgroup><col style="width:4.13in"><col style="width:1.72in"><col style="width:.94in"></colgroup><tbody>' +
+        '<tr class="hd"><td>Biller Display Name</td><td class="c">Biller Category</td><td class="c">Biller Code</td></tr>' +
+        res.rows.map(function (x, i) { return '<tr class="' + x.status + '"><td><span class="no">' + (i + 1) + '.</span>' + esc(x.name) + '</td><td class="c">' + esc(x.category) + '</td><td class="c">' + esc(x.code) + '</td></tr>'; }).join('') +
         '</tbody></table></div></td></tr></tbody></table><script>window.onload=function(){setTimeout(function(){print()},300)}<\/script></body></html>';
     });
   }
