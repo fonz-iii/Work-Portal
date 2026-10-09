@@ -151,22 +151,27 @@
     if (!box) return;
     var st = f.status(), name = esc(f.folderName()), html = icon('folder');
     if (st === 'connected') {
-      html += '<span>Saving to <b>' + name + '</b></span><button class="linkbtn" data-act="connect">Change</button><button class="linkbtn" data-act="disconnect">Disconnect</button>';
+      html += '<span title="Reference files are read from this folder; outputs are saved in its Outputs folder.">Portal folder: <b>' + name + '</b></span><button class="linkbtn" data-act="connect">Change</button><button class="linkbtn" data-act="disconnect">Disconnect</button>';
     } else if (st === 'needs-permission') {
-      html += '<span>Folder <b>' + name + '</b> needs permission</span><button class="linkbtn strong" data-act="reconnect">Allow access</button>';
+      html += '<span>Portal folder <b>' + name + '</b> needs permission</span><button class="linkbtn strong" data-act="reconnect">Allow access</button>';
     } else if (st === 'none') {
-      html += '<span title="Pick a folder so finished files save straight into it. Otherwise they go to Downloads.">Where should files be saved?</span><button class="linkbtn strong" data-act="connect">Choose folder</button>';
+      html += '<span title="Pick one folder: the portal reads your reference files from it and saves outputs into it.">No portal folder yet</span><button class="linkbtn strong" data-act="connect">Choose folder</button>';
     } else {
       html += '<span>Files save to your Downloads folder</span>';
     }
     if (f.lastError) html += '<span class="folder-err" title="' + esc(f.lastError) + '">!</span>';
     box.innerHTML = html;
+    var setup = $('#folder-setup');
+    if (setup) setup.innerHTML = st === 'none' || st === 'needs-permission' ? '<div class="card folder-setup">' + icon('folder') + '<div><h2>' + (st === 'none' ? 'Set up your portal folder' : 'Allow your portal folder') + '</h2>' +
+      (st === 'none' ? '<p>Pick one folder on this computer (for example <b>Documents › SBA Portal Files</b>). The portal adds folders inside it: <b>Employee Info</b>, <b>QR Ph Billers</b>, <b>Industry Ranking</b> (one folder per quarter, e.g. 2026-Q3) and <b>Outputs</b>. Drop each new file in its folder and the pages find it by themselves.</p>'
+        : '<p>Chrome asks again after it restarts. Click Allow, then choose <b>Allow on every visit</b> if Chrome offers it.</p>') +
+      '<p><button class="btn gold" data-act="' + (st === 'none' ? 'connect' : 'reconnect') + '">' + icon('folder') + (st === 'none' ? 'Choose folder' : 'Allow folder') + '</button> <a href="help.html#folder">How it works</a></p></div></div>' : '';
   }
 
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-theme-set]');
     if (t) { setTheme(t.getAttribute('data-theme-set')); return; }
-    var b = e.target.closest('#folder [data-act]');
+    var b = e.target.closest('#folder [data-act], #folder-setup [data-act]');
     if (!b) return;
     var act = b.getAttribute('data-act');
     if (act === 'connect') P.files.connect();
@@ -338,6 +343,7 @@
       imgSlot(H.heroImage || 'assets/images/home-hero.jpg', 'Main picture', 'hero-img') + '</div></section>';
 
     var pmTeam = TEAMS[0];
+    html += '<div class="wrap"><div id="folder-setup"></div></div>';
     html += '<section class="band" data-scene="sky"><div class="wrap"><header class="band-head"><p class="kicker">Step 1</p><h2>Choose your team</h2><p>Pick the area you work in. More teams are on the way.</p></header>' +
       '<div class="teams"><a class="team team-live reveal" href="modules.html"><span class="team-ico">' + icon(pmTeam.icon) + '</span><span class="pill pill-ready">Open now</span>' +
       '<h3>' + esc(pmTeam.name) + '</h3><p>' + esc(pmTeam.blurb) + '</p><dl class="team-stats"><div><dt>Ready to use</dt><dd>' + ready + '</dd></div><div><dt>Coming soon</dt><dd>' + soon + '</dd></div></dl>' +
@@ -403,7 +409,7 @@
 
   /* ---------- skill runner ---------- */
   function renderRunner(main, skill) {
-    var state = { inputs: {}, params: {}, metrics: null };
+    var state = { inputs: {}, params: {}, metrics: null, manual: {} };
     var st = skill.status || 'ready', g = skill.group || '', gid = meta(g).id;
     var head = pageHead([['Product Management', 'modules.html'], [g, 'modules.html#' + gid], [skill.title]], skill.title, esc(skill.description || ''),
       '<span class="pill pill-' + esc(st) + '">' + esc(STATUS_LABEL[st] || st) + '</span>', 'calm');
@@ -425,8 +431,14 @@
       '<div class="actions"><button class="btn primary lg" id="run">Create report ' + icon('arrow') + '</button></div>' + rulesNote(skill) + '</section></div>' +
       '<div id="errors"></div><section id="results"></section></div>';
 
-    var inBox = $('#inputs');
-    (skill.inputs || []).forEach(function (d) { inBox.appendChild(inputRow(d, state)); });
+    var inBox = $('#inputs'), rows = {};
+    (skill.inputs || []).forEach(function (d) { inBox.appendChild(rows[d.key] = inputRow(d, state)); });
+    fillFromFolder(skill, state, rows);
+    runnerRefill = function () { fillFromFolder(skill, state, rows); };
+    inBox.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-src-refill]'); if (!b) return;
+      state.manual = {}; fillFromFolder(skill, state, rows);
+    });
     if (!(skill.inputs || []).length) inBox.innerHTML = '<p class="muted">No files needed.</p>';
 
     var pBox = $('#params');
@@ -436,6 +448,29 @@
     $('#run').addEventListener('click', function () { run(skill, state); });
     settle(main);
   }
+
+  /* ---------- portal folder: fill a skill's inputs from the folder the user connected ---------- */
+  var runnerRefill = null;
+  function fillFromFolder(skill, state, rows) {
+    (skill.inputs || []).filter(function (d) { return d.source && !state.manual[d.key]; }).forEach(function (d) {
+      var r = rows[d.key];
+      P.files.find(d.source, d.type).then(function (res) {
+        if (state.manual[d.key]) return;
+        if (res.status === 'unsupported') return r._note('');
+        if (res.status === 'no-folder') return r._note(icon('folder') + 'Tip: choose your <b>portal folder</b> (top bar) and this is filled in for you from its <b>' + esc(d.source.folder) + '</b> folder.');
+        if (res.status === 'needs-permission') return r._note(icon('folder') + 'Your portal folder needs permission again. <button class="linkbtn-dark" data-folder-allow>Allow folder</button>');
+        if (res.status === 'not-found') {
+          return r._note(icon('folder') + (d.required ? 'Not found in ' : 'Nothing in ') + esc(P.files.folderName()) + ' › <b>' + esc(res.path.replace(/\\/g, ' › ')) + '</b> (' + esc(res.why) + ').' +
+            (d.required ? ' Put the file there and <button class="linkbtn-dark" data-src-refill>look again</button>, or choose it below.' : ''));
+        }
+        r._fill(res.files);
+        r._note(icon('check') + 'From your portal folder: <b>' + esc(P.files.folderName() + ' › ' + res.path.replace(/\\/g, ' › ')) + '</b> (' + esc(res.why) + '). <button class="linkbtn-dark" data-src-refill>Look again</button>');
+      });
+    });
+  }
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-folder-allow]')) P.files.reconnect();
+  });
 
   function listBlock(title, items) {
     if (!items || !items.length) return '';
@@ -451,7 +486,7 @@
 
   function inputRow(d, state) {
     var row = el('<div class="field"><label>' + esc(d.label) + (d.required ? ' <span class="req">*</span>' : '') + '</label>' +
-      (d.help ? '<p class="help">' + esc(d.help) + '</p>' : '') + '<div class="file-line"></div></div>');
+      (d.help ? '<p class="help">' + esc(d.help) + '</p>' : '') + '<p class="src-note" hidden></p><div class="file-line"></div></div>');
     var line = $('.file-line', row);
 
     if (d.type === 'paste') {
@@ -488,7 +523,15 @@
         if (!many && !ok.length) state.inputs[d.key] = undefined;
       });
     }
-    btn.addEventListener('click', function () { P.files.pick({ accept: P.files.acceptFor(d.type), multiple: many }).then(load); });
+    /* Used by the portal folder: replace whatever is there with the files found in the folder. */
+    row._fill = function (list) { state.inputs[d.key] = undefined; load(list); };
+    row._note = function (html) { var n = $('.src-note', row); n.innerHTML = html || ''; n.hidden = !html; };
+    btn.addEventListener('click', function () {
+      P.files.pick({ accept: P.files.acceptFor(d.type), multiple: many }).then(function (l) {
+        if (l.length) { state.manual[d.key] = true; if (d.source) row._note('Using the file you chose. <button class="linkbtn-dark" data-src-refill>Use the portal folder again</button>'); }
+        load(l);
+      });
+    });
     info.addEventListener('click', function (e) {
       if (!e.target.closest('[data-clear]')) return;
       state.inputs[d.key] = undefined;
@@ -497,7 +540,7 @@
     row.classList.add('dropzone');
     row.addEventListener('dragover', function (e) { e.preventDefault(); row.classList.add('over'); });
     row.addEventListener('dragleave', function (e) { if (!row.contains(e.relatedTarget)) row.classList.remove('over'); });
-    row.addEventListener('drop', function (e) { e.preventDefault(); row.classList.remove('over'); load(e.dataTransfer && e.dataTransfer.files); });
+    row.addEventListener('drop', function (e) { e.preventDefault(); row.classList.remove('over'); state.manual[d.key] = true; load(e.dataTransfer && e.dataTransfer.files); });
     line.appendChild(btn); line.appendChild(info);
     return row;
   }
@@ -592,7 +635,8 @@
     Promise.resolve(o.render(m, params)).then(function (spec) {
       var built = P.export.build(o.format, spec);
       var base = o.filename ? o.filename(m, params) : skill.title + ' - ' + o.label;
-      return P.files.save(P.export.safeName(base) + '.' + built.ext, built.blob);
+      var sub = skill.outputFolder || ((skill.inputs || []).filter(function (d) { return d.source; })[0] || { source: { folder: skill.title } }).source.folder;
+      return P.files.save(P.export.safeName(base) + '.' + built.ext, built.blob, P.export.safeName(sub));
     }).then(function (r) {
       msg.textContent = r.where === 'folder' ? 'Saved "' + r.name + '" to folder ' + r.folder + '.' : 'Downloaded "' + r.name + '".' + (r.error ? ' ' + r.error : '');
       renderFolder();
@@ -603,6 +647,7 @@
   function route() {
     var main = $('#main'), h = location.hash.slice(1), m = /^skill\/(.+)$/.exec(h), c = /^cat\/(.+)$/.exec(h);
     var skill = m && P.getSkill(decodeURIComponent(m[1])), t = c && team(c[1]);
+    runnerRefill = null;
     if (skill) { renderRunner(main, skill); document.title = skill.title + ' · Marketing Portal'; }
     else if (t && !t.live) { renderTeam(main, t); document.title = t.name + ' · Marketing Portal'; }
     else {
@@ -618,7 +663,7 @@
     page = p;
     renderShell();
     initScenes();
-    P.files.onChange(renderFolder);
+    P.files.onChange(function (st) { renderFolder(); if (runnerRefill && st !== 'none') runnerRefill(); });
     P.files.init();
     var ready = P.skillsLoaded || Promise.resolve();
     if (p === 'home') ready.then(function () { renderHome($('#main')); });

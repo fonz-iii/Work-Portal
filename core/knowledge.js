@@ -286,14 +286,18 @@
   function loader(kind) {
     var d = kind === 'directory' ? state.dir : state.code, label = kind === 'directory' ? 'Employee Directory (phone directory Excel, .xls or .xlsx)' : 'Code of Conduct PDF';
     var accept = kind === 'directory' ? '.xls,.xlsx,.xlsm' : '.pdf';
+    var fst = P.files ? P.files.status() : 'unsupported', fname = P.files ? esc(P.files.folderName()) : '';
+    var folderTip = fst === 'connected' ? '<p class="k-folder">' + icon('folder') + 'Or put it in your portal folder: <b>' + fname + ' › Employee Info</b>. It loads by itself next time you open this page. <button class="linkbtn-dark" type="button" data-k-sync>Look now</button></p>'
+      : fst === 'needs-permission' ? '<p class="k-folder">' + icon('folder') + 'Your portal folder <b>' + fname + '</b> needs permission. <button class="linkbtn-dark" type="button" data-folder-allow>Allow folder</button></p>'
+      : fst === 'none' ? '<p class="k-folder">' + icon('folder') + 'Tip: choose your <b>portal folder</b> in the top bar and keep this file in its <b>Employee Info</b> folder; it then loads by itself.</p>' : '';
     if (!d) return '<div class="card k-empty dropzone" data-drop="' + kind + '">' + icon(kind === 'directory' ? 'chat' : 'book') +
-      '<h2>Load the ' + label + '</h2><p class="muted">Choose the file or drag it here. It is read on this computer and remembered in this browser only. It is never uploaded.</p>' +
+      '<h2>Load the ' + label + '</h2><p class="muted">Choose the file or drag it here. It is read on this computer and remembered in this browser only. It is never uploaded.</p>' + folderTip +
       '<label class="btn primary">' + icon('folder') + 'Choose file<input type="file" accept="' + accept + '" data-load="' + kind + '" hidden></label>' +
       '<p class="k-small">Just trying it out? Use the practice file in <code>samples/employee-info/</code>.</p></div>';
     var when = d.loadedAt ? new Date(d.loadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
     return '<div class="k-status" data-drop="' + kind + '">' + icon('check') + '<span>' + (d.synthetic ? '<span class="pill pill-on-hold">Practice file (synthetic)</span> ' : '') + '<b>' + esc(d.fileName) + '</b>' +
       (kind === 'directory' && d.asOf ? ' · as of ' + esc(d.asOf) : '') + (kind === 'code' && d.edition ? ' · ' + esc(d.edition) : '') +
-      ' · loaded ' + esc(when) + ' · ' + (state.saved[kind] ? 'saved on this PC only' : '<b class="k-warn">not saved (browser storage is blocked), load it again next time</b>') + '</span>' +
+      ' · ' + (d.src && d.src.folder ? 'from your portal folder' : 'loaded') + ' ' + esc(when) + ' · ' + (state.saved[kind] ? 'saved on this PC only' : '<b class="k-warn">not saved (browser storage is blocked), load it again next time</b>') + '</span>' +
       '<label class="btn">Replace with newer file<input type="file" accept="' + accept + '" data-load="' + kind + '" hidden></label>' +
       '<button class="btn" type="button" data-remove="' + kind + '">Remove from this PC</button></div>';
   }
@@ -444,24 +448,42 @@
   function render() { renderTabs(); if (state.tab === 'directory') renderDirectory(); if (state.tab === 'code') renderCode(); }
 
   /* --- loading files --- */
-  function load(kind, file) {
-    if (!file) return;
+  function load(kind, file, fromFolder) {
+    if (!file) return Promise.resolve();
     var box = $(kind === 'directory' ? '#k-directory' : '#k-code');
     box.insertAdjacentHTML('afterbegin', '<p class="k-busy">Reading ' + esc(file.name) + '…</p>');
     var job = kind === 'directory'
       ? (/\.(xlsx?|xlsm)$/i.test(file.name) ? P.parse.excel(file).then(function (b) { return K.parseDirectory(b, file.name); }) : Promise.reject(new Error('Please choose the phone directory Excel file (.xls or .xlsx).')))
       : (/\.pdf$/i.test(file.name) ? P.parse.pdf(file).then(function (r) { return K.parseCode(r.pages, file.name); }) : Promise.reject(new Error('Please choose the Code of Conduct PDF.')));
-    job.then(function (data) {
+    return job.then(function (data) {
       if (kind === 'directory' && !data.people.length && !data.branches.length) throw new Error('No names or numbers were found in this file. Is it the phone directory?');
       if (kind === 'code' && data.nodes.length < 3) throw new Error('No Articles or Sections were found in this PDF. Is it the Code of Conduct (a text PDF, not a scan)?');
       data.loadedAt = Date.now();
+      data.src = { name: file.name, size: file.size, modified: file.lastModified || 0, folder: !!fromFolder };
       if (kind === 'directory') state.dir = data; else state.code = data;
-      return K.store.set(kind, data).then(function (ok) { state.saved[kind] = ok; render(); toast('Loaded ' + file.name); });
+      return K.store.set(kind, data).then(function (ok) { state.saved[kind] = ok; render(); toast((fromFolder ? 'Updated from your portal folder: ' : 'Loaded ') + file.name); });
     }).catch(function (e) {
       var b = $('.k-busy', box); if (b) b.remove();
       box.insertAdjacentHTML('afterbegin', '<div class="errors" role="alert"><b>Could not read that file.</b> ' + esc(e.message || e) + '</div>');
     });
   }
+
+  /* ---------- portal folder: load the newest files from <portal folder>\Employee Info by themselves ---------- */
+  var ready = false, syncing = false;
+  var SOURCES = { directory: [{ folder: 'Employee Info', match: /directory/i }, 'excel'], code: [{ folder: 'Employee Info', match: /conduct/i }, 'pdf'] };
+  function sync() {
+    if (!ready || syncing || !P.files || P.files.status() !== 'connected') return Promise.resolve();
+    syncing = true;
+    return Promise.all(Object.keys(SOURCES).map(function (kind) {
+      return P.files.find(SOURCES[kind][0], SOURCES[kind][1]).then(function (res) {
+        var f = res.files[0], d = kind === 'directory' ? state.dir : state.code, s = d && d.src;
+        if (!f) return;
+        if (s && s.name === f.name && s.size === f.size && s.modified === (f.lastModified || 0)) return;   // unchanged: keep the saved copy
+        return load(kind, f, true);
+      });
+    })).then(function () { syncing = false; }, function () { syncing = false; });
+  }
+  K.sync = sync;
 
   K.init = function () {
     esc = P.ui.esc; icon = P.ui.icon;
@@ -482,10 +504,13 @@
       var a = e.target.closest('[data-tab]'); if (a) { e.preventDefault(); state.tab = a.getAttribute('data-tab'); render(); return; }
       var c = e.target.closest('[data-copy]'); if (c) { copy(c.getAttribute('data-copy')); return; }
       var l = e.target.closest('[data-loc]'); if (l) { state.loc = l.getAttribute('data-loc'); state.dept = ''; renderDirectory(); return; }
+      if (e.target.closest('[data-k-sync]')) { sync(); return; }
       var r = e.target.closest('[data-remove]');
       if (r) {
         var k = r.getAttribute('data-remove');
-        if (!confirm('Remove the ' + (k === 'directory' ? 'Employee Directory' : 'Code of Conduct') + ' from this PC? You can load the file again any time.')) return;
+        var dk = k === 'directory' ? state.dir : state.code;
+        if (!confirm('Remove the ' + (k === 'directory' ? 'Employee Directory' : 'Code of Conduct') + ' from this PC? You can load the file again any time.' +
+          (dk && dk.src && dk.src.folder ? ' It will load again from your portal folder unless you also move the file out of its Employee Info folder.' : ''))) return;
         K.store.del(k).then(function () { if (k === 'directory') state.dir = null; else state.code = null; render(); });
         return;
       }
@@ -514,7 +539,8 @@
         if (ev === 'drop' && e.dataTransfer.files[0]) load(z.getAttribute('data-drop'), e.dataTransfer.files[0]);
       });
     });
-    Promise.all([K.store.get('directory'), K.store.get('code')]).then(function (v) { state.dir = v[0] || null; state.code = v[1] || null; render(); });
+    Promise.all([K.store.get('directory'), K.store.get('code')]).then(function (v) { state.dir = v[0] || null; state.code = v[1] || null; render(); ready = true; sync(); });
+    if (P.files) P.files.onChange(function (st) { render(); if (st === 'connected') sync(); });
     render();
   };
 })(typeof window !== 'undefined' ? window : globalThis);

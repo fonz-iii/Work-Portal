@@ -783,8 +783,10 @@
     description: 'Thrift-bank ranking slide deck and 2-page President’s report from the BSP ranking PDFs.',
     inputs: [
       { key: 'current', label: 'Files for this quarter: the four BSP thrift-bank PDFs', type: 'pdf-or-excel', multiple: true, required: true,
+        source: { folder: 'Industry Ranking', subfolder: 'newest' },
         help: 'On the BSP website, open each thrift-bank ranking page (Total Assets, Stockholder’s Equity, Deposit Liabilities, Loans and Receivables), press Ctrl+P and choose Save as PDF. Add all four here. Keep a copy: BSP replaces these pages every quarter. Not sure which box? Use either: the portal sorts the files by their \u201CAs of\u201D date.' },
       { key: 'prior', label: 'Files for the previous quarter: its four PDFs (or the old workbook)', type: 'pdf-or-excel', multiple: true, required: true,
+        source: { folder: 'Industry Ranking', subfolder: 'second' },
         help: 'The same four pages saved last quarter. If one is missing, also add the old “Industry Ranking as of …” workbook; it fills the gap with its top 10 banks. Practice files: samples/industry-ranking/2026-Q2-june is this quarter; 2026-Q1-march is the previous quarter.' }
     ],
     params: [{ key: 'presented_by', label: 'Presented by (shown on the cover slide)', type: 'text', default: 'Marketing' }],
