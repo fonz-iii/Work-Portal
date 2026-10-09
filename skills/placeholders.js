@@ -1,5 +1,5 @@
 /* skills/placeholders.js — menu tiles for every module in the CLAUDE.md table that is not built yet.
-   When a real skill is built, remove its entry here (Industry Ranking: built 2026-10-06; QR Ph P2B Directory: built 2026-10-08).
+   When a real skill is built, remove its entry here (Industry Ranking: built 2026-10-06; QR Ph P2B Directory: built 2026-10-08; RIB Advisory Generator: built 2026-10-09).
    All sit under the Product Management team (category 'pm', the default). Sections set 2026-10-06. */
 (function () {
   'use strict';
@@ -16,10 +16,6 @@
       description: 'Idle account report with charts.',
       note: 'Waiting for the column layout of the source Excel.',
       plannedInputs: ['Excel (column spec needed)'], plannedOutputs: ['Report', 'Charts'] },
-    { id: 'rib-advisory-formatter', title: 'RIB Advisory Formatter', group: 'RIB', status: 'planned',
-      description: 'Clean advisory text for the UAT editor, plus a status tracker.',
-      note: 'Waiting for formatting rules and a before/after example.',
-      plannedInputs: ['Pasted advisory text'], plannedOutputs: ['Clean plain text for the UAT editor', 'Status tracker: received / drafted in UAT / for approval / posted to Prod'] },
     { id: 'research-library', title: 'Research Library', group: 'Research', status: 'planned',
       description: 'Browse and search past studies; start a new study from a template.',
       plannedInputs: ['Past studies', 'Templates'], plannedOutputs: ['Browse', 'Search', 'New-study template'] },

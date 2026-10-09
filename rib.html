@@ -4,133 +4,141 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RIB Advisory Generator · Marketing Portal</title>
+<script>(function(){var t='light';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
+<link rel="icon" href="assets/icons/portal.svg">
+<link rel="stylesheet" href="assets/css/portal.css">
 <style>
-:root{--navy:#0E2A47;--navy2:#1B3E66;--amber:#E3A21A;--amber-soft:#FBF0D6;--cream:#FAF7F0;--surface:#fff;--ink:#1A2330;--muted:#5C6878;--line:#E4DED0;--ok:#2E7D4F;--warn:#9A5B00;--err:#B3261E;--info:#2F5E8C;--shadow:0 1px 2px rgba(14,42,71,.06),0 6px 18px rgba(14,42,71,.06)}
-:root[data-theme="dark"]{--navy:#0A1726;--navy2:#22456E;--amber:#F0B43C;--amber-soft:#3A2F17;--cream:#0F151D;--surface:#17202B;--ink:#E6EAF0;--muted:#9BA8B7;--line:#2B3746;--ok:#6CC495;--warn:#E9B25A;--err:#F08A82;--info:#8DB8E3;--shadow:none}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--cream);color:var(--ink);font:14px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
-button,input,select,textarea{font:inherit;color:inherit}
-.top{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 24px;flex-wrap:wrap}
-.brand{font-weight:700;letter-spacing:.02em}.brand span{color:var(--amber);font-weight:600;margin-left:8px}
-.top .sp{flex:1}
-.pill{font-size:12px;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.12)}
-.pill.ok{background:rgba(108,196,149,.22)}.pill.warn{background:rgba(240,180,60,.28)}
-.top input[type=text]{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 9px;width:130px;color:#fff}
-.top label{font-size:12px;opacity:.85}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 13px;cursor:pointer;white-space:nowrap}
-.btn:hover{border-color:var(--navy2)}
-.btn.pri{background:var(--navy);border-color:var(--navy);color:#fff}
-:root[data-theme="dark"] .btn.pri{background:var(--navy2);border-color:var(--navy2)}
-.btn.amb{background:var(--amber);border-color:var(--amber);color:#1A2330;font-weight:600}
-.btn.ghost{background:transparent;border-color:rgba(255,255,255,.35);color:#fff}
-.btn.sm{padding:4px 9px;font-size:12px}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.tabs{display:flex;gap:4px;padding:0 24px;background:var(--navy);}
-.tab{background:none;border:0;color:#C9D4E2;padding:10px 16px;cursor:pointer;border-bottom:3px solid transparent;font-weight:600}
-.tab.on{color:#fff;border-bottom-color:var(--amber)}
-.tab .n{font-size:11px;background:rgba(255,255,255,.14);border-radius:99px;padding:1px 7px;margin-left:6px}
-main{max-width:1320px;margin:0 auto;padding:20px 24px 60px}
-.banner{background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:16px}
-.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px;font-weight:700}
-.card h2 b{color:var(--amber);margin-right:6px}
-.seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{border:1px solid var(--line);background:var(--cream);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:600}
-.seg button.on{background:var(--navy);border-color:var(--navy);color:#fff}
-:root[data-theme="dark"] .seg button.on{background:var(--navy2)}
-.drop{display:block;border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;cursor:pointer;color:var(--muted);margin-top:12px}
-.drop.over{border-color:var(--amber);background:var(--amber-soft)}
-.drop input{display:none}
-textarea,input[type=text],input[type=date],input[type=time],input[type=search],select{width:100%;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:var(--surface)}
-textarea{min-height:150px;resize:vertical}
-.mt{margin-top:12px}
-.email{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--cream);font-size:13px}
-.email dt{font-weight:600;color:var(--muted);float:left;width:70px}.email dd{margin:0 0 2px 76px}
-.email pre{white-space:pre-wrap;max-height:220px;overflow:auto;font:12px/1.45 Consolas,monospace;margin:8px 0 0}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1px solid var(--line);background:var(--cream);border-radius:99px;padding:6px 13px;cursor:pointer;font-size:13px}
-.chip.on{background:var(--amber);border-color:var(--amber);color:#1A2330;font-weight:600}
-.note{font-size:12px;color:var(--muted);margin-top:8px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:start}
-@media (max-width:1000px){.grid{grid-template-columns:1fr}}
-.sticky{position:sticky;top:12px}
-.field{margin-bottom:12px}.field>label{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
-.hint{font-size:12px;color:var(--muted);margin-top:3px}
-.check{display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0}
-.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
-.win{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px}
-.win small{display:block;font-size:11px;color:var(--muted)}
-.svc{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}
-.pv-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:4px 0 6px}
-.paper{background:#fff;color:#222;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-family:"Trebuchet MS",sans-serif;font-size:16px;line-height:1.45}
-.paper.subj{padding:10px 16px}
-.paper.empty{color:#999;font-style:italic}
-.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.checks{list-style:none;padding:0;margin:12px 0 0;font-size:13px}
-.checks li{padding:5px 10px;border-radius:8px;margin-bottom:4px;border-left:4px solid}
-.checks .error{border-color:var(--err);background:rgba(179,38,30,.08)}
-.checks .warn{border-color:var(--warn);background:rgba(227,162,26,.12)}
-.checks .info{border-color:var(--info);background:rgba(47,94,140,.08)}
-.checks .ok{border-color:var(--ok);background:rgba(46,125,79,.08)}
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
-th{background:var(--navy);color:#fff;text-align:left;padding:9px 10px;font-weight:600}
-th:first-child{border-top-left-radius:10px}th:last-child{border-top-right-radius:10px}
-td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;background:var(--surface)}
-tr:nth-child(even) td{background:var(--cream)}
-.st{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--line)}
-.st.uat{background:#DCE8F5;color:#1E4B7A}.st.approval{background:var(--amber-soft);color:#7A4E00}.st.prod{background:#D8EFE1;color:#1F6A41}
-:root[data-theme="dark"] .st{color:var(--ink)!important;background:var(--navy2)}
-.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--amber-soft);color:#7A4E00}
-:root[data-theme="dark"] .tag{color:var(--amber)}
-.filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
-@media (max-width:900px){.filters{grid-template-columns:1fr 1fr}}
-.entry{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:16px 0;border-top:1px solid var(--line)}
-.entry:first-child{border-top:0}
-.entry .date{font-weight:700;color:var(--navy2)}:root[data-theme="dark"] .entry .date{color:var(--amber)}
-.shots{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-.shots img{max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:8px;cursor:zoom-in;background:#fff}
-.empty-state{color:var(--muted);text-align:center;padding:30px}
-dialog{border:1px solid var(--line);border-radius:14px;padding:0;width:min(560px,94vw);background:var(--surface);color:var(--ink)}
-dialog::backdrop{background:rgba(10,20,35,.45)}
-dialog header{background:var(--navy);color:#fff;padding:12px 16px;font-weight:700}
-dialog .body{padding:16px}
-dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
-.paste{border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);margin-top:6px;outline:none}
-.paste:focus{border-color:var(--amber)}
-.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.thumbs img{height:70px;border:1px solid var(--line);border-radius:6px}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:9px 16px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
-.toast.show{opacity:1}
-.hide{display:none!important}
-#viewer{border:0;background:transparent;width:auto;max-width:96vw}#viewer img{max-width:94vw;max-height:90vh;display:block;border-radius:8px}
+.rib{--rib-navy:#0E2A47;--rib-navy2:#1B3E66;--rib-amber:#E3A21A;--rib-amber-soft:#FBF0D6;--rib-cream:#FAF7F0;--rib-surface:#fff;--rib-ink:#1A2330;--rib-muted:#5C6878;--rib-line:#E4DED0;--rib-ok:#2E7D4F;--rib-warn:#9A5B00;--rib-err:#B3261E;--rib-info:#2F5E8C;--rib-shadow:0 1px 2px rgba(14,42,71,.06),0 6px 18px rgba(14,42,71,.06)}
+:root[data-theme="dark"] .rib{--rib-navy:#0A1726;--rib-navy2:#22456E;--rib-amber:#F0B43C;--rib-amber-soft:#3A2F17;--rib-cream:#0F151D;--rib-surface:#17202B;--rib-ink:#E6EAF0;--rib-muted:#9BA8B7;--rib-line:#2B3746;--rib-ok:#6CC495;--rib-warn:#E9B25A;--rib-err:#F08A82;--rib-info:#8DB8E3;--rib-shadow:none}
+.rib, .rib *{box-sizing:border-box}
+.rib{color:var(--rib-ink);font:14px/1.5 var(--font, "Segoe UI",system-ui,Arial,sans-serif)}
+.rib button,.rib input,.rib select,.rib textarea{font:inherit;color:inherit}
+.rib .top{background:var(--rib-surface);border:1px solid var(--rib-line);border-radius:14px;box-shadow:var(--rib-shadow);display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap;margin-bottom:14px}
+.rib .brand{font-weight:700;letter-spacing:.02em}.rib .brand span{color:var(--rib-amber);font-weight:600;margin-left:8px}
+.rib .top .sp{flex:1}
+.rib .pill{font-size:12px;padding:4px 10px;border-radius:99px;background:var(--rib-cream);color:var(--rib-ink)}
+.rib .pill.ok{background:rgba(46,125,79,.12);color:var(--rib-ok)}.rib .pill.warn{background:var(--rib-amber-soft);color:var(--rib-warn)}
+.rib .top input[type=text]{width:150px;padding:5px 9px}
+.rib .top label{font-size:12.5px;font-weight:600;color:var(--rib-muted)}
+.rib .btn{border:1px solid var(--rib-line);background:var(--rib-surface);border-radius:9px;padding:7px 13px;cursor:pointer;white-space:nowrap}
+.rib .btn:hover{border-color:var(--rib-navy2)}
+.rib .btn.pri{background:var(--rib-navy);border-color:var(--rib-navy);color:#fff}
+:root[data-theme="dark"] .rib .btn.pri{background:var(--rib-navy2);border-color:var(--rib-navy2)}
+.rib .btn.amb{background:var(--rib-amber);border-color:var(--rib-amber);color:#1A2330;font-weight:600}
+.rib .btn.ghost{background:transparent;border-color:rgba(255,255,255,.35);color:#fff}
+.rib .btn.sm{padding:4px 9px;font-size:12px}
+.rib .btn:disabled{opacity:.5;cursor:not-allowed}
+.rib .tabs{display:flex;gap:6px;padding:0;margin:0 0 16px;background:transparent;flex-wrap:wrap}
+.rib .tab{background:var(--rib-surface);border:1px solid var(--rib-line);color:var(--rib-muted);padding:8px 16px;cursor:pointer;border-radius:999px;font-weight:600}
+.rib .tab.on{color:#fff;background:var(--rib-navy);border-color:var(--rib-navy);box-shadow:inset 0 -3px 0 var(--rib-amber)}
+.rib .tab .n{font-size:11px;background:var(--rib-cream);color:var(--rib-ink);border-radius:99px;padding:1px 7px;margin-left:6px}.rib .tab.on .n{background:var(--rib-amber);color:#1A2330}
+.rib .rib-main{padding:0 0 60px}
+.rib .banner{background:var(--rib-amber-soft);border:1px solid var(--rib-amber);border-radius:12px;padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.rib .card{background:var(--rib-surface);border:1px solid var(--rib-line);border-radius:14px;padding:16px 18px;box-shadow:var(--rib-shadow);margin-bottom:16px}
+.rib .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--rib-muted);margin:0 0 12px;font-weight:700}
+.rib .card h2 b{color:var(--rib-amber);margin-right:6px}
+.rib .seg{display:flex;gap:8px;flex-wrap:wrap}
+.rib .seg button{border:1px solid var(--rib-line);background:var(--rib-cream);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:600}
+.rib .seg button.on{background:var(--rib-navy);border-color:var(--rib-navy);color:#fff}
+:root[data-theme="dark"] .rib .seg button.on{background:var(--rib-navy2)}
+.rib .drop{display:block;border:2px dashed var(--rib-line);border-radius:12px;padding:22px;text-align:center;cursor:pointer;color:var(--rib-muted);margin-top:12px}
+.rib .drop.over{border-color:var(--rib-amber);background:var(--rib-amber-soft)}
+.rib .drop input{display:none}
+.rib textarea,.rib input[type=text],.rib input[type=date],.rib input[type=time],.rib input[type=search],.rib select{width:100%;border:1px solid var(--rib-line);border-radius:9px;padding:7px 10px;background:var(--rib-surface)}
+.rib textarea{min-height:150px;resize:vertical}
+.rib .mt{margin-top:12px}
+.rib .email{margin-top:12px;border:1px solid var(--rib-line);border-radius:10px;padding:10px 12px;background:var(--rib-cream);font-size:13px}
+.rib .email dt{font-weight:600;color:var(--rib-muted);float:left;width:70px}.rib .email dd{margin:0 0 2px 76px}
+.rib .email pre{white-space:pre-wrap;max-height:220px;overflow:auto;font:12px/1.45 Consolas,monospace;margin:8px 0 0}
+.rib .chips{display:flex;flex-wrap:wrap;gap:8px}
+.rib .chip{border:1px solid var(--rib-line);background:var(--rib-cream);border-radius:99px;padding:6px 13px;cursor:pointer;font-size:13px}
+.rib .chip.on{background:var(--rib-amber);border-color:var(--rib-amber);color:#1A2330;font-weight:600}
+.rib .note{font-size:12px;color:var(--rib-muted);margin-top:8px}
+.rib .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:start}
+@media (max-width:1000px){.rib .grid{grid-template-columns:1fr}}
+.rib .sticky{position:sticky;top:84px}
+.rib .field{margin-bottom:12px}.rib .field>label{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
+.rib .hint{font-size:12px;color:var(--rib-muted);margin-top:3px}
+.rib .check{display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0}
+.rib .row{display:flex;gap:8px;align-items:center}.rib .row>*{flex:1}
+.rib .win{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px}
+.rib .win small{display:block;font-size:11px;color:var(--rib-muted)}
+.rib .svc{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}
+.rib .pv-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--rib-muted);text-transform:uppercase;letter-spacing:.05em;margin:4px 0 6px}
+.rib .paper{background:#fff;color:#222;border:1px solid var(--rib-line);border-radius:10px;padding:14px 16px;font-family:"Trebuchet MS",sans-serif;font-size:16px;line-height:1.45}
+.rib .paper.subj{padding:10px 16px}
+.rib .paper.empty{color:#999;font-style:italic}
+.rib .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rib .checks{list-style:none;padding:0;margin:12px 0 0;font-size:13px}
+.rib .checks li{padding:5px 10px;border-radius:8px;margin-bottom:4px;border-left:4px solid}
+.rib .checks .error{border-color:var(--rib-err);background:rgba(179,38,30,.08)}
+.rib .checks .warn{border-color:var(--rib-warn);background:rgba(227,162,26,.12)}
+.rib .checks .info{border-color:var(--rib-info);background:rgba(47,94,140,.08)}
+.rib .checks .ok{border-color:var(--rib-ok);background:rgba(46,125,79,.08)}
+.rib table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.rib th{background:var(--rib-navy);color:#fff;text-align:left;padding:9px 10px;font-weight:600}
+.rib th:first-child{border-top-left-radius:10px}.rib th:last-child{border-top-right-radius:10px}
+.rib td{padding:9px 10px;border-bottom:1px solid var(--rib-line);vertical-align:top;background:var(--rib-surface)}
+.rib tr:nth-child(even) td{background:var(--rib-cream)}
+.rib .st{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--rib-line)}
+.rib .st.uat{background:#DCE8F5;color:#1E4B7A}.rib .st.approval{background:var(--rib-amber-soft);color:#7A4E00}.rib .st.prod{background:#D8EFE1;color:#1F6A41}
+:root[data-theme="dark"] .rib .st{color:var(--rib-ink)!important;background:var(--rib-navy2)}
+.rib .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--rib-amber-soft);color:#7A4E00}
+:root[data-theme="dark"] .rib .tag{color:var(--rib-amber)}
+.rib .filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
+@media (max-width:900px){.rib .filters{grid-template-columns:1fr 1fr}}
+.rib .entry{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:16px 0;border-top:1px solid var(--rib-line)}
+.rib .entry:first-child{border-top:0}
+.rib .entry .date{font-weight:700;color:var(--rib-navy2)}:root[data-theme="dark"] .rib .entry .date{color:var(--rib-amber)}
+.rib .shots{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.rib .shots img{max-width:100%;max-height:340px;border:1px solid var(--rib-line);border-radius:8px;cursor:zoom-in;background:#fff}
+.rib .empty-state{color:var(--rib-muted);text-align:center;padding:30px}
+.rib dialog{border:1px solid var(--rib-line);border-radius:14px;padding:0;width:min(560px,94vw);background:var(--rib-surface);color:var(--rib-ink)}
+.rib dialog::backdrop{background:rgba(10,20,35,.45)}
+.rib dialog header{background:var(--rib-navy);color:#fff;padding:12px 16px;font-weight:700}
+.rib dialog .body{padding:16px}
+.rib dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
+.rib .paste{border:2px dashed var(--rib-line);border-radius:10px;padding:16px;text-align:center;color:var(--rib-muted);margin-top:6px;outline:none}
+.rib .paste:focus{border-color:var(--rib-amber)}
+.rib .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.rib .thumbs img{height:70px;border:1px solid var(--rib-line);border-radius:6px}
+.rib .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--rib-navy);color:#fff;padding:9px 16px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .2s;pointer-events:none;z-index:70}
+.rib .toast.show{opacity:1}
+.rib .hide{display:none!important}
+.rib #viewer{border:0;background:transparent;width:auto;max-width:96vw}.rib #viewer img{max-width:94vw;max-height:90vh;display:block;border-radius:8px}
 @media print{
-  .top,.tabs,.no-print,#tab-new,#tab-tracker,.banner{display:none!important}
-  body,html{background:#fff;color:#000}
-  main{padding:0;max-width:none}
-  .card{box-shadow:none;border:0;padding:0}
-  .entry{break-inside:avoid;grid-template-columns:120px 1fr}
-  .print-head{display:block!important}
+  .rib .top,.rib .tabs,.rib .no-print,.rib #tab-new,.rib #tab-tracker,.rib .banner{display:none!important}
+  .rib,.rib{background:#fff;color:#000}
+  .rib .rib-main{padding:0;max-width:none}
+  .rib .card{box-shadow:none;border:0;padding:0}
+  .rib .entry{break-inside:avoid;grid-template-columns:120px 1fr}
+  .rib .print-head{display:block!important}
 }
-.print-head{display:none;margin-bottom:12px}
+.rib .print-head{display:none;margin-bottom:12px}
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="brand">Marketing Portal<span>RIB Advisory Generator</span></div>
-  <div class="sp"></div>
+<header id="shell" class="no-print"></header>
+<main id="main">
+  <header class="page-head no-print" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="index.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><a href="modules.html">Product Management</a><span aria-hidden="true">›</span><a href="modules.html#rib">RIB</a><span aria-hidden="true">›</span><b>RIB Advisory Generator</b></nav>
+    <div class="page-title"><div><h1>RIB Advisory Generator</h1><p class="lede">Turn an advisory email into the RIB Inbox subject and body, track it from UAT to Prod, and keep the compilation of everything posted.</p></div></div>
+  </div></header>
+<div class="wrap rib" data-scene="sky">
+<div class="top no-print">
   <span id="storePill" class="pill">Storage: …</span>
-  <button id="btnFolder" class="btn ghost sm">Connect folder</button>
+  <button id="btnFolder" class="btn sm">Choose portal folder</button>
+  <span class="sp"></span>
   <label for="preparedBy">Prepared by</label>
   <input id="preparedBy" type="text" list="people" placeholder="Your name">
   <datalist id="people"><option value="Fons"><option value="Nicole"></datalist>
-  <button id="btnTheme" class="btn ghost sm" title="Light or dark theme">Dark mode</button>
-</header>
-<nav class="tabs">
+</div>
+<nav class="tabs no-print">
   <button class="tab on" data-tab="new">New advisory</button>
   <button class="tab" data-tab="tracker">Tracker <span class="n" id="nTracker">0</span></button>
   <button class="tab" data-tab="compilation">Compilation <span class="n" id="nComp">0</span></button>
 </nav>
 
-<main>
+<div class="rib-main">
   <div id="banner" class="banner hide"></div>
 
   <!-- NEW ADVISORY -->
@@ -180,7 +188,7 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
           <button class="btn" id="cpPlain">Copy body (plain text)</button>
         </div>
         <ul class="checks" id="checks"></ul>
-        <div class="btns" style="border-top:1px solid var(--line);padding-top:12px;margin-top:12px">
+        <div class="btns" style="border-top:1px solid var(--rib-line);padding-top:12px;margin-top:12px">
           <button class="btn pri" id="btnSave">Save to tracker</button>
           <button class="btn" id="btnNew">Start a new advisory</button>
           <span class="note" id="editNote"></span>
@@ -226,7 +234,7 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
       <div id="compList"></div>
     </div>
   </section>
-</main>
+</div>
 
 <dialog id="prodDlg">
   <header>Posted on Prod</header>
@@ -241,7 +249,14 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
 </dialog>
 <dialog id="viewer"><img id="viewerImg" alt="Screenshot"></dialog>
 <div class="toast" id="toast"></div>
+</div>
+</main>
+<footer id="foot" class="foot no-print"></footer>
 
+<script src="core/files.js"></script>
+<script src="data/feedback.js"></script>
+<script src="core/ui.js"></script>
+<script>Portal.ui.boot('rib');</script>
 <script src="vendor/cfb.min.js"></script>
 <script src="skills/rib-advisory.js"></script>
 <script>
@@ -271,7 +286,6 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
   function blobToDataURL(b) { return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.readAsDataURL(b); }); }
   function dataURLToBlob(u) { var p = u.split(','), mime = /:(.*?);/.exec(p[0])[1], bin = atob(p[1]), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: mime }); }
   function extOf(type) { return ({ 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' })[type] || 'png'; }
-  function download(name, blob) { var a = h('a', { href: URL.createObjectURL(blob), download: name }); document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
 
   // ---------------------------------------------------------------- storage
   var IDB = (function () {
@@ -300,7 +314,7 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
     base = root.getDirectoryHandle('RIB Advisories', { create: true });
     async function write(d, name, data) { var fh = await (await dir(d)).getFileHandle(name, { create: true }); var w = await fh.createWritable(); await w.write(data); await w.close(); }
     return {
-      mode: 'folder', label: 'Folder: ' + root.name + ' › RIB Advisories',
+      mode: 'folder', root: root, label: 'Portal folder: ' + root.name + ' › RIB Advisories',
       list: async function () { var out = [], d = await dir('entries'); for await (var pair of d.entries()) { if (/\.json$/.test(pair[0])) { try { out.push(JSON.parse(await (await pair[1].getFile()).text())); } catch (e) { console.warn('Skipped', pair[0], e); } } } return out; },
       save: function (e) { return write('entries', e.id + '.json', JSON.stringify(e, null, 2)); },
       remove: async function (e) { await (await dir('entries')).removeEntry(e.id + '.json').catch(function () {}); var sd = await dir('screenshots'); for (var n of (e.screenshots || [])) await sd.removeEntry(n).catch(function () {}); },
@@ -316,42 +330,48 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
     var p = $('storePill'), b = $('btnFolder'), ban = $('banner');
     ban.classList.add('hide');
     if (pending) {
-      p.className = 'pill warn'; p.textContent = 'Folder not reconnected'; b.textContent = 'Reconnect folder';
-      ban.innerHTML = ''; ban.appendChild(h('span', { text: 'Your advisories folder needs permission again before the tracker and compilation can load.' }));
-      ban.appendChild(h('button', { class: 'btn pri sm', text: 'Reconnect folder', onclick: reconnect })); ban.classList.remove('hide');
+      p.className = 'pill warn'; p.textContent = 'Portal folder needs permission'; b.textContent = 'Allow folder';
+      ban.innerHTML = ''; ban.appendChild(h('span', { text: 'Your portal folder needs permission again before the tracker and compilation can load.' }));
+      ban.appendChild(h('button', { class: 'btn pri sm', text: 'Allow folder', onclick: reconnect })); ban.classList.remove('hide');
       return;
     }
     p.className = 'pill ' + (S.store && S.store.mode === 'folder' ? 'ok' : 'warn');
     p.textContent = S.store ? S.store.label : '—';
-    b.textContent = S.store && S.store.mode === 'folder' ? 'Change folder' : 'Connect folder';
-    b.classList.toggle('hide', !window.showDirectoryPicker);
+    b.textContent = S.store && S.store.mode === 'folder' ? 'Change portal folder' : 'Choose portal folder';
+    b.title = 'Advisories are kept in the RIB Advisories folder inside your portal folder.';
+    b.classList.toggle('hide', !Portal.files.supported);
   }
-  async function connectFolder() {
-    try {
-      var hnd = await window.showDirectoryPicker({ mode: 'readwrite', id: 'sba-rib' });
-      await IDB.put('meta', hnd, 'dir');
-      var fresh = FolderStore(hnd);
-      var local = await BrowserStore.list();
-      if (local.length && S.store && S.store.mode === 'browser' && confirm('Move ' + local.length + ' advisories saved in this browser into the folder?')) {
-        for (var e of local) { for (var n of (e.screenshots || [])) { var bl = await BrowserStore.getBlob('shot', n); if (bl) await fresh.putBlob('shot', n, bl); } await fresh.save(e); await BrowserStore.remove(e); }
+  /* Storage uses the PORTAL folder (one grant for the whole portal): <portal folder>\RIB Advisories\entries|screenshots|emails.
+     Without it, advisories are kept in this browser (BrowserStore) and can be moved into the folder later. */
+  function connectFolder() { return Portal.files.connect(); }
+  function reconnect() { return Portal.files.reconnect(); }
+  async function moveLocalInto(fresh) {
+    var local = await BrowserStore.list();
+    if (!local.length || !confirm('Move ' + local.length + ' advisories saved in this browser into the portal folder?')) return;
+    for (var e of local) { for (var n of (e.screenshots || [])) { var bl = await BrowserStore.getBlob('shot', n); if (bl) await fresh.putBlob('shot', n, bl); } await fresh.save(e); await BrowserStore.remove(e); }
+  }
+  var syncing = Promise.resolve();
+  function syncStore() {
+    syncing = syncing.then(async function () {
+      var st = Portal.files.status();
+      if (st === 'connected') {
+        if (S.store && S.store.mode === 'folder' && S.store.root === Portal.files.dir) return;
+        var fresh = FolderStore(Portal.files.dir);
+        await moveLocalInto(fresh);
+        return useStore(fresh);
       }
-      await useStore(fresh); toast('Folder connected');
-    } catch (err) { if (err && err.name !== 'AbortError') alert('Could not connect the folder: ' + err.message); }
+      if (st === 'needs-permission') { S.store = null; paintStore(true); paintAll(); return; }
+      if (!S.store || S.store.mode !== 'browser') return useStore(BrowserStore);
+    }).catch(function (e) { console.error(e); return useStore(BrowserStore); });
+    return syncing;
   }
-  async function reconnect() {
-    var hnd = S.pendingHandle; if (!hnd) return connectFolder();
-    if ((await hnd.requestPermission({ mode: 'readwrite' })) === 'granted') { S.pendingHandle = null; await useStore(FolderStore(hnd)); }
+  function initStore() {
+    Portal.files.onChange(function () { syncStore(); });    // connect / allow / disconnect later on
+    return Portal.files.ready.then(syncStore);             // after the remembered folder has been checked
   }
-  async function initStore() {
-    if (window.showDirectoryPicker) {
-      var hnd = null; try { hnd = await IDB.get('meta', 'dir'); } catch (e) {}
-      if (hnd) {
-        var perm = 'denied'; try { perm = await hnd.queryPermission({ mode: 'readwrite' }); } catch (e) {}
-        if (perm === 'granted') return useStore(FolderStore(hnd));
-        S.pendingHandle = hnd; S.store = null; paintStore(true); paintAll(); return;
-      }
-    }
-    return useStore(BrowserStore);
+  async function saveOut(name, blob) {
+    var r = await Portal.files.save(name, blob, 'RIB Advisories');
+    toast(r.where === 'folder' ? 'Saved to ' + r.folder : 'Downloaded ' + name);
   }
 
   // ---------------------------------------------------------------- source / email
@@ -647,14 +667,14 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
       '--' + bd + '\r\nContent-Type: text/html; charset="utf-8"\r\nContent-Transfer-Encoding: base64\r\nContent-Location: file:///C:/rib.htm\r\n\r\n' + wrap76(b64utf8(html)) + '\r\n';
     parts.forEach(function (p) { mht += '--' + bd + '\r\nContent-Type: ' + p.type + '\r\nContent-Transfer-Encoding: base64\r\nContent-Location: ' + p.loc + '\r\n\r\n' + wrap76(p.data) + '\r\n'; });
     mht += '--' + bd + '--\r\n';
-    download('RIB Inbox Advisories ' + U.today() + '.doc', new Blob([mht], { type: 'application/msword' }));
+    await saveOut('RIB Inbox Advisories ' + U.today() + '.doc', new Blob([mht], { type: 'application/msword' }));
   }
 
   // ---------------------------------------------------------------- backup
   async function exportBackup() {
     var images = {};
     for (var e of S.entries) for (var n of (e.screenshots || [])) { var b = await S.store.getBlob('shot', n); if (b) images[n] = await blobToDataURL(b); }
-    download('RIB advisories backup ' + U.today() + '.json', new Blob([JSON.stringify({ app: 'rib-advisories', v: 1, exportedAt: new Date().toISOString(), entries: S.entries, images: images })], { type: 'application/json' }));
+    await saveOut('RIB advisories backup ' + U.today() + '.json', new Blob([JSON.stringify({ app: 'rib-advisories', v: 1, exportedAt: new Date().toISOString(), entries: S.entries, images: images })], { type: 'application/json' }));
   }
   async function importBackup(file) {
     try {
@@ -680,7 +700,6 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
     $('nComp').textContent = S.entries.filter(function (e) { return e.status === 'prod'; }).length;
     paintTracker(); paintComp();
   }
-  function setTheme(t) { document.documentElement.setAttribute('data-theme', t); $('btnTheme').textContent = t === 'dark' ? 'Light mode' : 'Dark mode'; ls('portal.theme', t); }
 
   document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { switchTab(b.dataset.tab); }); });
   $('methodSeg').addEventListener('click', function (ev) { if (ev.target.dataset.m) setMethod(ev.target.dataset.m); });
@@ -696,8 +715,7 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
   $('cpPlain').addEventListener('click', function () { copyPlain(OUT.plain).then(function (ok) { toast(ok ? 'Body copied as plain text' : 'Copy failed'); }); });
   $('btnSave').addEventListener('click', function () { saveCurrent().catch(function (e) { alert('Save failed: ' + e.message); }); });
   $('btnNew').addEventListener('click', resetNew);
-  $('btnFolder').addEventListener('click', function () { S.pendingHandle ? reconnect() : connectFolder(); });
-  $('btnTheme').addEventListener('click', function () { setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
+  $('btnFolder').addEventListener('click', function () { Portal.files.status() === 'needs-permission' ? reconnect() : connectFolder(); });
   $('preparedBy').addEventListener('input', function () { ls('rib.preparedBy', this.value); });
   R.config.statuses.forEach(function (s) { $('trkStatus').appendChild(h('option', { value: s.k, text: s.label })); });
   $('trkStatus').addEventListener('change', paintTracker); $('trkSearch').addEventListener('input', paintTracker);
@@ -715,7 +733,6 @@ dialog footer{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
   $('prodCancel').addEventListener('click', function () { $('prodDlg').close(); });
   $('viewer').addEventListener('click', function () { $('viewer').close(); });
 
-  setTheme(ls('portal.theme') || 'light');
   $('preparedBy').value = ls('rib.preparedBy') || '';
   $('postDate').value = S.postDate;
   paintCats(); paintForm(); paintPreview();

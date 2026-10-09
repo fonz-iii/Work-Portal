@@ -8,14 +8,16 @@
 
   /* The portal folder: one folder the user picks once. The portal creates these subfolders inside it,
      reads each project's reference files from it, and saves outputs into that project's own Outputs folder. */
-  var LAYOUT = ['Employee Info', 'QR Ph Billers', 'QR Ph Billers/Outputs', 'Industry Ranking', 'Industry Ranking/Outputs'];
+  var LAYOUT = ['Employee Info', 'QR Ph Billers', 'QR Ph Billers/Outputs', 'Industry Ranking', 'Industry Ranking/Outputs', 'RIB Advisories', 'RIB Advisories/Outputs'];
   var README = 'SBA MARKETING PORTAL FOLDER\r\n\r\nPut each new file in its folder, then open the page in the portal. The portal uses the newest file by itself.\r\n\r\n' +
     'Employee Info      the phone directory Excel and the Code of Conduct PDF\r\n' +
     'QR Ph Billers      the P2B Biller Masterlist files (keep the previous one too; the newest is "this period")\r\n' +
     '  Outputs          the Word directories and check sheets the portal saves\r\n' +
     'Industry Ranking   one folder per quarter, named like 2026-Q3, holding that quarter\'s four BSP thrift PDFs\r\n' +
     '                   (the old "Industry Ranking as of ..." workbook may go in the previous quarter\'s folder)\r\n' +
-    '  Outputs          the decks, reports and figures the portal saves\r\n\r\n' +
+    '  Outputs          the decks, reports and figures the portal saves\r\n' +
+    'RIB Advisories     kept by the RIB Advisory Generator (entries, screenshots, emails); do not edit by hand\r\n' +
+    '  Outputs          compilation Word files and backups\r\n\r\n' +
     'Each project keeps its own Outputs folder. Files in Outputs are never used as inputs.\r\n' +
     'Files here stay on this computer. Do not upload them to GitHub or the shared portal folder.\r\n';
   var MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -101,16 +103,18 @@
     onChange: function (fn) { listeners.push(fn); },
 
     /** On page load: restore the remembered handle. Permission re-prompt needs a click, so it waits in `pending`. */
+    /** Resolves once init() has checked the remembered folder (pages can wait on it instead of racing onChange). */
+    ready: Promise.resolve(),
     init: function () {
-      if (!files.supported || !root.indexedDB) { files.supported = false; return Promise.resolve(); }
-      return idbGet(KEY).then(function (h) {
+      if (!files.supported || !root.indexedDB) { files.supported = false; return (files.ready = Promise.resolve()); }
+      return (files.ready = idbGet(KEY).then(function (h) {
         if (!h) return;
         return h.queryPermission({ mode: 'readwrite' }).then(function (p) {
           if (p === 'granted') { files.dir = h; return files.ensureLayout(); }
           files.pending = h;
         });
       }).catch(function (e) { files.lastError = String(e && e.message || e); })
-        .then(notify);
+        .then(notify));
     },
 
     /** Must be called from a click. Opens the browser's folder prompt. */

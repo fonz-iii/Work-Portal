@@ -79,7 +79,7 @@
   function meta(g) { return SECTION_META[g] || { id: String(g).toLowerCase().replace(/\W+/g, '-'), icon: 'file', blurb: '' }; }
   function team(id) { return TEAMS.find(function (t) { return t.id === id; }); }
   function pmSkills() { return skills.filter(function (s) { return (s.category || 'pm') === 'pm'; }); }
-  function skillHref(s) { return s.href || ('modules.html#skill/' + encodeURIComponent(s.id)); }
+  function skillHref(s) { return s.href || s.page || ('modules.html#skill/' + encodeURIComponent(s.id)); }   // `page`: a module with its own page (e.g. rib.html)
   var reduceMotion = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   P.ui = { esc: esc, icon: icon };
@@ -103,6 +103,7 @@
   /* ---------- shell ---------- */
   var page = '';
   function navKey() {
+    if (page === 'rib') return 'team:pm';
     if (page !== 'modules') return page;
     var c = /^cat\/(.+)$/.exec(location.hash.slice(1));
     return c ? 'team:' + c[1] : 'team:pm';
