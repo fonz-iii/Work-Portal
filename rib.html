@@ -61,7 +61,9 @@
 .rib .hint{font-size:12px;color:var(--rib-muted);margin-top:3px}
 .rib .check{display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0}
 .rib .row{display:flex;gap:8px;align-items:center}.rib .row>*{flex:1}
-.rib .win{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px}
+.rib .win{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 10px;align-items:end;margin-bottom:10px;padding:10px 12px;border:1px solid var(--rib-line);border-radius:10px;background:var(--rib-cream)}
+.rib .win input{min-width:0;width:100%}
+.rib .win > .btn{grid-column:1/-1;justify-self:end}
 .rib .win small{display:block;font-size:11px;color:var(--rib-muted)}
 .rib .svc{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}
 .rib .pv-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--rib-muted);text-transform:uppercase;letter-spacing:.05em;margin:4px 0 6px}
@@ -469,10 +471,11 @@
     var box = h('div');
     S.f.windows.forEach(function (w, i) {
       function inp(type, key, label) { var e = h('input', { type: type }); e.value = w[key] || ''; e.addEventListener('input', function () { w[key] = e.value; paintPreview(); }); return h('div', null, [h('small', { text: label }), e]); }
-      var del = h('button', { class: 'btn sm', text: 'Remove', title: 'Remove this window', onclick: function () { S.f.windows.splice(i, 1); if (!S.f.windows.length) S.f.windows.push({ date: '', start: '', end: '' }); paintForm(); paintPreview(); } });
-      box.appendChild(h('div', { class: 'win' }, [inp('date', 'date', 'Date'), inp('time', 'start', 'Start'), inp('time', 'end', 'End'), del]));
+      var del = h('button', { class: 'btn sm', text: 'Remove', title: 'Remove this window', onclick: function () { S.f.windows.splice(i, 1); if (!S.f.windows.length) S.f.windows.push({ date: '', start: '', endDate: '', end: '' }); paintForm(); paintPreview(); } });
+      var endD = inp('date', 'endDate', 'End date'); endD.title = 'Leave blank for the same day (or the next day if the end time is earlier).';
+      box.appendChild(h('div', { class: 'win' }, [inp('date', 'date', 'Start date'), inp('time', 'start', 'Start time'), endD, inp('time', 'end', 'End time'), del]));
     });
-    box.appendChild(h('button', { class: 'btn sm', text: '+ Add another date', onclick: function () { S.f.windows.push({ date: '', start: '', end: '' }); paintForm(); } }));
+    box.appendChild(h('button', { class: 'btn sm', text: '+ Add another window', onclick: function () { S.f.windows.push({ date: '', start: '', endDate: '', end: '' }); paintForm(); } }));
     return box;
   }
   function servicesEditor() {

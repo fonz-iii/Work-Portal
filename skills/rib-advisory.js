@@ -141,8 +141,9 @@
   // ------------------------------------------------------------------ builders
   function smWindows(f) {
     return (f.windows || []).filter(function (x) { return x.date && x.start && x.end; }).map(function (x) {
-      var s = pd(x.date), e = x.end <= x.start ? addDays(s, 1) : s;
-      return { s: s, e: e, st: x.start, et: x.end, over: +e !== +s };
+      // End date: as entered (multi-day maintenance); if blank, the same day, or the next day when the end time is earlier.
+      var s = pd(x.date), e = x.endDate ? pd(x.endDate) : (x.end <= x.start ? addDays(s, 1) : s);
+      return { s: s, e: e, st: x.start, et: x.end, over: +e !== +s, bad: +e < +s || (+e === +s && x.endDate && x.end <= x.start) };
     }).sort(function (a, b) { return (a.s - b.s) || a.st.localeCompare(b.st); });
   }
   function smSpan(x) {
@@ -176,6 +177,7 @@
     'system-maintenance': function (f) {
       var errs = [], w = smWindows(f), svc = serviceLabels(f), paras = [], subject = '';
       if (!w.length) errs.push('Add at least one maintenance window (date, start time and end time).');
+      if (w.some(function (x) { return x.bad; })) errs.push('A maintenance window ends before it starts. Check its end date and time.');
       if (!svc.length) errs.push('Tick at least one affected service.');
       if (w.length) {
         subject = C.sm.title + smTitleDates(w);
@@ -239,7 +241,7 @@
   // ------------------------------------------------------------------ defaults + form fields
   var FIELDS = {
     'system-maintenance': [
-      { k: 'windows', type: 'windows', label: 'Maintenance window(s)', hint: 'If the end time is earlier than the start time, it ends the next day.' },
+      { k: 'windows', type: 'windows', label: 'Maintenance window(s)', hint: 'For maintenance over several days, set the End date. Leave it blank for the same day (or the next day if the end time is earlier).' },
       { k: 'services', type: 'services', label: 'Temporarily unavailable' },
       { k: 'thanks', type: 'thanks', label: 'Closing line' }
     ],
@@ -280,7 +282,7 @@
 
   function defaults(cat) {
     switch (cat) {
-      case 'system-maintenance': return { windows: [{ date: '', start: '', end: '' }], services: C.services.filter(function (s) { return s.def; }).map(function (s) { return s.k; }), otherServices: '', footer: true, thanks: '' };
+      case 'system-maintenance': return { windows: [{ date: '', start: '', endDate: '', end: '' }], services: C.services.filter(function (s) { return s.def; }).map(function (s) { return s.k; }), otherServices: '', footer: true, thanks: '' };
       case 'bsp-cpr': return { weekOf: '', subject: C.cpr.subject, hook: '', body: '', standard: true, closing: C.cpr.closings[0] };
       case 'security': return { subject: '', body: '', securityLine: true, footer: true, thanks: '' };
       case 'unavailable': return { service: 'InstaPay', mode: 'scheduled', fromDate: '', fromTime: '', toDate: '', toTime: '', alt: true, footer: true, thanks: 'Thank you.' };
@@ -301,6 +303,7 @@
       var d = new Date(y, mi, +m[2]);
       if (WD[d.getDay()] !== m[4]) list.push(['error', m[1] + ' ' + m[2] + ', ' + y + ' is a ' + WD[d.getDay()] + ', not ' + m[4] + '.']);
     }
+    if (cat === 'system-maintenance') smWindows(f).forEach(function (x) { if ((x.e - x.s) / 864e5 > 7) list.push(['warn', 'A maintenance window lasts more than 7 days. Check the dates.']); });
     var yrs = text.match(/\b20\d\d\b/g) || [];
     yrs.forEach(function (y) { if (+y < ref.getFullYear() || +y > ref.getFullYear() + 1) list.push(['warn', 'Year ' + y + ' differs from the posting year ' + ref.getFullYear() + '.']); });
     var dbl = text.match(/\b([A-Za-z]{2,})\s+\1\b/gi); if (dbl) dbl.forEach(function (w) { list.push(['warn', 'Repeated word: “' + w + '”']); });
@@ -453,24 +456,25 @@
     return ev.sort(function (a, b) { return a.i - b.i; });
   }
   function windowsFrom(ev) {
-    var out = [], run = [], pend = null, startDate = null;
+    var out = [], run = [], pend = null, startDate = null, endDate = null;
     ev.forEach(function (e) {
       if (e.t === 'd') {
-        if (pend) return; // end date of an overnight window; end time follows
+        if (pend) { if (!endDate && e.v > startDate) endDate = e.v; return; } // end date of a window that runs past its start day; end time follows
         if (run.length && out.length && run.lastUsed) run = [];
         run.push(e.v); run.lastUsed = false;
       } else {
         if (!run.length) return;
         if (!pend) { pend = e.v; startDate = run[0]; return; }
-        var st = pend, et = e.v; pend = null;
+        var st = pend, et = e.v, ed = endDate; pend = null; endDate = null;
         var consecutive = run.length === 2 && iso(addDays(pd(run[0]), 1)) === run[1];
-        if (run.length === 1 || (consecutive && et <= st)) out.push({ date: startDate, start: st, end: et });
+        if (ed) out.push({ date: startDate, start: st, endDate: ed, end: et });
+        else if (run.length === 1 || (consecutive && et <= st)) out.push({ date: startDate, start: st, end: et });
         else run.forEach(function (d) { out.push({ date: d, start: st, end: et }); });
         run.lastUsed = true;
       }
     });
     var seen = {};
-    return out.filter(function (w) { var k = w.date + w.start + w.end; if (seen[k]) return false; seen[k] = 1; return true; });
+    return out.filter(function (w) { var k = w.date + w.start + (w.endDate || '') + w.end; if (seen[k]) return false; seen[k] = 1; return true; });
   }
   function guessCategory(subject, body) {
     var t = (subject + '\n' + body).toLowerCase();
