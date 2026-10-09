@@ -151,7 +151,7 @@
     if (!box) return;
     var st = f.status(), name = esc(f.folderName()), html = icon('folder');
     if (st === 'connected') {
-      html += '<span title="Reference files are read from this folder; outputs are saved in its Outputs folder.">Portal folder: <b>' + name + '</b></span><button class="linkbtn" data-act="connect">Change</button><button class="linkbtn" data-act="disconnect">Disconnect</button>';
+      html += '<span title="Reference files are read from this folder; each project saves its outputs in its own Outputs folder.">Portal folder: <b>' + name + '</b></span><button class="linkbtn" data-act="connect">Change</button><button class="linkbtn" data-act="disconnect">Disconnect</button>';
     } else if (st === 'needs-permission') {
       html += '<span>Portal folder <b>' + name + '</b> needs permission</span><button class="linkbtn strong" data-act="reconnect">Allow access</button>';
     } else if (st === 'none') {
@@ -163,7 +163,7 @@
     box.innerHTML = html;
     var setup = $('#folder-setup');
     if (setup) setup.innerHTML = st === 'none' || st === 'needs-permission' ? '<div class="card folder-setup">' + icon('folder') + '<div><h2>' + (st === 'none' ? 'Set up your portal folder' : 'Allow your portal folder') + '</h2>' +
-      (st === 'none' ? '<p>Pick one folder on this computer (for example <b>Documents › SBA Portal Files</b>). The portal adds folders inside it: <b>Employee Info</b>, <b>QR Ph Billers</b>, <b>Industry Ranking</b> (one folder per quarter, e.g. 2026-Q3) and <b>Outputs</b>. Drop each new file in its folder and the pages find it by themselves.</p>'
+      (st === 'none' ? '<p>Pick one folder on this computer (for example <b>Documents › SBA Portal Files</b>). The portal adds one folder per project inside it: <b>Employee Info</b>, <b>QR Ph Billers</b> and <b>Industry Ranking</b> (one folder per quarter, e.g. 2026-Q3). Each project keeps its saved files in its own <b>Outputs</b> folder. Drop each new file in its project folder and the pages find it by themselves.</p>'
         : '<p>Chrome asks again after it restarts. Click Allow, then choose <b>Allow on every visit</b> if Chrome offers it.</p>') +
       '<p><button class="btn gold" data-act="' + (st === 'none' ? 'connect' : 'reconnect') + '">' + icon('folder') + (st === 'none' ? 'Choose folder' : 'Allow folder') + '</button> <a href="help.html#folder">How it works</a></p></div></div>' : '';
   }

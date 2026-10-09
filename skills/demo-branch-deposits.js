@@ -116,6 +116,7 @@
 
   Portal.registerSkill({
     id: 'demo-branch-deposits',
+    outputFolder: 'Demo',
     title: 'Demo: Branch Deposits',
     group: 'Demo',
     status: 'demo',

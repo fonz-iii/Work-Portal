@@ -33,7 +33,7 @@ SBA-Portal/
   outputs/              default save location (user's connected folder in practice)
 ```
 
-**Portal folder (2026-10-09, Fons):** the user picks ONE local folder once (top bar or Home card; File System Access API, handle remembered in IndexedDB). The portal creates `Employee Info\`, `QR Ph Billers\`, `Industry Ranking\<YYYY-Qn>\`, `Outputs\<module>\` and `READ ME.txt` inside it (`core/files.js` `LAYOUT`). Pages read the newest reference file from it (date in the file name, else last-modified) and the user still clicks Create report; Employee Info re-reads only when the file changed (name/size/modified). Outputs save to `Outputs\<module>`. Manual Choose file stays as fallback. Practice copy: `samples/SBA Portal Files (practice)/`.
+**Portal folder (2026-10-09, Fons):** the user picks ONE local folder once (top bar or Home card; File System Access API, handle remembered in IndexedDB). The portal creates `Employee Info\`, `QR Ph Billers\` (+ `Outputs\`), `Industry Ranking\<YYYY-Qn>\` (+ `Outputs\`) and `READ ME.txt` inside it (2026-10-09: each project keeps its own Outputs folder; quarter lookup ignores `Outputs`) (`core/files.js` `LAYOUT`). Pages read the newest reference file from it (date in the file name, else last-modified) and the user still clicks Create report; Employee Info re-reads only when the file changed (name/size/modified). Outputs save to `<project>\Outputs`. Manual Choose file stays as fallback. Practice copy: `samples/SBA Portal Files (practice)/`.
 
 ## Core engine (`core/`)
 
@@ -73,7 +73,7 @@ Portal.registerSkill({
 
 `analyze` must be a pure function with no DOM access, so it can be unit-tested with sample data.
 
-An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `source: { folder, subfolder: 'newest'|'second' }` (all matching files in that subfolder); the runner fills it from the portal folder via `P.files.find()`. Saves go to `Outputs\<first source folder>` (or `skill.outputFolder`).
+An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `source: { folder, subfolder: 'newest'|'second' }` (all matching files in that subfolder); the runner fills it from the portal folder via `P.files.find()`. Saves go to `<first source folder>\Outputs` (or `<skill.outputFolder>\Outputs`, else `<skill title>\Outputs`).
 
 ## Modules and build order
 
@@ -134,5 +134,5 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 - [x] QR Ph P2B Biller Directory built 2026-10-08: port of the Claude skill `qrph-p2b-directory`. Letterhead templates in `data/qrph-templates.js` (sample rows replaced, author names removed). Golden check vs `build_directory.py` on synthetic masterlists (with and without previous, with overrides, new-only template): rows, report and Word `document.xml` byte-identical after C14N.
 - [x] QR Ph real-data check 2026-10-08 (local only, not committed): Sept 15, 2026 masterlist gives 460 billers, 7 new, 0 updated; identical to `build_directory.py` and row for row to the official Sept 15 PDF (names, categories, codes, order, yellow rows). PDF version restyled to the official layout (Calibri 11pt, numbers inside the name cell, header row on page 1 only, 34/37 rows per page, 13 pages).
 - [ ] Office test of QR Ph: open the portal's .docx in Word, Save as PDF, and try the PDF version in Chrome (Calibri, Letter).
-- [x] Portal folder built 2026-10-09: Employee Info, QR Ph and Industry Ranking read their files from one connected folder; outputs saved to Outputs\<module>. Tested with a simulated folder (headless Chrome cannot click the native dialog).
+- [x] Portal folder built 2026-10-09: Employee Info, QR Ph and Industry Ranking read their files from one connected folder; outputs saved to each project's own Outputs folder. Tested with a simulated folder (headless Chrome cannot click the native dialog).
 - [ ] Office test of the portal folder: choose Documents\SBA Portal Files, drop in the real files, open each page; check Chrome's "Allow on every visit" keeps access after a restart.

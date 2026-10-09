@@ -1,7 +1,7 @@
 Practice copy of a portal folder. Everything here is either synthetic or public (BSP ranking pages).
 
 To try it: in the portal, click "Choose folder" in the top bar and pick THIS folder.
-The portal adds an Outputs folder and a READ ME file, then:
+The portal adds an Outputs folder inside each project folder and a READ ME file, then:
   - Employee Info loads the practice phone directory and Code of Conduct by itself;
   - QR Ph P2B Biller Directory fills in the Sept 30 masterlist (this period) and Sept 15 (previous);
   - Industry Ranking fills in 2026-Q2 (this quarter) and 2026-Q1 (previous quarter, with the old workbook).

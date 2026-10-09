@@ -7,14 +7,16 @@
   var DB_NAME = 'sba-portal', STORE = 'handles', KEY = 'outputFolder';
 
   /* The portal folder: one folder the user picks once. The portal creates these subfolders inside it,
-     reads each module's reference files from them, and saves outputs into Outputs\<module>. */
-  var LAYOUT = ['Employee Info', 'QR Ph Billers', 'Industry Ranking', 'Outputs'];
+     reads each project's reference files from it, and saves outputs into that project's own Outputs folder. */
+  var LAYOUT = ['Employee Info', 'QR Ph Billers', 'QR Ph Billers/Outputs', 'Industry Ranking', 'Industry Ranking/Outputs'];
   var README = 'SBA MARKETING PORTAL FOLDER\r\n\r\nPut each new file in its folder, then open the page in the portal. The portal uses the newest file by itself.\r\n\r\n' +
     'Employee Info      the phone directory Excel and the Code of Conduct PDF\r\n' +
     'QR Ph Billers      the P2B Biller Masterlist files (keep the previous one too; the newest is "this period")\r\n' +
+    '  Outputs          the Word directories and check sheets the portal saves\r\n' +
     'Industry Ranking   one folder per quarter, named like 2026-Q3, holding that quarter\'s four BSP thrift PDFs\r\n' +
     '                   (the old "Industry Ranking as of ..." workbook may go in the previous quarter\'s folder)\r\n' +
-    'Outputs            everything the portal saves, one folder per report\r\n\r\n' +
+    '  Outputs          the decks, reports and figures the portal saves\r\n\r\n' +
+    'Each project keeps its own Outputs folder. Files in Outputs are never used as inputs.\r\n' +
     'Files here stay on this computer. Do not upload them to GitHub or the shared portal folder.\r\n';
   var MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
   var EXT = { excel: /\.(xlsx|xls|xlsm|csv)$/i, csv: /\.csv$/i, pdf: /\.pdf$/i, 'pdf-or-excel': /\.(pdf|xlsx|xls|xlsm)$/i, text: /\.txt$/i };
@@ -151,13 +153,20 @@
     ensureLayout: function () {
       var dir = files.dir;
       if (!dir) return Promise.resolve();
-      return Promise.all(LAYOUT.map(function (n) { return dir.getDirectoryHandle(n, { create: true }); }))
+      return LAYOUT.reduce(function (p, path) { return p.then(function () { return files.folder(path, true); }); }, Promise.resolve())
         .then(function () {
           return dir.getFileHandle('READ ME.txt').then(function () {}, function () {
             return dir.getFileHandle('READ ME.txt', { create: true }).then(function (fh) { return fh.createWritable(); })
               .then(function (w) { return w.write(README).then(function () { return w.close(); }); });
           });
         }).catch(function (e) { files.lastError = 'Could not set up the portal folder (' + (e && e.message || e) + ').'; });
+    },
+
+    /** Handle of a subfolder path like 'QR Ph Billers/Outputs' (created when `create`); rejects if missing. */
+    folder: function (path, create) {
+      var d = Promise.resolve(files.dir);
+      String(path || '').split(/[\\/]/).filter(Boolean).forEach(function (n) { d = d.then(function (h) { return h.getDirectoryHandle(n, create ? { create: true } : undefined); }); });
+      return d;
     },
 
     /** Entries of a subfolder path like 'QR Ph Billers' or 'Industry Ranking/2026-Q3'; [] if it does not exist. */
@@ -177,7 +186,7 @@
       var idx = (source.subfolder || source.pick) === 'second' ? 1 : 0;
       if (source.subfolder) {
         return files.list(base).then(function (es) {
-          var subs = es.filter(function (e) { return e.kind === 'folder'; }).sort(newestFirst), sub = subs[idx];
+          var subs = es.filter(function (e) { return e.kind === 'folder' && !/^outputs$/i.test(e.name); }).sort(newestFirst), sub = subs[idx];
           if (!sub) return { status: 'not-found', files: [], path: base, why: idx ? 'only one quarter folder' : 'no quarter folders' };
           return files.list(base + '/' + sub.name).then(function (fs) {
             var got = fs.filter(function (e) { return e.kind === 'file' && extRe.test(e.name); }).sort(function (a, b) { return a.name < b.name ? -1 : 1; });
@@ -195,16 +204,16 @@
       });
     },
 
-    /** Save a Blob: into the portal folder (Outputs\<sub> when given) if possible, else as a browser download.
+    /** Save a Blob: into the portal folder (<project>\Outputs when a project is given) if possible, else as a browser download.
         Resolves { where: 'folder'|'download', name, folder? }. */
     save: function (name, blob, sub) {
       var dir = files.dir;
       if (!dir) { files.download(name, blob); return Promise.resolve({ where: 'download', name: name }); }
-      var target = sub ? dir.getDirectoryHandle('Outputs', { create: true }).then(function (o) { return o.getDirectoryHandle(sub, { create: true }); }) : Promise.resolve(dir);
+      var target = sub ? files.folder(sub + '/Outputs', true) : Promise.resolve(dir);
       return target.then(function (d) { return d.getFileHandle(name, { create: true }); })
         .then(function (fh) { return fh.createWritable(); })
         .then(function (w) { return w.write(blob).then(function () { return w.close(); }); })
-        .then(function () { return { where: 'folder', name: name, folder: dir.name + (sub ? '\\Outputs\\' + sub : '') }; })
+        .then(function () { return { where: 'folder', name: name, folder: dir.name + (sub ? '\\' + sub + '\\Outputs' : '') }; })
         .catch(function (e) {
           files.lastError = 'Could not write to folder (' + (e && e.message || e) + '). Downloaded instead.';
           files.download(name, blob);
