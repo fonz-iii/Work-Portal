@@ -64,10 +64,10 @@
       [/\b(Wedneday|Thurday|Saterday)\b/gi, 'Weekday is misspelled']
     ],
     statuses: [
-      { k: 'drafted', label: 'Drafted', next: 'Mark posted on UAT' },
-      { k: 'uat', label: 'Posted on UAT', next: 'Mark sent for approval' },
-      { k: 'approval', label: 'For Ms. Rocky’s approval', next: 'Mark posted on Prod' },
-      { k: 'prod', label: 'Posted on Prod' }
+      { k: 'drafted', label: 'Drafted', short: 'Drafted', next: 'I’ve posted it on UAT' },
+      { k: 'uat', label: 'Posted on UAT', short: 'On UAT (test)', next: 'I’ve sent it for Ms. Rocky’s approval' },
+      { k: 'approval', label: 'For Ms. Rocky’s approval', short: 'For approval', next: 'It’s approved and posted on Prod' },
+      { k: 'prod', label: 'Posted on Prod', short: 'On Prod (live)' }
     ]
   };
 

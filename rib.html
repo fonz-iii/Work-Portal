@@ -13,13 +13,6 @@
 .rib, .rib *{box-sizing:border-box}
 .rib{color:var(--rib-ink);font:14px/1.5 var(--font, "Segoe UI",system-ui,Arial,sans-serif)}
 .rib button,.rib input,.rib select,.rib textarea{font:inherit;color:inherit}
-.rib .top{background:var(--rib-surface);border:1px solid var(--rib-line);border-radius:14px;box-shadow:var(--rib-shadow);display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap;margin-bottom:14px}
-.rib .brand{font-weight:700;letter-spacing:.02em}.rib .brand span{color:var(--rib-amber);font-weight:600;margin-left:8px}
-.rib .top .sp{flex:1}
-.rib .pill{font-size:12px;padding:4px 10px;border-radius:99px;background:var(--rib-cream);color:var(--rib-ink)}
-.rib .pill.ok{background:rgba(46,125,79,.12);color:var(--rib-ok)}.rib .pill.warn{background:var(--rib-amber-soft);color:var(--rib-warn)}
-.rib .top input[type=text]{width:150px;padding:5px 9px}
-.rib .top label{font-size:12.5px;font-weight:600;color:var(--rib-muted)}
 .rib .btn{border:1px solid var(--rib-line);background:var(--rib-surface);border-radius:9px;padding:7px 13px;cursor:pointer;white-space:nowrap}
 .rib .btn:hover{border-color:var(--rib-navy2)}
 .rib .btn.pri{background:var(--rib-navy);border-color:var(--rib-navy);color:#fff}
@@ -28,18 +21,11 @@
 .rib .btn.ghost{background:transparent;border-color:rgba(255,255,255,.35);color:#fff}
 .rib .btn.sm{padding:4px 9px;font-size:12px}
 .rib .btn:disabled{opacity:.5;cursor:not-allowed}
-.rib .tabs{display:flex;gap:6px;padding:0;margin:0 0 16px;background:transparent;flex-wrap:wrap}
-.rib .tab{background:var(--rib-surface);border:1px solid var(--rib-line);color:var(--rib-muted);padding:8px 16px;cursor:pointer;border-radius:999px;font-weight:600}
-.rib .tab.on{color:#fff;background:var(--rib-navy);border-color:var(--rib-navy);box-shadow:inset 0 -3px 0 var(--rib-amber)}
-.rib .tab .n{font-size:11px;background:var(--rib-cream);color:var(--rib-ink);border-radius:99px;padding:1px 7px;margin-left:6px}.rib .tab.on .n{background:var(--rib-amber);color:#1A2330}
 .rib .rib-main{padding:0 0 60px}
 .rib .banner{background:var(--rib-amber-soft);border:1px solid var(--rib-amber);border-radius:12px;padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .rib .card{background:var(--rib-surface);border:1px solid var(--rib-line);border-radius:14px;padding:16px 18px;box-shadow:var(--rib-shadow);margin-bottom:16px}
 .rib .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--rib-muted);margin:0 0 12px;font-weight:700}
 .rib .card h2 b{color:var(--rib-amber);margin-right:6px}
-.rib .seg{display:flex;gap:8px;flex-wrap:wrap}
-.rib .seg button{border:1px solid var(--rib-line);background:var(--rib-cream);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:600}
-.rib .seg button.on{background:var(--rib-navy);border-color:var(--rib-navy);color:#fff}
 :root[data-theme="dark"] .rib .seg button.on{background:var(--rib-navy2)}
 .rib .drop{display:block;border:2px dashed var(--rib-line);border-radius:12px;padding:22px;text-align:center;cursor:pointer;color:var(--rib-muted);margin-top:12px}
 .rib .drop.over{border-color:var(--rib-amber);background:var(--rib-amber-soft)}
@@ -108,7 +94,7 @@
 .rib .hide{display:none!important}
 .rib #viewer{border:0;background:transparent;width:auto;max-width:96vw}.rib #viewer img{max-width:94vw;max-height:90vh;display:block;border-radius:8px}
 @media print{
-  .rib .top,.rib .tabs,.rib .no-print,.rib #tab-new,.rib #tab-tracker,.rib .banner{display:none!important}
+  .rib .flow,.rib .store-line,.rib .no-print,.rib #tab-new,.rib #tab-tracker,.rib .banner{display:none!important}
   .rib,.rib{background:#fff;color:#000}
   .rib .rib-main{padding:0;max-width:none}
   .rib .card{box-shadow:none;border:0;padding:0}
@@ -116,6 +102,67 @@
   .rib .print-head{display:block!important}
 }
 .rib .print-head{display:none;margin-bottom:12px}
+
+/* ---- streamlined flow (2026-10-09) ---- */
+.rib .flow{display:flex;align-items:stretch;gap:8px;margin:0 0 8px;flex-wrap:wrap}
+.rib .flow-step{flex:1 1 220px;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;background:var(--rib-surface);border:1px solid var(--rib-line);border-radius:14px;padding:12px 16px;box-shadow:var(--rib-shadow);color:var(--rib-ink);transition:border-color .15s,background .15s}
+.rib .flow-step:hover{border-color:var(--rib-navy2)}
+.rib .flow-step.on{background:var(--rib-navy);border-color:var(--rib-navy);color:#fff;box-shadow:inset 0 -4px 0 var(--rib-amber)}
+.rib .fs-num{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--rib-cream);color:var(--rib-ink);font-weight:800;font-size:16px;border:2px solid var(--rib-amber)}
+.rib .flow-step.on .fs-num{background:var(--rib-amber);color:#1A2330}
+.rib .fs-txt{display:flex;flex-direction:column;line-height:1.3;flex:1}
+.rib .fs-txt b{font-size:15px}
+.rib .fs-txt small{font-size:12.5px;color:var(--rib-muted)}
+.rib .flow-step.on .fs-txt small{color:#C9D4E2}
+.rib .flow-step .n{flex:none;font-size:12px;font-weight:700;background:var(--rib-cream);color:var(--rib-ink);border-radius:99px;padding:2px 9px}
+.rib .flow-step.on .n{background:var(--rib-amber);color:#1A2330}
+.rib .flow-arrow{align-self:center;font-size:26px;color:var(--rib-amber);font-weight:700}
+@media (max-width:900px){.rib .flow-arrow{display:none}}
+.rib .store-line{font-size:12.5px;color:var(--rib-muted);margin:0 0 16px 4px}
+.rib .store-line .ok{color:var(--rib-ok)}.rib .store-line .warn{color:var(--rib-warn);font-weight:600}
+.rib .lnk{background:none;border:0;padding:0;color:var(--rib-info);text-decoration:underline;cursor:pointer;font-size:13px}
+.rib .lnk.danger{color:var(--rib-err)}
+.rib .step-card h2{display:flex;align-items:center;gap:10px;font-size:15px;text-transform:none;letter-spacing:0;color:var(--rib-ink)}
+.rib .step-card h2 b{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--rib-navy);color:#fff;margin:0;font-size:14px}
+.rib .who{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.rib .who select{width:auto;min-width:260px;font-size:16px;font-weight:600;padding:10px 12px;border:2px solid var(--rib-amber);border-radius:10px;background:var(--rib-surface)}
+.rib .who select.need{background:var(--rib-amber-soft)}
+.rib .who input{width:240px;font-size:15px;padding:9px 12px}
+.rib .who-sm{margin-left:auto}.rib .who-sm select{min-width:180px;font-size:14px;padding:6px 10px}.rib .who-sm input{width:180px;font-size:14px;padding:6px 10px}
+.rib .who-lbl{font-size:13px;font-weight:700;color:var(--rib-muted)}
+.rib .choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.rib .choices{grid-template-columns:1fr}}
+.rib .choices button{display:flex;flex-direction:column;gap:3px;text-align:left;cursor:pointer;background:var(--rib-cream);border:2px solid var(--rib-line);border-radius:12px;padding:12px 14px;color:var(--rib-ink)}
+.rib .choices button b{font-size:15px}.rib .choices button span{font-size:12.5px;color:var(--rib-muted)}
+.rib .choices button.on{border-color:var(--rib-amber);background:var(--rib-amber-soft)}
+.rib .pv-font{font-weight:400;text-transform:none;letter-spacing:0;font-size:11.5px}
+.rib .do-list{list-style:none;counter-reset:d;padding:0;margin:14px 0 0;border-top:1px solid var(--rib-line)}
+.rib .do-list li{counter-increment:d;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--rib-line);font-size:13px;color:var(--rib-muted)}
+.rib .do-list li::before{content:counter(d);display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--rib-cream);border:1px solid var(--rib-line);font-weight:700;color:var(--rib-ink);font-size:12px}
+.rib .do-list .btn{min-width:150px;justify-content:center}
+.rib .do-list .btn:not(.pri):not(.amb){color:var(--rib-ink)}
+.rib .saved{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(46,125,79,.1);border:1px solid var(--rib-ok);font-size:13.5px}
+.rib .trk-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.rib .trk-head input[type=search]{width:220px}
+.rib .trk-card{border:1px solid var(--rib-line);border-radius:12px;padding:14px 16px;margin-top:12px;background:var(--rib-surface)}
+.rib .trk-card h3{font-size:15.5px;margin:6px 0 10px;color:var(--rib-ink)}
+.rib .trk-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rib .prog{list-style:none;display:flex;margin:0 0 8px;padding:0}
+.rib .prog li{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--rib-muted);text-align:center}
+.rib .prog li::before{content:'';position:absolute;top:8px;left:-50%;width:100%;height:3px;background:var(--rib-line);z-index:0}
+.rib .prog li:first-child::before{display:none}
+.rib .prog li.done::before,.rib .prog li.cur::before{background:var(--rib-ok)}
+.rib .prog .dot{position:relative;z-index:1;width:18px;height:18px;border-radius:50%;background:var(--rib-surface);border:3px solid var(--rib-line)}
+.rib .prog li.done .dot{background:var(--rib-ok);border-color:var(--rib-ok)}
+.rib .prog li.cur .dot{background:var(--rib-amber);border-color:var(--rib-amber);box-shadow:0 0 0 4px var(--rib-amber-soft)}
+.rib .prog li.cur .lbl{color:var(--rib-ink);font-weight:700}
+.rib .trk-acts{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.rib .trk-acts .btn.pri{font-weight:600}
+.rib .live{color:var(--rib-ok);font-weight:700;font-size:13.5px}
+.rib .filters{grid-template-columns:2fr 1.4fr 1fr 1fr auto}
+.rib details.backup summary{cursor:pointer;font-weight:700;color:var(--rib-muted)}
+.rib details.backup[open] summary{margin-bottom:8px}
+@media (max-width:900px){.rib .filters{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -123,126 +170,131 @@
 <main id="main">
   <header class="page-head no-print" data-scene="calm"><div class="wrap">
     <nav class="crumbs" aria-label="You are here"><a href="index.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><a href="modules.html">Product Management</a><span aria-hidden="true">›</span><a href="modules.html#rib">RIB</a><span aria-hidden="true">›</span><b>RIB Advisory Generator</b></nav>
-    <div class="page-title"><div><h1>RIB Advisory Generator</h1><p class="lede">Turn an advisory email into the RIB Inbox subject and body, track it from UAT to Prod, and keep the compilation of everything posted.</p></div></div>
+    <div class="page-title"><div><h1>RIB Advisory Generator</h1><p class="lede">Turn an advisory email into ready-to-paste RIB Inbox text, track it until it is live, and keep a record of everything posted.</p></div></div>
   </div></header>
 <div class="wrap rib" data-scene="sky">
-<div class="top no-print">
-  <span id="storePill" class="pill">Storage: …</span>
-  <button id="btnFolder" class="btn sm">Choose portal folder</button>
-  <span class="sp"></span>
-  <label for="preparedBy">Prepared by</label>
-  <input id="preparedBy" type="text" list="people" placeholder="Your name">
-  <datalist id="people"><option value="Fons"><option value="Nicole"></datalist>
-</div>
-<nav class="tabs no-print">
-  <button class="tab on" data-tab="new">New advisory</button>
-  <button class="tab" data-tab="tracker">Tracker <span class="n" id="nTracker">0</span></button>
-  <button class="tab" data-tab="compilation">Compilation <span class="n" id="nComp">0</span></button>
+<nav class="flow no-print" aria-label="Steps">
+  <button class="flow-step on" data-tab="new"><span class="fs-num">1</span><span class="fs-txt"><b>Write the advisory</b><small>From the email to ready-to-paste text</small></span></button>
+  <span class="flow-arrow" aria-hidden="true">›</span>
+  <button class="flow-step" data-tab="tracker"><span class="fs-num">2</span><span class="fs-txt"><b>Track posting</b><small>Mark each step: test site, approval, live site</small></span><span class="n" id="nTracker" title="Still in progress">0</span></button>
+  <span class="flow-arrow" aria-hidden="true">›</span>
+  <button class="flow-step" data-tab="compilation"><span class="fs-num">3</span><span class="fs-txt"><b>Compilation</b><small>Everything posted on the live site</small></span><span class="n" id="nComp" title="Posted on Prod">0</span></button>
 </nav>
+<div class="store-line no-print"><span id="storePill">…</span> <button id="btnFolder" class="lnk">Choose portal folder</button></div>
+<input type="hidden" id="preparedBy">
 
 <div class="rib-main">
   <div id="banner" class="banner hide"></div>
 
-  <!-- NEW ADVISORY -->
+  <!-- 1. WRITE THE ADVISORY -->
   <section id="tab-new">
-    <div class="card">
-      <h2><b>1</b>How do you want to enter the details?</h2>
-      <div class="seg" id="methodSeg">
-        <button data-m="file" class="on">Upload email file (.eml / .msg)</button>
-        <button data-m="paste">Paste email text</button>
-        <button data-m="form">Fill in the form</button>
+    <div class="card step-card">
+      <h2><b>1</b>Who is preparing this advisory?</h2>
+      <div class="who" data-who></div>
+      <div class="note">Your name is saved with the advisory and with every status update. This PC remembers it.</div>
+    </div>
+
+    <div class="card step-card">
+      <h2><b>2</b>Where is the advisory coming from?</h2>
+      <div class="choices" id="methodSeg">
+        <button data-m="file" class="on"><b>Email file</b><span>I saved the email as a file (.eml or .msg)</span></button>
+        <button data-m="paste"><b>Paste the email</b><span>I'll copy the email text and paste it here</span></button>
+        <button data-m="form"><b>Type it in myself</b><span>No email; I'll fill in the details</span></button>
       </div>
       <div id="m-file">
         <label class="drop" id="drop">
           <input type="file" id="emailFile" accept=".eml,.msg,message/rfc822,application/vnd.ms-outlook">
-          <strong>Drop the email here or click to choose</strong><br>
-          <span class="note">Outlook on the web: open the email › ⋯ › Download (.eml). Outlook desktop: drag the email to a folder (.msg).</span>
+          <strong>Drop the email file here, or click to choose it</strong><br>
+          <span class="note">Outlook on the web: open the email › ⋯ › Download. Outlook on the desktop: drag the email onto your desktop or a folder.</span>
         </label>
       </div>
       <div id="m-paste" class="hide mt">
-        <textarea id="pasteText" placeholder="Paste the whole email here, including the subject line if you can."></textarea>
-        <div class="btns"><button class="btn pri" id="btnReadPaste">Read text</button></div>
+        <textarea id="pasteText" placeholder="Paste the whole email here (include the subject line if you can)."></textarea>
+        <div class="btns"><button class="btn pri" id="btnReadPaste">Read the text</button></div>
       </div>
-      <div id="m-form" class="hide note">Pick a category below and fill in the details yourself.</div>
+      <div id="m-form" class="hide note mt">Choose the kind of advisory below, then fill in the details.</div>
       <div id="emailBox" class="email hide"></div>
     </div>
 
-    <div class="card">
-      <h2><b>2</b>Category</h2>
+    <div class="card step-card">
+      <h2><b>3</b>What kind of advisory is it?</h2>
       <div class="chips" id="catChips"></div>
       <div class="note" id="catNote"></div>
     </div>
 
     <div class="grid">
-      <div class="card">
-        <h2><b>3</b>Details</h2>
-        <div class="field"><label for="postDate" id="postDateLabel">Posting date (Prod)</label><input type="date" id="postDate"><div class="hint">The date the advisory goes live on Prod. Change it if posting slips.</div></div>
+      <div class="card step-card">
+        <h2><b>4</b>Check the details</h2>
+        <div class="field"><label for="postDate" id="postDateLabel">Posting date (Prod)</label><input type="date" id="postDate"><div class="hint">The day it should go live on the RIB Inbox. Change it if posting moves.</div></div>
         <div id="formFields"></div>
       </div>
-      <div class="card sticky">
-        <h2>Preview <span style="text-transform:none;letter-spacing:0;font-weight:400">· Trebuchet MS, size 3</span></h2>
-        <div class="pv-label">Subject <button class="btn sm" id="cpSubj">Copy subject</button></div>
+      <div class="card step-card sticky">
+        <h2><b>5</b>Preview, copy and save</h2>
+        <div class="pv-label">Subject</div>
         <div class="paper subj" id="pvSubj"></div>
-        <div class="pv-label mt">Body</div>
+        <div class="pv-label mt">Body <span class="pv-font">Trebuchet MS, size 3</span></div>
         <div class="paper" id="pvBody"></div>
-        <div class="btns">
-          <button class="btn amb" id="cpRich">Copy body (formatted)</button>
-          <button class="btn" id="cpPlain">Copy body (plain text)</button>
-        </div>
+        <div class="pv-label mt">Before you copy</div>
         <ul class="checks" id="checks"></ul>
-        <div class="btns" style="border-top:1px solid var(--rib-line);padding-top:12px;margin-top:12px">
-          <button class="btn pri" id="btnSave">Save to tracker</button>
-          <button class="btn" id="btnNew">Start a new advisory</button>
-          <span class="note" id="editNote"></span>
+        <ol class="do-list">
+          <li><button class="btn" id="cpSubj">Copy subject</button><span>Paste it into the RIB Inbox subject.</span></li>
+          <li><button class="btn amb" id="cpRich">Copy body</button><span>Paste it into the message box. <button class="lnk" id="cpPlain" title="Copy without bold and font">Copy as plain text</button></span></li>
+          <li><button class="btn pri" id="btnSave">Save to tracker</button><span><span class="note" id="editNote"></span> <button class="lnk hide" id="btnCancelEdit">Start a new advisory instead</button></span></li>
+        </ol>
+        <div class="saved hide" id="savedPanel">
+          <b>Saved.</b> Next: post it on UAT (the test site), then go to <b>2 Track posting</b> and click <i>I've posted it on UAT</i>.
+          <div class="btns"><button class="btn pri" id="goTrack">Go to Track posting</button><button class="btn" id="btnNew">Start another advisory</button></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- TRACKER -->
+  <!-- 2. TRACK POSTING -->
   <section id="tab-tracker" class="hide">
     <div class="card">
-      <h2>Advisories in progress and posted</h2>
-      <div class="row no-print" style="margin-bottom:12px;max-width:520px">
-        <select id="trkStatus"><option value="">All statuses</option></select>
-        <input type="search" id="trkSearch" placeholder="Search subject">
+      <div class="trk-head">
+        <div class="chips" id="trkChips"></div>
+        <input type="search" id="trkSearch" placeholder="Search by subject">
+        <div class="who who-sm"><span class="who-lbl">You are</span><span data-who></span></div>
       </div>
+      <p class="note">Each advisory goes through four steps: <b>Drafted</b> › <b>Posted on UAT</b> (test site) › <b>For Ms. Rocky’s approval</b> › <b>Posted on Prod</b> (live site). When you finish a step, click the blue button on its card.</p>
       <div id="trkTable"></div>
     </div>
   </section>
 
-  <!-- COMPILATION -->
+  <!-- 3. COMPILATION -->
   <section id="tab-compilation" class="hide">
     <div class="card no-print">
-      <h2>Filter</h2>
-      <div class="chips" id="compCats"></div>
-      <div class="filters mt">
-        <div><label class="note">Keyword</label><input type="search" id="compKw" placeholder="Search subject and text"></div>
-        <div><label class="note">From</label><input type="date" id="compFrom"></div>
-        <div><label class="note">To</label><input type="date" id="compTo"></div>
+      <div class="filters">
+        <div><label class="note" for="compKw">Search</label><input type="search" id="compKw" placeholder="Words in the subject or text"></div>
+        <div><label class="note" for="compCat">Kind of advisory</label><select id="compCat"></select></div>
+        <div><label class="note" for="compFrom">From</label><input type="date" id="compFrom"></div>
+        <div><label class="note" for="compTo">To</label><input type="date" id="compTo"></div>
         <button class="btn" id="compClear">Clear</button>
       </div>
       <div class="btns">
-        <button class="btn pri" id="expWord">Export to Word</button>
-        <button class="btn" id="expPdf">Print / save as PDF</button>
-        <span class="sp"></span>
-        <button class="btn" id="expBackup">Export backup</button>
-        <label class="btn">Import backup<input type="file" id="impBackup" accept=".json" class="hide"></label>
+        <button class="btn pri" id="expWord">Download Word file</button>
+        <button class="btn" id="expPdf">Print / Save as PDF</button>
+        <span class="note" id="compCount"></span>
       </div>
     </div>
     <div class="card">
       <div class="print-head"><strong>RIB Inbox Advisories</strong><div id="printSub"></div></div>
-      <div class="note no-print" id="compCount"></div>
       <div id="compList"></div>
     </div>
+    <details class="card backup no-print">
+      <summary>Backup and restore</summary>
+      <p class="note">Save a backup file to keep a copy of every advisory and screenshot, or to move them to another PC. Use <b>Restore</b> once for the starter file. Restoring never makes duplicates.</p>
+      <div class="btns"><button class="btn" id="expBackup">Save a backup file</button><label class="btn">Restore from a backup file<input type="file" id="impBackup" accept=".json" class="hide"></label></div>
+    </details>
   </section>
 </div>
 
 <dialog id="prodDlg">
-  <header>Posted on Prod</header>
+  <header>Posted on Prod (live site): add the date and a screenshot</header>
   <div class="body">
-    <div class="field"><label for="prodDate">Prod posting date</label><input type="date" id="prodDate"></div>
-    <div class="field"><label>Prod screenshot(s)</label>
+    <div class="field"><label for="prodDate">Date it went live</label><input type="date" id="prodDate"></div>
+    <div class="field"><label>Screenshot of the live post</label>
       <div class="paste" id="pasteZone" tabindex="0">Click here and press Ctrl+V to paste a screenshot, or <label style="text-decoration:underline;cursor:pointer">choose image files<input type="file" id="shotFiles" accept="image/*" multiple class="hide"></label></div>
       <div class="thumbs" id="shotThumbs"></div>
     </div>
@@ -303,7 +355,7 @@
   })();
 
   var BrowserStore = {
-    mode: 'browser', label: 'Browser storage (this PC only)',
+    mode: 'browser', label: 'Saved in this browser only (this PC)',
     list: function () { return IDB.all('entries'); },
     save: function (e) { return IDB.put('entries', e); },
     remove: function (e) { return Promise.all([IDB.del('entries', e.id)].concat((e.screenshots || []).map(function (n) { return IDB.del('blobs', 'shot/' + n); }))); },
@@ -316,7 +368,7 @@
     base = root.getDirectoryHandle('RIB Advisories', { create: true });
     async function write(d, name, data) { var fh = await (await dir(d)).getFileHandle(name, { create: true }); var w = await fh.createWritable(); await w.write(data); await w.close(); }
     return {
-      mode: 'folder', root: root, label: 'Portal folder: ' + root.name + ' › RIB Advisories',
+      mode: 'folder', root: root, label: 'Saved in your portal folder: ' + root.name + ' › RIB Advisories',
       list: async function () { var out = [], d = await dir('entries'); for await (var pair of d.entries()) { if (/\.json$/.test(pair[0])) { try { out.push(JSON.parse(await (await pair[1].getFile()).text())); } catch (e) { console.warn('Skipped', pair[0], e); } } } return out; },
       save: function (e) { return write('entries', e.id + '.json', JSON.stringify(e, null, 2)); },
       remove: async function (e) { await (await dir('entries')).removeEntry(e.id + '.json').catch(function () {}); var sd = await dir('screenshots'); for (var n of (e.screenshots || [])) await sd.removeEntry(n).catch(function () {}); },
@@ -332,14 +384,14 @@
     var p = $('storePill'), b = $('btnFolder'), ban = $('banner');
     ban.classList.add('hide');
     if (pending) {
-      p.className = 'pill warn'; p.textContent = 'Portal folder needs permission'; b.textContent = 'Allow folder';
+      p.className = 'warn'; p.textContent = 'Your portal folder needs permission.'; b.textContent = 'Allow folder';
       ban.innerHTML = ''; ban.appendChild(h('span', { text: 'Your portal folder needs permission again before the tracker and compilation can load.' }));
       ban.appendChild(h('button', { class: 'btn pri sm', text: 'Allow folder', onclick: reconnect })); ban.classList.remove('hide');
       return;
     }
-    p.className = 'pill ' + (S.store && S.store.mode === 'folder' ? 'ok' : 'warn');
+    p.className = S.store && S.store.mode === 'folder' ? 'ok' : 'warn';
     p.textContent = S.store ? S.store.label : '—';
-    b.textContent = S.store && S.store.mode === 'folder' ? 'Change portal folder' : 'Choose portal folder';
+    b.textContent = S.store && S.store.mode === 'folder' ? 'Change' : 'Choose a portal folder to keep them safely';
     b.title = 'Advisories are kept in the RIB Advisories folder inside your portal folder.';
     b.classList.toggle('hide', !Portal.files.supported);
   }
@@ -490,6 +542,35 @@
     return h('div', null, [box, h('div', { class: 'mt' }, [other])]);
   }
 
+  // ---------------------------------------------------------------- who is preparing / updating (one value, shown in step 1 and in the tracker)
+  var PEOPLE = ['Fons', 'Nicole'];
+  function who() { return $('preparedBy').value.trim(); }
+  function setWho(v) { $('preparedBy').value = v; ls('rib.preparedBy', v); paintWho(); paintPreview(); }
+  function paintWho() {
+    var v = who(), known = PEOPLE.indexOf(v) >= 0, oth = S.whoOther || (v && !known);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-who]'), function (box) {
+      box.innerHTML = '';
+      var sel = h('select', { 'aria-label': 'Prepared by', class: v ? '' : 'need' });
+      [['', 'Choose your name…']].concat(PEOPLE.map(function (n) { return [n, n]; }), [['__other', 'Someone else…']]).forEach(function (o) {
+        var op = h('option', { value: o[0], text: o[1] }); if (oth ? o[0] === '__other' : (known ? o[0] === v : !o[0])) op.selected = true; sel.appendChild(op);
+      });
+      var other = h('input', { type: 'text', placeholder: 'Type your name, then press Enter', class: oth ? '' : 'hide' }); other.value = v && !known ? v : '';
+      sel.addEventListener('change', function () {
+        S.whoOther = sel.value === '__other';
+        setWho(S.whoOther && known ? '' : (S.whoOther ? v : sel.value));
+        if (S.whoOther) { var o = box.querySelector('input'); if (o) o.focus(); }
+      });
+      other.addEventListener('change', function () { setWho(other.value.trim()); });
+      box.appendChild(sel); box.appendChild(other);
+    });
+  }
+  function needWho() {
+    if (who()) return false;
+    toast('First choose who you are (“You are” / Step 1).');
+    var s = document.querySelector('#tab-' + (S.tab || 'new') + ' [data-who] select') || document.querySelector('[data-who] select'); if (s) s.focus();
+    return true;
+  }
+
   // ---------------------------------------------------------------- preview + checks
   var OUT = null;
   function paintPreview() {
@@ -501,9 +582,10 @@
     if (!list.length) ul.appendChild(h('li', { class: 'ok', text: 'No issues found. Still read it once before posting.' }));
     list.forEach(function (c) { ul.appendChild(h('li', { class: c[0], text: c[1] })); });
     var blocked = list.some(function (c) { return c[0] === 'error'; });
-    $('btnSave').disabled = blocked || !S.store; $('cpRich').disabled = $('cpPlain').disabled = $('cpSubj').disabled = !OUT.subject && !OUT.plain;
+    $('btnSave').disabled = blocked || !S.store || !who(); $('cpRich').disabled = $('cpPlain').disabled = $('cpSubj').disabled = !OUT.subject && !OUT.plain;
     $('btnSave').textContent = S.editId ? 'Update in tracker' : 'Save to tracker';
-    $('editNote').textContent = S.editId ? 'Editing a saved advisory' : (!S.store ? 'Connect the folder to save' : '');
+    $('editNote').textContent = !who() ? 'Choose who is preparing it (Step 1) to save.' : blocked ? 'Fix the red item above to save.' : S.editId ? 'You are editing a saved advisory.' : (!S.store ? 'Waiting for storage…' : '');
+    $('btnCancelEdit').classList.toggle('hide', !S.editId);
   }
   async function copyRich(html, plain) {
     try { await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([plain], { type: 'text/plain' }) })]); return true; } catch (e) {}
@@ -519,7 +601,8 @@
   // ---------------------------------------------------------------- save / tracker
   async function saveCurrent() {
     if (!S.store) return;
-    var by = $('preparedBy').value.trim(), now = new Date().toISOString(), e;
+    if (needWho()) return;
+    var by = who(), now = new Date().toISOString(), e;
     if (S.editId) {
       e = S.entries.filter(function (x) { return x.id === S.editId; })[0];
       e.history.push({ status: e.status, at: now, by: by, note: 'Edited' });
@@ -534,56 +617,75 @@
     if (S.cat === 'bsp-cpr') e.weekOf = S.f.weekOf; else delete e.weekOf;
     if (e.status === 'prod') e.prodDate = e.prodDate || S.postDate;
     await S.store.save(e);
-    S.editId = e.id; paintAll(); paintPreview(); toast('Saved to tracker');
+    var wasNew = !S.editId;
+    S.editId = e.id; paintAll(); paintPreview(); toast(wasNew ? 'Saved to tracker' : 'Changes saved');
+    $('savedPanel').classList.remove('hide'); $('savedPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   function openEntry(e) {
     S.editId = e.id; S.cat = e.category; S.f = JSON.parse(JSON.stringify(e.fields || R.defaults(e.category))); S.postDate = e.prodDate || e.postDate || U.today();
     S.email = null; S.sourceFile = null; S.catGuessed = false; $('postDate').value = S.postDate;
+    $('savedPanel').classList.add('hide');
     setMethod('form'); paintCats(); paintForm(); paintPreview(); switchTab('new'); scrollTo(0, 0);
   }
   function resetNew() {
     S.editId = null; S.email = null; S.sourceFile = null; S.cat = 'system-maintenance'; S.f = R.defaults(S.cat); S.postDate = U.today(); S.catGuessed = false;
     $('postDate').value = S.postDate; $('pasteText').value = ''; $('emailFile').value = '';
+    $('savedPanel').classList.add('hide');
     setMethod('file'); paintEmail(); paintCats(); paintForm(); paintPreview();
   }
   async function advance(e) {
     var i = R.config.statuses.map(function (s) { return s.k; }).indexOf(e.status), next = R.config.statuses[i + 1];
-    if (!next) return;
+    if (!next || needWho()) return;
     if (next.k === 'prod') return openProd(e);
-    e.status = next.k; e.history.push({ status: next.k, at: new Date().toISOString(), by: $('preparedBy').value.trim() }); e.updatedAt = new Date().toISOString();
-    await S.store.save(e); paintAll();
+    e.status = next.k; e.history.push({ status: next.k, at: new Date().toISOString(), by: who() }); e.updatedAt = new Date().toISOString();
+    await S.store.save(e); paintAll(); toast('Updated: ' + stLabel(next.k));
+  }
+  async function undoStep(e) {
+    var keys = R.config.statuses.map(function (s) { return s.k; }), i = keys.indexOf(e.status);
+    if (i <= 0 || needWho()) return;
+    if (!confirm('Move “' + (e.subject || 'this advisory') + '” back to “' + stLabel(keys[i - 1]) + '”?')) return;
+    var now = new Date().toISOString();
+    e.status = keys[i - 1]; e.history.push({ status: e.status, at: now, by: who(), note: 'Undone' }); e.updatedAt = now;
+    await S.store.save(e); paintAll(); toast('Moved back to: ' + stLabel(e.status));
   }
   async function removeEntry(e) {
     if (!confirm('Delete "' + (e.subject || 'this advisory') + '"? This removes it from the tracker and compilation.')) return;
     await S.store.remove(e); S.entries = S.entries.filter(function (x) { return x !== e; }); if (S.editId === e.id) S.editId = null; paintAll(); paintPreview();
   }
   function paintTracker() {
-    var box = $('trkTable'); box.innerHTML = '';
-    if (!S.store) { box.appendChild(h('div', { class: 'empty-state', text: 'Reconnect the folder to see saved advisories.' })); return; }
-    var st = $('trkStatus').value, q = $('trkSearch').value.trim().toLowerCase();
-    var rows = S.entries.filter(function (e) { return (!st || e.status === st) && (!q || (e.subject || '').toLowerCase().indexOf(q) >= 0); })
+    var box = $('trkTable'), chips = $('trkChips'); box.innerHTML = ''; chips.innerHTML = '';
+    var open = S.entries.filter(function (e) { return e.status !== 'prod'; }).length, live = S.entries.length - open;
+    [['open', 'Still in progress', open], ['prod', 'Posted on Prod', live], ['all', 'All', S.entries.length]].forEach(function (c) {
+      chips.appendChild(h('button', { class: 'chip' + (S.trk === c[0] ? ' on' : ''), text: c[1] + ' (' + c[2] + ')', onclick: function () { S.trk = c[0]; paintTracker(); } }));
+    });
+    if (!S.store) { box.appendChild(h('div', { class: 'empty-state', text: 'Allow your portal folder (above) to see saved advisories.' })); return; }
+    var q = $('trkSearch').value.trim().toLowerCase(), keys = R.config.statuses.map(function (x) { return x.k; });
+    var rows = S.entries.filter(function (e) { return (S.trk === 'all' || (S.trk === 'prod') === (e.status === 'prod')) && (!q || (e.subject || '').toLowerCase().indexOf(q) >= 0); })
       .sort(function (a, b) { return (b.prodDate || b.postDate || '').localeCompare(a.prodDate || a.postDate || '') || (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
-    if (!rows.length) { box.appendChild(h('div', { class: 'empty-state', text: 'No advisories yet. Saved drafts appear here.' })); return; }
-    var tb = h('tbody');
+    if (!rows.length) {
+      box.appendChild(h('div', { class: 'empty-state', text: S.trk === 'open' ? 'Nothing in progress. Advisories you save in Step 1 appear here.' : 'No advisories here yet.' }));
+      return;
+    }
     rows.forEach(function (e) {
-      var nx = R.config.statuses.filter(function (s) { return s.k === e.status; })[0];
-      var acts = h('div', { class: 'btns', style: 'margin:0' }, [
-        nx && nx.next ? h('button', { class: 'btn sm pri', text: nx.next, onclick: function () { advance(e); } }) : null,
-        e.status === 'prod' ? h('button', { class: 'btn sm', text: 'Screenshots', onclick: function () { openProd(e); } }) : null,
-        h('button', { class: 'btn sm', text: 'Open', onclick: function () { openEntry(e); } }),
-        h('button', { class: 'btn sm', text: 'Delete', onclick: function () { removeEntry(e); } })
+      var i = keys.indexOf(e.status), nx = R.config.statuses[i], last = e.history[e.history.length - 1] || {};
+      var prog = h('ol', { class: 'prog' }, R.config.statuses.map(function (st, j) {
+        return h('li', { class: j < i ? 'done' : j === i ? 'cur' : '' }, [h('span', { class: 'dot' }), h('span', { class: 'lbl', text: st.short || st.label })]);
+      }));
+      var acts = h('div', { class: 'trk-acts' }, [
+        nx && nx.next ? h('button', { class: 'btn pri', text: nx.next, onclick: function () { advance(e); } }) : h('span', { class: 'live', text: '✓ Live since ' + fmtDate(e.prodDate) }),
+        e.status === 'prod' ? h('button', { class: 'lnk', text: 'Screenshots / live date', onclick: function () { openProd(e); } }) : null,
+        h('button', { class: 'lnk', text: 'Edit text', onclick: function () { openEntry(e); } }),
+        i > 0 ? h('button', { class: 'lnk', text: 'Undo last step', onclick: function () { undoStep(e); } }) : null,
+        h('button', { class: 'lnk danger', text: 'Delete', onclick: function () { removeEntry(e); } })
       ]);
-      var last = e.history[e.history.length - 1] || {};
-      tb.appendChild(h('tr', null, [
-        h('td', { text: fmtDate(e.prodDate || e.postDate) }),
-        h('td', null, [h('span', { class: 'tag', text: catLabel(e.category) })]),
-        h('td', null, [h('strong', { text: e.subject || '(no subject)' })]),
-        h('td', null, [h('span', { class: 'st ' + e.status, text: stLabel(e.status) }), h('div', { class: 'note', text: (last.by ? last.by + ' · ' : '') + (last.at ? new Date(last.at).toLocaleDateString() : '') })]),
-        h('td', { text: e.preparedBy || '—' }),
-        h('td', null, [acts])
+      box.appendChild(h('article', { class: 'trk-card' }, [
+        h('div', { class: 'trk-top' }, [h('span', { class: 'tag', text: catLabel(e.category) }), h('span', { class: 'note', text: (e.status === 'prod' ? 'Live: ' : 'Planned: ') + fmtDate(e.prodDate || e.postDate) + ' · Prepared by ' + (e.preparedBy || '—') })]),
+        h('h3', { text: e.subject || '(no subject)' }),
+        prog,
+        h('div', { class: 'note', text: 'Last update: ' + stLabel(e.status) + (last.note === 'Undone' ? ' (moved back)' : '') + (last.by ? ' by ' + last.by : '') + (last.at ? ' · ' + new Date(last.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '') }),
+        acts
       ]));
     });
-    box.appendChild(h('table', null, [h('thead', null, [h('tr', null, ['Date (Prod)', 'Category', 'Subject', 'Status', 'Prepared by', ''].map(function (t) { return h('th', { text: t }); }))]), tb]));
   }
 
   // ---------------------------------------------------------------- Prod dialog
@@ -598,7 +700,8 @@
   async function saveProd() {
     var e = dlgEntry; if (!e) return;
     var d = $('prodDate').value; if (!d) { alert('Set the Prod posting date.'); return; }
-    var now = new Date().toISOString(), by = $('preparedBy').value.trim();
+    if (needWho()) return;
+    var now = new Date().toISOString(), by = who();
     for (var b of dlgShots) { var n = e.id + '-' + (e.screenshots.length + 1) + '.' + extOf(b.type); await S.store.putBlob('shot', n, b); e.screenshots.push(n); }
     if (e.status !== 'prod') { e.status = 'prod'; e.history.push({ status: 'prod', at: now, by: by }); }
     e.prodDate = d; e.updatedAt = now;
@@ -625,17 +728,17 @@
     return p.join(' · ');
   }
   function paintComp() {
-    var cb = $('compCats'); cb.innerHTML = '';
-    cb.appendChild(h('button', { class: 'chip' + (!S.filters.cats.length ? ' on' : ''), text: 'All', onclick: function () { S.filters.cats = []; paintComp(); } }));
-    R.categories.forEach(function (c) {
-      var on = S.filters.cats.indexOf(c.k) >= 0;
-      cb.appendChild(h('button', { class: 'chip' + (on ? ' on' : ''), text: c.label, onclick: function () { S.filters.cats = on ? S.filters.cats.filter(function (x) { return x !== c.k; }) : S.filters.cats.concat(c.k); paintComp(); } }));
-    });
+    var cs = $('compCat');
+    if (!cs.options.length) {
+      cs.appendChild(h('option', { value: '', text: 'All kinds' }));
+      R.categories.forEach(function (c) { cs.appendChild(h('option', { value: c.k, text: c.label })); });
+    }
+    cs.value = S.filters.cats[0] || '';
     var rows = compRows(), box = $('compList'); box.innerHTML = '';
-    $('compCount').textContent = rows.length + ' advisor' + (rows.length === 1 ? 'y' : 'ies') + ' · ' + filterSummary();
+    $('compCount').textContent = rows.length + ' advisor' + (rows.length === 1 ? 'y' : 'ies') + ' shown · ' + filterSummary();
     $('printSub').textContent = filterSummary() + ' · ' + rows.length + ' advisories · printed ' + U.long(new Date());
-    if (!S.store) { box.appendChild(h('div', { class: 'empty-state', text: 'Reconnect the folder to see the compilation.' })); return; }
-    if (!rows.length) { box.appendChild(h('div', { class: 'empty-state', text: 'No Prod posts match. Advisories appear here once marked as posted on Prod.' })); return; }
+    if (!S.store) { box.appendChild(h('div', { class: 'empty-state', text: 'Allow your portal folder (above) to see the compilation.' })); return; }
+    if (!rows.length) { box.appendChild(h('div', { class: 'empty-state', text: 'Nothing here yet. An advisory appears here once you mark it “Posted on Prod” in Step 2.' })); return; }
     rows.forEach(function (e) {
       var shots = h('div', { class: 'shots' });
       (e.screenshots || []).forEach(function (n) { shotURL(n).then(function (u) { if (u) shots.appendChild(h('img', { src: u, alt: 'Prod screenshot', onclick: function () { $('viewerImg').src = u; $('viewer').showModal(); } })); }); });
@@ -694,7 +797,8 @@
 
   // ---------------------------------------------------------------- tabs + wiring
   function switchTab(t) {
-    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (b) { b.classList.toggle('on', b.dataset.tab === t); });
+    S.tab = t;
+    Array.prototype.forEach.call(document.querySelectorAll('.flow-step'), function (b) { b.classList.toggle('on', b.dataset.tab === t); b.setAttribute('aria-current', b.dataset.tab === t ? 'step' : 'false'); });
     ['new', 'tracker', 'compilation'].forEach(function (k) { $('tab-' + k).classList.toggle('hide', k !== t); });
     ls('rib.tab', t);
   }
@@ -704,8 +808,8 @@
     paintTracker(); paintComp();
   }
 
-  document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { switchTab(b.dataset.tab); }); });
-  $('methodSeg').addEventListener('click', function (ev) { if (ev.target.dataset.m) setMethod(ev.target.dataset.m); });
+  document.querySelectorAll('.flow-step').forEach(function (b) { b.addEventListener('click', function () { switchTab(b.dataset.tab); scrollTo({ top: 0, behavior: 'smooth' }); }); });
+  $('methodSeg').addEventListener('click', function (ev) { var b = ev.target.closest('[data-m]'); if (b) setMethod(b.dataset.m); });
   $('emailFile').addEventListener('change', function () { if (this.files[0]) readFile(this.files[0]); });
   var drop = $('drop');
   ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (ev) { ev.preventDefault(); drop.classList.add('over'); }); });
@@ -719,9 +823,10 @@
   $('btnSave').addEventListener('click', function () { saveCurrent().catch(function (e) { alert('Save failed: ' + e.message); }); });
   $('btnNew').addEventListener('click', resetNew);
   $('btnFolder').addEventListener('click', function () { Portal.files.status() === 'needs-permission' ? reconnect() : connectFolder(); });
-  $('preparedBy').addEventListener('input', function () { ls('rib.preparedBy', this.value); });
-  R.config.statuses.forEach(function (s) { $('trkStatus').appendChild(h('option', { value: s.k, text: s.label })); });
-  $('trkStatus').addEventListener('change', paintTracker); $('trkSearch').addEventListener('input', paintTracker);
+  $('trkSearch').addEventListener('input', paintTracker);
+  $('goTrack').addEventListener('click', function () { switchTab('tracker'); scrollTo({ top: 0, behavior: 'smooth' }); });
+  $('btnCancelEdit').addEventListener('click', resetNew);
+  $('compCat').addEventListener('change', function () { S.filters.cats = this.value ? [this.value] : []; paintComp(); });
   $('compKw').addEventListener('input', function () { S.filters.kw = this.value.trim(); paintComp(); });
   $('compFrom').addEventListener('input', function () { S.filters.from = this.value; paintComp(); });
   $('compTo').addEventListener('input', function () { S.filters.to = this.value; paintComp(); });
@@ -736,7 +841,7 @@
   $('prodCancel').addEventListener('click', function () { $('prodDlg').close(); });
   $('viewer').addEventListener('click', function () { $('viewer').close(); });
 
-  $('preparedBy').value = ls('rib.preparedBy') || '';
+  $('preparedBy').value = ls('rib.preparedBy') || ''; S.trk = 'open'; paintWho();
   $('postDate').value = S.postDate;
   paintCats(); paintForm(); paintPreview();
   switchTab(ls('rib.tab') || 'new');
