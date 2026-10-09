@@ -84,11 +84,27 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 | 3 | DRB Usage | Excel | Report + charts | **On hold** (2026-10-07): Fons is writing the skill |
 | 4 | DRB Enrollees | Excel | Report + charts | Needs column spec |
 | 5 | DRB Idle Accounts | Excel | Report + charts | Needs column spec |
-| 6 | RIB Advisory Formatter | Pasted advisory text | Clean plain text for the UAT editor, plus a status tracker (received / drafted in UAT / for approval / posted to Prod) | Needs format rules |
+| 6 | RIB Advisory Generator | .eml / .msg email, pasted email text, or manual form | Subject + body (Trebuchet MS, size 3; formatted or plain copy), status tracker, filterable Prod compilation (Word / PDF) | **Built 2026-10-09** (`rib.html` + `skills/rib-advisory.js`), in Product Management › RIB |
 | 7 | Research Library | Past studies + templates | Browse, search, new-study template | — |
 | 8 | Types of Complaints | TBD | Report + charts | **On hold** pending Customer Service |
 
 **Employee Info** page (`knowledge.html`, renamed from Knowledge 2026-10-07; not a skill): searchable **Employee Directory** tab (renamed from Phone Directory 2026-10-07; own search box plus the page-wide one; SBA phone directory .xls: Name/Local/Direct block sheets, Branches sheet, Globe mobile list) and Code of Conduct reader (PDF split into Article/Chapter/Section with page numbers). **These are real internal files: they are loaded on the office PC and cached only in that browser's IndexedDB; never commit them or anything derived from them.** Practice files: `samples/employee-info/` (synthetic). Later sections: org chart, products/fees, P2B billers, templates.
+
+## Module 6: RIB Advisory Generator (built 2026-10-09)
+
+Files: `rib.html` (page and UI), `skills/rib-advisory.js` (templates, builders, checks, email parsing; pure functions on `window.RIB`), `vendor/cfb.min.js` (SheetJS CFB, Apache-2.0, reads Outlook .msg), `samples/rib/` (synthetic emails). It is an interactive tool, so it is a page rather than an `analyze/render` skill; it registers a launcher with `page: 'rib.html'` if `Portal.registerSkill` exists.
+
+- **Users:** Fons now, Ms. Nicole later. "Prepared by" is stored on each advisory.
+- **Workflow:** email → draft → post on UAT → Ms. Rocky's approval → post on Prod. Statuses: Drafted → Posted on UAT → For Ms. Rocky's approval → Posted on Prod (with dates and who did it). The portal never posts.
+- **Input options:** upload `.eml` (Outlook on the web) or `.msg` (Outlook desktop); paste email text; or fill the form. Email reading is rule-based (dates, times, overnight windows, services, standard lines); the user confirms every field.
+- **Categories** (only those with examples in the RIB Inbox / BSP CPR compilation decks): System Maintenance, BSP CPR, Security Advisory, Sterling Bank Online / Product Advisory, Regulatory Advisory, InstaPay/PESONet Unavailability, InstaPay/PESONet Resumption. Wording follows the 2026 posts (older deck examples for the InstaPay/PESONet ones). All wording lives in the `C` config block of the skill file.
+- **Footer (official, version A):** "For inquiries or concerns, you may contact our 24/7 Customer Service Helplines at +632 8721 6000 or +632 8672 6300 or email customer.service@sterlingbankasia.com."
+- **BSP CPR:** BSP sends it weekly; keep or rewrite. Subject "Tips to fight financial fraud", optional opening line, body, standard "Makipag-ugnayan agad…" line, closing hashtag line. "Week of" and release date are tracked metadata.
+- **Output:** subject and body copied separately; body as formatted (`<font face="Trebuchet MS" size="3">`, bold title and date/time phrase) or plain text. The date line is the Prod posting date.
+- **Checks:** weekday vs date, year vs posting year, CPR release date inside its week, repeated words, double spaces, space before punctuation, known typos, footer off, missing fields.
+- **Compilation:** one list of all Prod posts (date, category, text, Prod screenshots; no UAT). Filter by category, date range and keyword. Export the filtered view to Word (MHTML .doc with images) or print to PDF.
+- **Storage:** the portal folder (2026-10-09 integration) → `RIB Advisories/entries/<id>.json`, `screenshots/`, `emails/` (one file per advisory so two users do not overwrite each other). Without folder access it falls back to browser storage, with backup export/import (JSON with embedded images). The compilation starts from posts on or after 2026-09-07 (starter backup kept outside the repo).
+- **In the portal (2026-10-09):** `rib.html` uses the portal shell (top bar, nav, breadcrumbs, Light/Dark, fabs); its CSS is scoped under `.rib` with `--rib-*` variables. Storage uses the portal folder (`Portal.files`, project folder `RIB Advisories`); Word export and backup save to `RIB Advisories\Outputs`. Menu tile via `page: 'rib.html'` (Product Management › RIB).
 
 ## Design
 
@@ -112,7 +128,8 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 
 - [x] Feasibility test passed on the office desktop, Chrome 154 via `file://` (2026-10-05): Excel read, PDF text read, folder connect + write, folder remembered after reopen, Excel/Word/PDF exports. Chrome is the reference browser; Edge not yet tested.
 - [ ] Column layouts for DRB Usage, Enrollees, Idle Accounts (DRB Usage on hold 2026-10-07 while Fons writes its skill)
-- [ ] RIB advisory formatting rules and a before/after example
+- [x] RIB advisory format rules (module 6 above)
+- [ ] Edge test of `rib.html` (clipboard formatting, folder access, .msg reading) on the office desktop
 - [ ] Complaints data format (Customer Service)
 - [ ] SBA-approved interpretation thresholds
 - [x] Milestone 1 portal shell (2026-10-05): menu board, Knowledge tab (empty), core engine, registry + placeholders, demo skill on synthetic data.
@@ -136,3 +153,4 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 - [ ] Office test of QR Ph: open the portal's .docx in Word, Save as PDF, and try the PDF version in Chrome (Calibri, Letter).
 - [x] Portal folder built 2026-10-09: Employee Info, QR Ph and Industry Ranking read their files from one connected folder; outputs saved to each project's own Outputs folder. Tested with a simulated folder (headless Chrome cannot click the native dialog).
 - [ ] Office test of the portal folder: choose Documents\SBA Portal Files, drop in the real files, open each page; check Chrome's "Allow on every visit" keeps access after a restart.
+- [ ] RIB starter backup (2 Prod advisories from Sept 2026): Fons imports `RIB_advisories_starter_from_Sept_7_2026.json` once via Compilation › Import backup into the portal folder. Kept out of the repo.
