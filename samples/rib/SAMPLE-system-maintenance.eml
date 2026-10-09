@@ -1,0 +1,30 @@
+From: "IT Operations (SAMPLE)" <it.ops@example.com>
+To: "Marketing (SAMPLE)" <marketing@example.com>
+Subject: FW: [External] For posting: Scheduled System Maintenance
+Date: Mon, 12 Oct 2026 09:15:00 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1"
+
+--b1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Marketing,
+
+Please post the advisory below in the RIB Inbox.
+
+SYNTHETIC SAMPLE ONLY. There will be a scheduled system maintenance from Oc=
+tober 14 (Wednesday), 11:30 pm to October 15 (Thursday), 3:00 am.
+
+Affected: Sterling Bank Online (Personal and Business), InstaPay, PESONet a=
+nd Visa OTP.
+
+Thank you for your understanding.
+
+Regards,
+IT Ops (sample)
+--b1
+Content-Type: text/html; charset="utf-8"
+
+<p>HTML part (should be ignored when plain text exists)</p>
+--b1--

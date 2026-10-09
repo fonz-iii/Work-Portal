@@ -77,9 +77,24 @@ Portal.registerSkill({
 | 3 | DRB Usage | Excel | Report + charts | Needs column spec |
 | 4 | DRB Enrollees | Excel | Report + charts | Needs column spec |
 | 5 | DRB Idle Accounts | Excel | Report + charts | Needs column spec |
-| 6 | RIB Advisory Formatter | Pasted advisory text | Clean plain text for the UAT editor, plus a status tracker (received / drafted in UAT / for approval / posted to Prod) | Needs format rules |
+| 6 | RIB Advisory Generator | .eml / .msg email, pasted email text, or manual form | Subject + body (Trebuchet MS, size 3; formatted or plain copy), status tracker, filterable Prod compilation (Word / PDF) | **Built 2026-10-09** as standalone page `rib.html` + `skills/rib-advisory.js`; link from the menu board when the shell is in the repo |
 | 7 | Research Library | Past studies + templates | Browse, search, new-study template | — |
 | 8 | Types of Complaints | TBD | Report + charts | **On hold** pending Customer Service |
+
+## Module 6: RIB Advisory Generator (built 2026-10-09)
+
+Files: `rib.html` (page and UI), `skills/rib-advisory.js` (templates, builders, checks, email parsing; pure functions on `window.RIB`), `vendor/cfb.min.js` (SheetJS CFB, Apache-2.0, reads Outlook .msg), `samples/rib/` (synthetic emails). It is an interactive tool, so it is a page rather than an `analyze/render` skill; it registers a launcher with `page: 'rib.html'` if `Portal.registerSkill` exists.
+
+- **Users:** Fons now, Ms. Nicole later. "Prepared by" is stored on each advisory.
+- **Workflow:** email → draft → post on UAT → Ms. Rocky's approval → post on Prod. Statuses: Drafted → Posted on UAT → For Ms. Rocky's approval → Posted on Prod (with dates and who did it). The portal never posts.
+- **Input options:** upload `.eml` (Outlook on the web) or `.msg` (Outlook desktop); paste email text; or fill the form. Email reading is rule-based (dates, times, overnight windows, services, standard lines); the user confirms every field.
+- **Categories** (only those with examples in the RIB Inbox / BSP CPR compilation decks): System Maintenance, BSP CPR, Security Advisory, Sterling Bank Online / Product Advisory, Regulatory Advisory, InstaPay/PESONet Unavailability, InstaPay/PESONet Resumption. Wording follows the 2026 posts (older deck examples for the InstaPay/PESONet ones). All wording lives in the `C` config block of the skill file.
+- **Footer (official, version A):** "For inquiries or concerns, you may contact our 24/7 Customer Service Helplines at +632 8721 6000 or +632 8672 6300 or email customer.service@sterlingbankasia.com."
+- **BSP CPR:** BSP sends it weekly; keep or rewrite. Subject "Tips to fight financial fraud", optional opening line, body, standard "Makipag-ugnayan agad…" line, closing hashtag line. "Week of" and release date are tracked metadata.
+- **Output:** subject and body copied separately; body as formatted (`<font face="Trebuchet MS" size="3">`, bold title and date/time phrase) or plain text. The date line is the Prod posting date.
+- **Checks:** weekday vs date, year vs posting year, CPR release date inside its week, repeated words, double spaces, space before punctuation, known typos, footer off, missing fields.
+- **Compilation:** one list of all Prod posts (date, category, text, Prod screenshots; no UAT). Filter by category, date range and keyword. Export the filtered view to Word (MHTML .doc with images) or print to PDF.
+- **Storage:** connected folder → `RIB Advisories/entries/<id>.json`, `screenshots/`, `emails/` (one file per advisory so two users do not overwrite each other). Without folder access it falls back to browser storage, with backup export/import (JSON with embedded images). The compilation starts from posts on or after 2026-09-07 (starter backup kept outside the repo).
 
 Knowledge tab (separate page, not a skill): directory, org chart, branch list, product/fee summaries, P2B biller list, templates. Source data is Excel/PDF; the portal imports Excel and writes a `data/*.js` file.
 
@@ -103,6 +118,7 @@ Knowledge tab (separate page, not a skill): directory, org chart, branch list, p
 
 - [x] Feasibility test passed on the office desktop, Chrome 154 via `file://` (2026-10-05): Excel read, PDF text read, folder connect + write, folder remembered after reopen, Excel/Word/PDF exports. Chrome is the reference browser; Edge not yet tested.
 - [ ] Column layouts for DRB Usage, Enrollees, Idle Accounts
-- [ ] RIB advisory formatting rules and a before/after example
+- [x] RIB advisory format rules (module 6 above)
+- [ ] Edge test of `rib.html` (clipboard formatting, folder access, .msg reading) on the office desktop
 - [ ] Complaints data format (Customer Service)
 - [ ] SBA-approved interpretation thresholds
