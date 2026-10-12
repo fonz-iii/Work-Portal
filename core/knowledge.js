@@ -1,7 +1,7 @@
-/* core/knowledge.js — Employee Info page (knowledge.html): Employee Directory + Code of Conduct.
+/* core/knowledge.js — Employee Info page (knowledge.html): Employee Directory, Code of Conduct, QR Ph P2B biller list.
    PRIVACY: the real files hold staff names and numbers. They are read in the browser on the office PC
    and kept only in this browser's IndexedDB on that PC. Nothing here is written to the repo or sent anywhere.
-   parseDirectory() and parseCode() are pure functions (no DOM) so they can be tested with sample data. */
+   parseDirectory(), parseCode() and parseBillers() are pure functions (no DOM) so they can be tested with sample data. */
 (function (root) {
   'use strict';
   var P = root.Portal = root.Portal || {};
@@ -222,6 +222,19 @@
     return out;
   };
 
+  /* ---------- QR Ph P2B biller list: the same rows as the published directory (skills/qrph-p2b-directory.js) ---------- */
+  K.parseBillers = function (book, fileName) {
+    var Q = root.__SBA_QRPH;
+    if (!Q) throw new Error('The QR Ph module did not load (skills/qrph-p2b-directory.js).');
+    var cur = Q.readMasterlist(book), res = Q.buildRows({ current: cur, previous: null, asof: Q.parseAsof(cur) }, {}), m = res.meta;
+    var cats = {};
+    res.rows.forEach(function (r) { cats[r.category] = (cats[r.category] || 0) + 1; });
+    return { fileName: fileName || book.name, asOf: m.month + ' ' + m.day + ', ' + m.year, synthetic: cur.synthetic,
+      rows: res.rows.map(function (r, i) { return { no: i + 1, name: r.name, category: r.category, code: r.code, status: r.status }; }),
+      cats: Object.keys(cats).sort().map(function (c) { return [c, cats[c]]; }),
+      counts: { total: res.rows.length, 'new': m['new'].length, updated: m.updated.length } };
+  };
+
   /* ---------- local storage (this PC only) ---------- */
   var DB = 'sba-portal-reference', STORE = 'kv';
   function idb() {
@@ -249,7 +262,13 @@
   };
 
   /* ---------- page ---------- */
-  var esc, icon, state = { tab: 'directory', q: '', dq: '', loc: '', dept: '', vacant: false, dir: null, code: null, saved: { directory: true, code: true }, hit: 0 };
+  var esc, icon, state = { tab: 'directory', q: '', dq: '', loc: '', dept: '', vacant: false, dir: null, code: null, bill: null, bq: '', bcat: '', bnew: false, saved: { directory: true, code: true, billers: true }, hit: 0 };
+  /* the three files this page reads: where they live in state, the portal folder, and the file picker */
+  var KINDS = {
+    directory: { key: 'dir', box: '#k-directory', name: 'Employee Directory', label: 'Employee Directory (phone directory Excel, .xls or .xlsx)', accept: '.xls,.xlsx,.xlsm', icon: 'chat', folder: 'Employee Info', practice: 'samples/employee-info/' },
+    code: { key: 'code', box: '#k-code', name: 'Code of Conduct', label: 'Code of Conduct PDF', accept: '.pdf', icon: 'book', folder: 'Employee Info', practice: 'samples/employee-info/' },
+    billers: { key: 'bill', box: '#k-billers', name: 'QR Ph biller list', label: 'P2B Biller Masterlist (Excel)', accept: '.xlsx,.xls,.xlsm', icon: 'file', folder: 'QR Ph Billers', practice: 'samples/qrph-p2b/' }
+  };
   function $(s, c) { return (c || document).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); }
   function terms(q) { return fold(q).split(/[\s,]+/).filter(Boolean); }
@@ -284,19 +303,18 @@
   }
 
   function loader(kind) {
-    var d = kind === 'directory' ? state.dir : state.code, label = kind === 'directory' ? 'Employee Directory (phone directory Excel, .xls or .xlsx)' : 'Code of Conduct PDF';
-    var accept = kind === 'directory' ? '.xls,.xlsx,.xlsm' : '.pdf';
+    var k = KINDS[kind], d = state[k.key], label = k.label, accept = k.accept;
     var fst = P.files ? P.files.status() : 'unsupported', fname = P.files ? esc(P.files.folderName()) : '';
-    var folderTip = fst === 'connected' ? '<p class="k-folder">' + icon('folder') + 'Or put it in your portal folder: <b>' + fname + ' › Employee Info</b>. It loads by itself next time you open this page. <button class="linkbtn-dark" type="button" data-k-sync>Look now</button></p>'
+    var folderTip = fst === 'connected' ? '<p class="k-folder">' + icon('folder') + 'Or put it in your portal folder: <b>' + fname + ' › ' + k.folder + '</b>. It loads by itself next time you open this page. <button class="linkbtn-dark" type="button" data-k-sync>Look now</button></p>'
       : fst === 'needs-permission' ? '<p class="k-folder">' + icon('folder') + 'Your portal folder <b>' + fname + '</b> needs permission. <button class="linkbtn-dark" type="button" data-folder-allow>Allow folder</button></p>'
-      : fst === 'none' ? '<p class="k-folder">' + icon('folder') + 'Tip: choose your <b>portal folder</b> in the top bar and keep this file in its <b>Employee Info</b> folder; it then loads by itself.</p>' : '';
-    if (!d) return '<div class="card k-empty dropzone" data-drop="' + kind + '">' + icon(kind === 'directory' ? 'chat' : 'book') +
+      : fst === 'none' ? '<p class="k-folder">' + icon('folder') + 'Tip: choose your <b>portal folder</b> in the top bar and keep this file in its <b>' + k.folder + '</b> folder; it then loads by itself.</p>' : '';
+    if (!d) return '<div class="card k-empty dropzone" data-drop="' + kind + '">' + icon(k.icon) +
       '<h2>Load the ' + label + '</h2><p class="muted">Choose the file or drag it here. It is read on this computer and remembered in this browser only. It is never uploaded.</p>' + folderTip +
       '<label class="btn primary">' + icon('folder') + 'Choose file<input type="file" accept="' + accept + '" data-load="' + kind + '" hidden></label>' +
-      '<p class="k-small">Just trying it out? Use the practice file in <code>samples/employee-info/</code>.</p></div>';
+      '<p class="k-small">Just trying it out? Use the practice file in <code>' + k.practice + '</code>.</p></div>';
     var when = d.loadedAt ? new Date(d.loadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
     return '<div class="k-status" data-drop="' + kind + '">' + icon('check') + '<span>' + (d.synthetic ? '<span class="pill pill-on-hold">Practice file (synthetic)</span> ' : '') + '<b>' + esc(d.fileName) + '</b>' +
-      (kind === 'directory' && d.asOf ? ' · as of ' + esc(d.asOf) : '') + (kind === 'code' && d.edition ? ' · ' + esc(d.edition) : '') +
+      (kind !== 'code' && d.asOf ? ' · as of ' + esc(d.asOf) : '') + (kind === 'code' && d.edition ? ' · ' + esc(d.edition) : '') +
       ' · ' + (d.src && d.src.folder ? 'from your portal folder' : 'loaded') + ' ' + esc(when) + ' · ' + (state.saved[kind] ? 'saved on this PC only' : '<b class="k-warn">not saved (browser storage is blocked), load it again next time</b>') + '</span>' +
       '<label class="btn">Replace with newer file<input type="file" accept="' + accept + '" data-load="' + kind + '" hidden></label>' +
       '<button class="btn" type="button" data-remove="' + kind + '">Remove from this PC</button></div>';
@@ -389,6 +407,46 @@
     renderTabs();
   }
 
+  /* --- QR Ph biller list view --- */
+  var STATUS = { 'new': 'New', updated: 'Updated' };
+  function billTerms() { return terms(state.q + ' ' + state.bq); }
+  function billResults() {
+    var ts = billTerms();
+    return state.bill.rows.filter(function (r) {
+      if (state.bcat && r.category !== state.bcat) return false;
+      if (state.bnew && r.status === 'existing') return false;
+      return !ts.length || matchAll([r.name, r.category, r.code, STATUS[r.status] || ''].join(' '), ts);
+    });
+  }
+  function renderBillers() {
+    var box = $('#k-billers'), b = state.bill;
+    if (!b) { box.innerHTML = loader('billers'); renderTabs(); return; }
+    if (state.bcat && !b.cats.some(function (c) { return c[0] === state.bcat; })) state.bcat = '';
+    var ts = billTerms(), res = billResults(), q = [state.q, state.bq].map(function (x) { return x.trim(); }).filter(Boolean).join(' + ');
+    var html = loader('billers') +
+      (b.synthetic ? '<div class="card errors k-synth" role="alert"><b>Practice file.</b> This masterlist is marked SYNTHETIC TEST DATA. Do not use these billers for real answers.</div>' : '') +
+      '<div class="k-bhead"><h2>QR Ph P2B Billers <span class="muted">as of ' + esc(b.asOf) + '</span></h2>' +
+      '<p class="muted">' + b.counts.total + ' billers accept QR Ph P2B' + (b.counts['new'] ? ' · <span class="k-tag new">' + b.counts['new'] + ' new</span>' : '') +
+      (b.counts.updated ? ' · <span class="k-tag upd">' + b.counts.updated + ' updated</span>' : '') + '. Same list and order as the published directory. Click a biller code to copy it.</p></div>' +
+      '<div class="k-filters"><div class="finder k-dsearch"><label for="k-bq" class="sr-only">Search the biller list</label>' + icon('search') +
+      '<input id="k-bq" type="search" autocomplete="off" placeholder="Search a biller name, category or biller code" value="' + esc(state.bq) + '">' +
+      (ts.length || state.bcat || state.bnew ? '<span class="k-found">' + res.length + ' found</span>' : '') + '</div>' +
+      '<div class="k-filter-row"><label>Category <select id="k-bcat"><option value="">All categories</option>' +
+      b.cats.map(function (c) { return '<option value="' + esc(c[0]) + '"' + (c[0] === state.bcat ? ' selected' : '') + '>' + esc(c[0]) + ' (' + c[1] + ')</option>'; }).join('') + '</select></label>' +
+      '<label class="k-check"><input type="checkbox" id="k-bnew"' + (state.bnew ? ' checked' : '') + '> New and updated only</label></div></div>';
+    html += res.length ? '<div class="k-btable-wrap"><table class="k-btable"><thead><tr><th class="n">No.</th><th>Biller name</th><th>Category</th><th>Biller code</th></tr></thead><tbody>' +
+      res.map(function (r) {
+        return '<tr' + (r.status !== 'existing' ? ' class="flag"' : '') + '><td class="n">' + r.no + '</td><td data-th="Biller">' + mark(r.name, ts) +
+          (STATUS[r.status] ? ' <span class="k-tag ' + (r.status === 'new' ? 'new' : 'upd') + '">' + STATUS[r.status] + '</span>' : '') + '</td>' +
+          '<td data-th="Category">' + mark(r.category, ts) + '</td><td data-th="Code"><button type="button" class="k-num plain" data-copy="' + esc(r.code) + '" title="Copy the biller code">' + mark(r.code, ts) + '</button></td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : '<div class="k-none">No biller matches “' + esc(q || state.bcat) + '”. Check the spelling, try part of the name, or clear the filters. A biller not on this list does not accept QR Ph P2B payments yet.</div>';
+    var had = document.activeElement && document.activeElement.id === 'k-bq' ? document.activeElement.selectionStart : -1;
+    box.innerHTML = html;
+    if (had >= 0) { var i = $('#k-bq'); i.focus(); i.setSelectionRange(had, had); }
+    renderTabs();
+  }
+
   /* --- code of conduct view --- */
   function codeHits(ts) {
     var hits = {};
@@ -435,32 +493,36 @@
 
   /* --- tabs / counts --- */
   function renderTabs() {
-    var ts = terms(state.q), dc = '', cc = '';
+    var ts = terms(state.q), dc = '', cc = '', bc = '';
     if (dirTerms().length && state.dir) { var r = dirResults(); dc = r.people.length + r.branches.length; }
     if (ts.length && state.code) { var h = codeHits(ts); cc = Object.keys(h).length; }
+    if (billTerms().length && state.bill) bc = billResults().length;
     $$('#k-tabs a').forEach(function (a) {
-      var t = a.getAttribute('data-tab'), n = t === 'directory' ? dc : t === 'code' ? cc : '';
+      var t = a.getAttribute('data-tab'), n = t === 'directory' ? dc : t === 'code' ? cc : t === 'billers' ? bc : '';
       a.classList.toggle('active', t === state.tab); a.setAttribute('aria-current', t === state.tab ? 'true' : 'false');
       var b = $('.tab-n', a); if (b) { b.textContent = n; b.hidden = n === ''; }
     });
     $$('.k-panel').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== state.tab; });
   }
-  function render() { renderTabs(); if (state.tab === 'directory') renderDirectory(); if (state.tab === 'code') renderCode(); }
+  function render() { renderTabs(); if (state.tab === 'directory') renderDirectory(); if (state.tab === 'code') renderCode(); if (state.tab === 'billers') renderBillers(); }
 
   /* --- loading files --- */
   function load(kind, file, fromFolder) {
     if (!file) return Promise.resolve();
-    var box = $(kind === 'directory' ? '#k-directory' : '#k-code');
+    var box = $(KINDS[kind].box), excel = /\.(xlsx?|xlsm)$/i.test(file.name);
     box.insertAdjacentHTML('afterbegin', '<p class="k-busy">Reading ' + esc(file.name) + '…</p>');
     var job = kind === 'directory'
-      ? (/\.(xlsx?|xlsm)$/i.test(file.name) ? P.parse.excel(file).then(function (b) { return K.parseDirectory(b, file.name); }) : Promise.reject(new Error('Please choose the phone directory Excel file (.xls or .xlsx).')))
+      ? (excel ? P.parse.excel(file).then(function (b) { return K.parseDirectory(b, file.name); }) : Promise.reject(new Error('Please choose the phone directory Excel file (.xls or .xlsx).')))
+      : kind === 'billers'
+      ? (excel ? P.parse.excel(file).then(function (b) { return K.parseBillers(b, file.name); }) : Promise.reject(new Error('Please choose the P2B Biller Masterlist Excel file (.xlsx).')))
       : (/\.pdf$/i.test(file.name) ? P.parse.pdf(file).then(function (r) { return K.parseCode(r.pages, file.name); }) : Promise.reject(new Error('Please choose the Code of Conduct PDF.')));
     return job.then(function (data) {
       if (kind === 'directory' && !data.people.length && !data.branches.length) throw new Error('No names or numbers were found in this file. Is it the phone directory?');
+      if (kind === 'billers' && !data.rows.length) throw new Error('No billers with QR Ph = Y were found in this masterlist.');
       if (kind === 'code' && data.nodes.length < 3) throw new Error('No Articles or Sections were found in this PDF. Is it the Code of Conduct (a text PDF, not a scan)?');
       data.loadedAt = Date.now();
       data.src = { name: file.name, size: file.size, modified: file.lastModified || 0, folder: !!fromFolder };
-      if (kind === 'directory') state.dir = data; else state.code = data;
+      state[KINDS[kind].key] = data;
       return K.store.set(kind, data).then(function (ok) { state.saved[kind] = ok; render(); toast((fromFolder ? 'Updated from your portal folder: ' : 'Loaded ') + file.name); });
     }).catch(function (e) {
       var b = $('.k-busy', box); if (b) b.remove();
@@ -470,13 +532,14 @@
 
   /* ---------- portal folder: load the newest files from <portal folder>\Employee Info by themselves ---------- */
   var ready = false, syncing = false;
-  var SOURCES = { directory: [{ folder: 'Employee Info', match: /directory/i }, 'excel'], code: [{ folder: 'Employee Info', match: /conduct/i }, 'pdf'] };
+  var SOURCES = { directory: [{ folder: 'Employee Info', match: /directory/i }, 'excel'], code: [{ folder: 'Employee Info', match: /conduct/i }, 'pdf'],
+    billers: [{ folder: 'QR Ph Billers', match: /masterlist/i }, 'excel'] };
   function sync() {
     if (!ready || syncing || !P.files || P.files.status() !== 'connected') return Promise.resolve();
     syncing = true;
     return Promise.all(Object.keys(SOURCES).map(function (kind) {
       return P.files.find(SOURCES[kind][0], SOURCES[kind][1]).then(function (res) {
-        var f = res.files[0], d = kind === 'directory' ? state.dir : state.code, s = d && d.src;
+        var f = res.files[0], d = state[KINDS[kind].key], s = d && d.src;
         if (!f) return;
         if (s && s.name === f.name && s.size === f.size && s.modified === (f.lastModified || 0)) return;   // unchanged: keep the saved copy
         return load(kind, f, true);
@@ -490,7 +553,7 @@
     var main = $('#k-app'), q = $('#k-q');
     function fromHash() {
       var m = location.hash.match(/(?:^#|&)q=([^&]*)/); if (m) { state.q = decodeURIComponent(m[1]); q.value = state.q; }
-      if (/^#code\b/.test(location.hash)) state.tab = 'code';
+      var t = location.hash.match(/^#(directory|code|billers|soon)\b/); if (t) state.tab = t[1];
     }
     fromHash();
     root.addEventListener('hashchange', function () { fromHash(); render(); });
@@ -508,10 +571,10 @@
       var r = e.target.closest('[data-remove]');
       if (r) {
         var k = r.getAttribute('data-remove');
-        var dk = k === 'directory' ? state.dir : state.code;
-        if (!confirm('Remove the ' + (k === 'directory' ? 'Employee Directory' : 'Code of Conduct') + ' from this PC? You can load the file again any time.' +
-          (dk && dk.src && dk.src.folder ? ' It will load again from your portal folder unless you also move the file out of its Employee Info folder.' : ''))) return;
-        K.store.del(k).then(function () { if (k === 'directory') state.dir = null; else state.code = null; render(); });
+        var dk = state[KINDS[k].key];
+        if (!confirm('Remove the ' + KINDS[k].name + ' from this PC? You can load the file again any time.' +
+          (dk && dk.src && dk.src.folder ? ' It will load again from your portal folder unless you also move the file out of its ' + KINDS[k].folder + ' folder.' : ''))) return;
+        K.store.del(k).then(function () { state[KINDS[k].key] = null; render(); });
         return;
       }
       var j = e.target.closest('[data-jump]');
@@ -520,16 +583,20 @@
     });
     var dt;
     main.addEventListener('input', function (e) {
+      if (e.target.id === 'k-bq') { clearTimeout(dt); dt = setTimeout(function () { state.bq = e.target.value; renderBillers(); }, 120); return; }
       if (e.target.id !== 'k-dq') return;
       clearTimeout(dt); dt = setTimeout(function () { state.dq = e.target.value; renderDirectory(); }, 120);
     });
     main.addEventListener('keydown', function (e) {
       if (e.target.id === 'k-dq' && e.key === 'Escape') { e.target.value = ''; state.dq = ''; renderDirectory(); }
+      if (e.target.id === 'k-bq' && e.key === 'Escape') { e.target.value = ''; state.bq = ''; renderBillers(); }
     });
     main.addEventListener('change', function (e) {
       if (e.target.matches('[data-load]')) { load(e.target.getAttribute('data-load'), e.target.files[0]); e.target.value = ''; }
       if (e.target.id === 'k-dept') { state.dept = e.target.value; renderDirectory(); }
       if (e.target.id === 'k-vacant') { state.vacant = e.target.checked; renderDirectory(); }
+      if (e.target.id === 'k-bcat') { state.bcat = e.target.value; renderBillers(); }
+      if (e.target.id === 'k-bnew') { state.bnew = e.target.checked; renderBillers(); }
     });
     ['dragover', 'dragleave', 'drop'].forEach(function (ev) {
       main.addEventListener(ev, function (e) {
@@ -539,7 +606,7 @@
         if (ev === 'drop' && e.dataTransfer.files[0]) load(z.getAttribute('data-drop'), e.dataTransfer.files[0]);
       });
     });
-    Promise.all([K.store.get('directory'), K.store.get('code')]).then(function (v) { state.dir = v[0] || null; state.code = v[1] || null; render(); ready = true; sync(); });
+    Promise.all([K.store.get('directory'), K.store.get('code'), K.store.get('billers')]).then(function (v) { state.dir = v[0] || null; state.code = v[1] || null; state.bill = v[2] || null; render(); ready = true; sync(); });
     if (P.files) P.files.onChange(function (st) { render(); if (st === 'connected') sync(); });
     render();
   };

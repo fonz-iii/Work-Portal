@@ -351,6 +351,6 @@
     ]
   });
 
-  /* exposed for checks only */
-  root.__SBA_QRPH = { analyze: analyze, buildRows: buildRows, readMasterlist: readMasterlist, fillTemplate: fillTemplate, result: result, printHtml: printHtml };
+  /* exposed for checks and for the Employee Info biller list (core/knowledge.js) */
+  root.__SBA_QRPH = { analyze: analyze, buildRows: buildRows, readMasterlist: readMasterlist, parseAsof: parseAsof, fillTemplate: fillTemplate, result: result, printHtml: printHtml };
 })(typeof window !== 'undefined' ? window : globalThis);

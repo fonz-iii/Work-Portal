@@ -45,7 +45,7 @@ SBA-Portal/
 - `charts.js` — chart rendering (local library or inline SVG).
 - `export.js` — Excel (SheetJS), Word (HTML-as-.doc first, real .docx later), print-to-PDF stylesheet, HTML slide deck. Format `file`: the output returns its own `{blob, ext}` (e.g. a real .docx built with `vendor/jszip.min.js`). The runner also supports `format: 'action'` outputs (a button that runs `o.run(m)`, e.g. opening a print view) and `screenPrint: false` to hide the generic Print button.
 - `ui.js` — shell, navigation, skill runner screen.
-- `knowledge.js` — Employee Info page: pure parsers `parseDirectory(book)` / `parseCode(pages)`, IndexedDB cache (`sba-portal-reference`), search UI.
+- `knowledge.js` — Employee Info page: pure parsers `parseDirectory(book)` / `parseCode(pages)` / `parseBillers(book)`, IndexedDB cache (`sba-portal-reference`), search UI.
 
 ## Skill module contract
 
@@ -88,7 +88,7 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 | 7 | Research Library | Past studies + templates | Browse, search, new-study template | — |
 | 8 | Types of Complaints | TBD | Report + charts | **On hold** pending Customer Service |
 
-**Employee Info** page (`knowledge.html`, renamed from Knowledge 2026-10-07; not a skill): searchable **Employee Directory** tab (renamed from Phone Directory 2026-10-07; own search box plus the page-wide one; SBA phone directory .xls: Name/Local/Direct block sheets, Branches sheet, Globe mobile list) and Code of Conduct reader (PDF split into Article/Chapter/Section with page numbers). **These are real internal files: they are loaded on the office PC and cached only in that browser's IndexedDB; never commit them or anything derived from them.** Practice files: `samples/employee-info/` (synthetic). Later sections: org chart, products/fees, P2B billers, templates.
+**Employee Info** page (`knowledge.html`, renamed from Knowledge 2026-10-07; not a skill): searchable **Employee Directory** tab (renamed from Phone Directory 2026-10-07; own search box plus the page-wide one; SBA phone directory .xls: Name/Local/Direct block sheets, Branches sheet, Globe mobile list) and Code of Conduct reader (PDF split into Article/Chapter/Section with page numbers), plus a **QR Ph Billers** tab (2026-10-12): searchable list of QR Ph = Y billers (name, category, biller code, New/Updated tags) built with the QR Ph skill's own `readMasterlist`/`buildRows`, so it matches the published directory; it reads the newest masterlist in `QR Ph Billers\` (knowledge.html loads `skills/qrph-p2b-directory.js`). **These are real internal files: they are loaded on the office PC and cached only in that browser's IndexedDB; never commit them or anything derived from them.** Practice files: `samples/employee-info/` (synthetic). Later sections: org chart, products/fees, templates.
 
 ## Module 6: RIB Advisory Generator (built 2026-10-09)
 
