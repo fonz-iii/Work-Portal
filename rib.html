@@ -55,7 +55,19 @@
 .rib .pv-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--rib-muted);text-transform:uppercase;letter-spacing:.05em;margin:4px 0 6px}
 .rib .paper{background:#fff;color:#222;border:1px solid var(--rib-line);border-radius:10px;padding:14px 16px;font-family:"Trebuchet MS",sans-serif;font-size:16px;line-height:1.45}
 .rib .paper.subj{padding:10px 16px}
-.rib .paper.empty{color:#999;font-style:italic}
+.rib .paper[contenteditable]{cursor:text;outline:none;transition:box-shadow .15s,border-color .15s}
+.rib .paper[contenteditable]:hover{border-color:var(--rib-blue,#1f5fbf)}
+.rib .paper[contenteditable]:focus{border-color:var(--rib-blue,#1f5fbf);box-shadow:0 0 0 3px rgba(31,95,191,.18)}
+.rib .paper.edited{border-color:#e3a21a}
+.rib .fmtbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 6px}
+.rib .fmtbar .fb{font:inherit;font-size:14px;min-width:32px;height:30px;padding:0 9px;border-radius:8px;border:1px solid var(--rib-line);background:#fff;color:#222;cursor:pointer}
+.rib .fmtbar .fb:hover{border-color:var(--rib-blue,#1f5fbf)}
+.rib .fmtbar .fb.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.rib .fmtbar .fb-hint{font-size:12.5px;color:var(--rib-muted,#667)}
+.rib .edit-note{font-size:13px;margin:6px 0 0;padding:8px 10px;border-radius:8px;background:#fdf3e3;color:#7a4a00;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rib .edit-note.stale{background:#fdecea;color:#8a1f15}
+.rib .paper.subj{font-weight:700}
+.rib .paper.subj:empty::before{content:attr(data-ph);color:#999;font-style:italic;font-weight:400}
 .rib .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .rib .checks{list-style:none;padding:0;margin:12px 0 0;font-size:13px}
 .rib .checks li{padding:5px 10px;border-radius:8px;margin-bottom:4px;border-left:4px solid}
@@ -231,9 +243,16 @@
       <div class="card step-card sticky">
         <h2><b>5</b>Preview, copy and save</h2>
         <div class="pv-label">Subject</div>
-        <div class="paper subj" id="pvSubj"></div>
-        <div class="pv-label mt">Body <span class="pv-font">Trebuchet MS, size 3</span></div>
-        <div class="paper" id="pvBody"></div>
+        <div class="paper subj" id="pvSubj" data-ph="Type the subject or fill in the form" contenteditable="plaintext-only" spellcheck="true" role="textbox" aria-label="Subject (you can type here)"></div>
+        <div class="pv-label mt">Body <span class="pv-font">Trebuchet MS, size 3 · click in the text to change it</span></div>
+        <div class="fmtbar" role="toolbar" aria-label="Formatting">
+          <button type="button" class="fb" data-fmt="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button type="button" class="fb" data-fmt="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button type="button" class="fb" data-fmt="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+          <span class="fb-hint">Select words, then click B, I or U.</span>
+        </div>
+        <div class="paper" id="pvBody" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Body (you can type here)"></div>
+        <div class="edit-note hide" id="editTextNote"><span id="editTextMsg"></span><button class="lnk" id="btnRebuild" type="button">Rebuild from the form</button></div>
         <div class="pv-label mt">Before you copy</div>
         <ul class="checks" id="checks"></ul>
         <ol class="do-list">
@@ -455,7 +474,7 @@
   function loadEmail(em, label) {
     S.email = em; S.email.label = label;
     var x = R.extract(em);
-    S.cat = x.cat; S.f = x.f; S.catGuessed = true;
+    S.cat = x.cat; S.f = x.f; S.catGuessed = true; clearEdit();
     if (x.cat === 'bsp-cpr') S.f.weekOf = R.sundayOf(S.postDate);
     S.editId = null;
     paintEmail(); paintCats(); paintForm(); paintPreview();
@@ -481,6 +500,8 @@
   }
   function setCat(k) {
     if (k === S.cat) return;
+    if (edited() && !confirm('Switch to ' + catLabel(k) + '? The text you typed in the preview will be replaced.')) return;
+    clearEdit();
     S.cat = k; S.catGuessed = false;
     S.f = S.email ? R.extract(S.email, k).f : R.defaults(k);
     if (k === 'bsp-cpr') S.f.weekOf = R.sundayOf(S.postDate);
@@ -573,16 +594,53 @@
 
   // ---------------------------------------------------------------- preview + checks
   var OUT = null;
-  function paintPreview() {
+  // Text typed into the preview: S.edit = { subject: string|null, body: inner HTML|null, base: what the form gave at that moment }.
+  function edited() { return !!(S.edit && (S.edit.subject != null || S.edit.body != null)); }
+  function clearEdit() { S.edit = null; }
+  function cur() {   // the text actually copied and saved: typed edits win over the form
+    var e = S.edit || {}, subject = e.subject != null ? e.subject : OUT.subject, inner = e.body != null ? e.body : OUT.inner;
+    return { subject: subject, subjectHtml: R.subjectHtml(subject), inner: inner, html: R.wrapBody(inner), plain: e.body != null ? R.plainFromInner(inner) : OUT.plain, errors: OUT.errors };
+  }
+  function cleanInner(el) {   // keep text, line breaks, bold, italic, underline; nothing else
+    function walk(n) {
+      if (n.nodeType === 3) return U.esc(n.nodeValue.replace(/\u00a0/g, ' '));
+      if (n.nodeType !== 1) return '';
+      var t = n.tagName.toLowerCase(); if (t === 'br') return '<br>';
+      var kids = Array.prototype.map.call(n.childNodes, walk).join(''), st = n.style || {};
+      var tag = /^(b|strong)$/.test(t) || /bold|[6-9]00/.test(st.fontWeight || '') ? 'b' : /^(i|em)$/.test(t) || st.fontStyle === 'italic' ? 'i' : t === 'u' || /underline/.test(st.textDecoration || st.textDecorationLine || '') ? 'u' : '';
+      if (tag && kids) kids = '<' + tag + '>' + kids + '</' + tag + '>';
+      if (/^(div|p)$/.test(t)) kids = '<br>' + kids;   // a new line typed with Enter
+      return kids;
+    }
+    var out = Array.prototype.map.call(el.childNodes, walk).join('');
+    return out.replace(/^(<br>)+/, '').replace(/<(b|i|u)><\/\1>/g, '');
+  }
+  function paintEditNote() {
+    var on = edited(), b = on && S.edit.base;
+    var stale = !!b && ((S.edit.subject != null && b.subject !== OUT.subject) || (S.edit.body != null && b.inner !== OUT.inner));
+    $('editTextNote').classList.toggle('hide', !on); $('editTextNote').classList.toggle('stale', !!stale);
+    $('editTextMsg').textContent = stale ? 'You changed the text by hand, and the form has changed since. Your typed text is kept; click Rebuild to use the form instead.' : 'You changed the text by hand. Your changes are kept when you save.';
+    $('pvSubj').classList.toggle('edited', !!(on && S.edit.subject != null)); $('pvBody').classList.toggle('edited', !!(on && S.edit.body != null));
+  }
+  function onEdit(which) {
+    if (!S.edit) S.edit = { subject: null, body: null, base: { subject: OUT.subject, inner: OUT.inner } };
+    if (which === 'subject') S.edit.subject = $('pvSubj').textContent.replace(/\s+/g, ' ').trim();
+    else S.edit.body = cleanInner($('pvBody'));
+    paintPreview(true);
+  }
+  function paintPreview(fromTyping) {
     OUT = R.build(S.cat, S.f);
-    var ps = $('pvSubj'), pb = $('pvBody');
-    ps.innerHTML = OUT.subject ? OUT.subjectHtml : ''; ps.classList.toggle('empty', !OUT.subject); if (!OUT.subject) ps.textContent = 'Subject appears here';
-    pb.innerHTML = OUT.html;
-    var list = R.checks(S.cat, S.f, OUT, S.postDate), ul = $('checks'); ul.innerHTML = '';
+    var ps = $('pvSubj'), pb = $('pvBody'), C2 = cur();
+    if (!fromTyping) {
+      ps.textContent = C2.subject || '';
+      pb.innerHTML = C2.inner;
+    }
+    paintEditNote();
+    var list = R.checks(S.cat, S.f, C2, S.postDate), ul = $('checks'); ul.innerHTML = '';
     if (!list.length) ul.appendChild(h('li', { class: 'ok', text: 'No issues found. Still read it once before posting.' }));
     list.forEach(function (c) { ul.appendChild(h('li', { class: c[0], text: c[1] })); });
     var blocked = list.some(function (c) { return c[0] === 'error'; });
-    $('btnSave').disabled = blocked || !S.store || !who(); $('cpRich').disabled = $('cpPlain').disabled = $('cpSubj').disabled = !OUT.subject && !OUT.plain;
+    $('btnSave').disabled = blocked || !S.store || !who(); $('cpRich').disabled = $('cpPlain').disabled = $('cpSubj').disabled = !C2.subject && !C2.plain;
     $('btnSave').textContent = S.editId ? 'Update in tracker' : 'Save to tracker';
     $('editNote').textContent = !who() ? 'Choose who is preparing it (Step 1) to save.' : blocked ? 'Fix the red item above to save.' : S.editId ? 'You are editing a saved advisory.' : (!S.store ? 'Waiting for storage…' : '');
     $('btnCancelEdit').classList.toggle('hide', !S.editId);
@@ -613,7 +671,8 @@
       if (S.sourceFile) { var fn = e.id + '-' + S.sourceFile.name.replace(/[^\w.\-]+/g, '_'); await S.store.putBlob('email', fn, S.sourceFile); e.source.file = fn; }
       S.entries.push(e);
     }
-    Object.assign(e, { category: S.cat, fields: JSON.parse(JSON.stringify(S.f)), subject: OUT.subject, bodyText: OUT.plain, bodyHtml: OUT.html, postDate: S.postDate, updatedAt: now });
+    Object.assign(e, { category: S.cat, fields: JSON.parse(JSON.stringify(S.f)), subject: cur().subject, bodyText: cur().plain, bodyHtml: cur().html, postDate: S.postDate, updatedAt: now });
+    if (edited()) e.edited = JSON.parse(JSON.stringify(S.edit)); else delete e.edited;
     if (S.cat === 'bsp-cpr') e.weekOf = S.f.weekOf; else delete e.weekOf;
     if (e.status === 'prod') e.prodDate = e.prodDate || S.postDate;
     await S.store.save(e);
@@ -623,12 +682,13 @@
   }
   function openEntry(e) {
     S.editId = e.id; S.cat = e.category; S.f = JSON.parse(JSON.stringify(e.fields || R.defaults(e.category))); S.postDate = e.prodDate || e.postDate || U.today();
+    S.edit = e.edited ? JSON.parse(JSON.stringify(e.edited)) : null;
     S.email = null; S.sourceFile = null; S.catGuessed = false; $('postDate').value = S.postDate;
     $('savedPanel').classList.add('hide');
     setMethod('form'); paintCats(); paintForm(); paintPreview(); switchTab('new'); scrollTo(0, 0);
   }
   function resetNew() {
-    S.editId = null; S.email = null; S.sourceFile = null; S.cat = 'system-maintenance'; S.f = R.defaults(S.cat); S.postDate = U.today(); S.catGuessed = false;
+    S.editId = null; S.email = null; S.sourceFile = null; S.cat = 'system-maintenance'; S.f = R.defaults(S.cat); S.postDate = U.today(); S.catGuessed = false; clearEdit();
     $('postDate').value = S.postDate; $('pasteText').value = ''; $('emailFile').value = '';
     $('savedPanel').classList.add('hide');
     setMethod('file'); paintEmail(); paintCats(); paintForm(); paintPreview();
@@ -817,9 +877,37 @@
   drop.addEventListener('drop', function (ev) { var f = ev.dataTransfer.files[0]; if (f) readFile(f); });
   $('btnReadPaste').addEventListener('click', readPaste);
   $('postDate').addEventListener('input', function () { S.postDate = this.value; if (S.cat === 'bsp-cpr' && this.value) { S.f.weekOf = R.sundayOf(this.value); paintForm(); } paintPreview(); });
-  $('cpSubj').addEventListener('click', function () { copyPlain(OUT.subject).then(function (ok) { toast(ok ? 'Subject copied' : 'Copy failed'); }); });
-  $('cpRich').addEventListener('click', function () { copyRich(OUT.html, OUT.plain).then(function (ok) { toast(ok ? 'Body copied with formatting' : 'Copy failed'); }); });
-  $('cpPlain').addEventListener('click', function () { copyPlain(OUT.plain).then(function (ok) { toast(ok ? 'Body copied as plain text' : 'Copy failed'); }); });
+  // ---- editable preview
+  try { document.execCommand('styleWithCSS', false, false); } catch (e) {}
+  $('pvSubj').addEventListener('input', function () { onEdit('subject'); });
+  $('pvSubj').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); ev.target.blur(); } });
+  $('pvBody').addEventListener('input', function () { onEdit('body'); });
+  [$('pvSubj'), $('pvBody')].forEach(function (el) {
+    el.addEventListener('paste', function (ev) {   // paste words only, never outside styles
+      ev.preventDefault(); var t = (ev.clipboardData || window.clipboardData).getData('text/plain') || '';
+      if (el.id === 'pvSubj') t = t.replace(/\s+/g, ' ');
+      document.execCommand('insertText', false, t);
+    });
+  });
+  document.querySelectorAll('.rib .fmtbar [data-fmt]').forEach(function (b) {
+    b.addEventListener('mousedown', function (ev) { ev.preventDefault(); });   // keep the selection in the text
+    b.addEventListener('click', function () {
+      var sel = getSelection(), pb = $('pvBody');
+      if (!sel.rangeCount || !pb.contains(sel.anchorNode)) { toast('First select the words in the body you want to format.'); pb.focus(); return; }
+      document.execCommand(b.getAttribute('data-fmt')); onEdit('body');
+    });
+  });
+  document.addEventListener('selectionchange', function () {
+    var pb = $('pvBody'), sel = getSelection(), inside = sel.rangeCount && pb.contains(sel.anchorNode);
+    document.querySelectorAll('.rib .fmtbar [data-fmt]').forEach(function (b) { var on = false; try { on = inside && document.queryCommandState(b.getAttribute('data-fmt')); } catch (e) {} b.classList.toggle('on', !!on); });
+  });
+  $('btnRebuild').addEventListener('click', function () {
+    if (!confirm('Replace the text you typed with the text built from the form?')) return;
+    clearEdit(); paintPreview(); toast('Rebuilt from the form');
+  });
+  $('cpSubj').addEventListener('click', function () { copyPlain(cur().subject).then(function (ok) { toast(ok ? 'Subject copied' : 'Copy failed'); }); });
+  $('cpRich').addEventListener('click', function () { copyRich(cur().html, cur().plain).then(function (ok) { toast(ok ? 'Body copied with formatting' : 'Copy failed'); }); });
+  $('cpPlain').addEventListener('click', function () { copyPlain(cur().plain).then(function (ok) { toast(ok ? 'Body copied as plain text' : 'Copy failed'); }); });
   $('btnSave').addEventListener('click', function () { saveCurrent().catch(function (e) { alert('Save failed: ' + e.message); }); });
   $('btnNew').addEventListener('click', resetNew);
   $('btnFolder').addEventListener('click', function () { Portal.files.status() === 'needs-permission' ? reconnect() : connectFolder(); });

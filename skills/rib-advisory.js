@@ -10,6 +10,10 @@
   // ------------------------------------------------------------------ config
   var C = {
     font: { face: 'Trebuchet MS', size: '3' },
+    // Formatting in the templates: b = bold, i = italic, u = underline (any mix, e.g. 'bu').
+    // The date/time phrase and the From/To lines are always bold.
+    fmt: { smServices: 'b', cprStandard: 'b', cprClosing: 'i', footerContacts: 'u' },
+    footerContacts: /(\+632 \d{4} \d{4}|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/,
     footer: 'For inquiries or concerns, you may contact our 24/7 Customer Service Helplines at +632 8721 6000 or +632 8672 6300 or email customer.service@sterlingbankasia.com.',
     securityLine: 'For more security tips, visit our website’s Financial Literacy and Awareness page.',
     thanks: ['', 'Thank you.', 'Thank you for your understanding.', 'Thank you for your patience and understanding.'],
@@ -28,7 +32,7 @@
       one: 'There will be a scheduled system maintenance on ',
       range: 'There will be a scheduled system maintenance from ',
       multi: 'There will be a scheduled system maintenance during the following period:',
-      during: 'During this period, {services} will be temporarily unavailable.',
+      during: 'During this period, {services} will be temporarily unavailable.',   // {services} gets fmt.smServices
       choose: 'You may choose to perform your transactions before or after this time.'
     },
     cpr: {
@@ -101,7 +105,8 @@
   function sundayOf(s) { var d = pd(s); return iso(addDays(d, -d.getDay())); }
 
   // ------------------------------------------------------------------ text model
-  // A paragraph is an array of segments [text, bold]. "\n" inside text = line break.
+  // A paragraph is an array of segments [text, fmt]. fmt: '' plain, or letters b/i/u (1 = bold, older entries).
+  // "\n" inside text = line break.
   function joinList(a) {
     if (a.length < 2) return a.join('');
     if (a.length === 2) return a[0] + ' and ' + a[1];
@@ -119,22 +124,46 @@
     });
   }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function styled(t, fmt) {
+    fmt = fmt === 1 ? 'b' : String(fmt || '');
+    ['u', 'i', 'b'].forEach(function (k) { if (fmt.indexOf(k) >= 0) t = '<' + k + '>' + t + '</' + k + '>'; });
+    return t;
+  }
+  // Template text with the {key} placeholders formatted (e.g. the service names in bold).
+  function fillSegs(t, o, fmt) {
+    var segs = [], re = /\{(\w+)\}/g, last = 0, m;
+    while ((m = re.exec(t))) { if (m.index > last) segs.push([t.slice(last, m.index)]); segs.push([o[m[1]] != null ? String(o[m[1]]) : m[0], fmt]); last = re.lastIndex; }
+    if (last < t.length) segs.push([t.slice(last)]);
+    return segs;
+  }
+  // Footer with the helpline numbers and email formatted.
+  function footerSegs() {
+    return C.footer.split(C.footerContacts).filter(Boolean).map(function (x) { return C.footerContacts.test(x) ? [x, C.fmt.footerContacts] : [x]; });
+  }
+  function wrapBody(inner) { return '<font face="' + C.font.face + '" size="' + C.font.size + '">' + inner + '</font>'; }
+  function subjectHtml(subject) { return wrapBody('<b>' + esc(subject) + '</b>'); }
+  // Body HTML (inside the <font> wrapper) -> plain text: <br> = line break, tags removed.
+  function plainFromInner(inner) {
+    return String(inner || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+      .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
   function render(out) {
     var plain = out.paras.map(function (p) { return p.map(function (s) { return s[0]; }).join(''); }).join('\n\n');
     var inner = out.paras.map(function (p) {
-      return p.map(function (s) { var t = esc(s[0]).replace(/\n/g, '<br>'); return s[1] ? '<b>' + t + '</b>' : t; }).join('');
+      return p.map(function (s) { return styled(esc(s[0]).replace(/\n/g, '<br>'), s[1]); }).join('');
     }).join('<br><br>');
-    var open = '<font face="' + C.font.face + '" size="' + C.font.size + '">';
     return {
       subject: out.subject,
       plain: plain,
-      html: open + inner + '</font>',
-      subjectHtml: open + '<b>' + esc(out.subject) + '</b></font>'
+      inner: inner,
+      html: wrapBody(inner),
+      subjectHtml: subjectHtml(out.subject)
     };
   }
   function tail(paras, f, opt) {
     if (opt && opt.security && f.securityLine) paras.push([[C.securityLine]]);
-    if (f.footer !== false) paras.push([[C.footer]]);
+    if (f.footer !== false) paras.push(footerSegs());
     if (f.thanks) paras.push([[f.thanks]]);
   }
 
@@ -184,7 +213,7 @@
         if (w.length === 1) paras.push([[w[0].over ? C.sm.range : C.sm.one], [smSpan(w[0]), 1], ['.']]);
         else { paras.push([[C.sm.multi]]); w.forEach(function (x) { paras.push([[smSpan(x), 1]]); }); }
       }
-      paras.push([[fill(C.sm.during, { services: joinList(svc) || '…' })]]);
+      paras.push(fillSegs(C.sm.during, { services: joinList(svc) || '…' }, C.fmt.smServices));
       paras.push([[C.sm.choose]]);
       tail(paras, f);
       return { subject: subject, paras: paras, errors: errs };
@@ -194,8 +223,8 @@
       if (!String(f.body || '').trim() && !String(f.hook || '').trim()) errs.push('Add the CPR text from BSP.');
       if (f.hook) paras.push([[f.hook.trim()]]);
       paras = paras.concat(textToParas(f.body));
-      if (f.standard) paras.push([[C.cpr.standard]]);
-      if (f.closing) paras.push([[f.closing]]);
+      if (f.standard) paras.push([[C.cpr.standard, C.fmt.cprStandard]]);
+      if (f.closing) paras.push([[f.closing, C.fmt.cprClosing]]);
       return { subject: f.subject || C.cpr.subject, paras: paras, errors: errs };
     },
     'unavailable': function (f) {
@@ -249,13 +278,13 @@
       { k: 'weekOf', type: 'date', label: 'Week of (Sunday)', hint: 'Filled from the release date. Change it if BSP assigned another week.' },
       { k: 'subject', type: 'text', label: 'Subject' },
       { k: 'hook', type: 'text', label: 'Opening line (optional)', hint: 'e.g. Mukhang sulit? Baka scam pala!' },
-      { k: 'body', type: 'textarea', label: 'BSP text (keep or rewrite)', hint: 'Blank line = new paragraph. Wrap text in **double asterisks** for bold.' },
+      { k: 'body', type: 'textarea', label: 'BSP text (keep or rewrite)', hint: 'Blank line = new paragraph. Wrap text in **double asterisks** for bold, or select text in the preview and use B / I / U.' },
       { k: 'standard', type: 'check', label: 'Add the standard “Makipag-ugnayan agad…” line' },
       { k: 'closing', type: 'datalist', label: 'Closing line', opts: C.cpr.closings }
     ],
     'security': [
       { k: 'subject', type: 'text', label: 'Subject' },
-      { k: 'body', type: 'textarea', label: 'Advisory text', hint: 'Blank line = new paragraph. Wrap text in **double asterisks** for bold.' },
+      { k: 'body', type: 'textarea', label: 'Advisory text', hint: 'Blank line = new paragraph. Wrap text in **double asterisks** for bold, or select text in the preview and use B / I / U.' },
       { k: 'securityLine', type: 'check', label: 'Add “For more security tips…” line' },
       { k: 'footer', type: 'check', label: 'Add the helpline footer' },
       { k: 'thanks', type: 'thanks', label: 'Closing line' }
@@ -528,6 +557,7 @@
     config: C, categories: CATS, fields: FIELDS, defaults: defaults, build: build, checks: checks,
     parseEml: parseEml, parseMsg: parseMsg, extract: extract, guessCategory: guessCategory,
     scanEvents: scanEvents, windowsFrom: windowsFrom, cleanBody: cleanBody, sundayOf: sundayOf,
+    wrapBody: wrapBody, subjectHtml: subjectHtml, plainFromInner: plainFromInner,
     util: { pd: pd, iso: iso, long: long, today: today, esc: esc }
   };
 
