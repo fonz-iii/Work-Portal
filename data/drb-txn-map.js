@@ -292,5 +292,10 @@ window.SBA_DRB_TXN_MAP = {
   "category": "Manage recurring transaction (add, update and delete)",
   "qr_group": "",
   "financial": "No"
+ },
+ "REQUEST TO STOP THE CHECK": {
+  "category": "Stop check requests",
+  "qr_group": "",
+  "financial": "No"
  }
 };

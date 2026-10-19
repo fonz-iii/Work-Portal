@@ -41,4 +41,4 @@ samples/SBA Portal Files (practice)/DRB Usage/
 | Staff (Y) | 60 | 40 |
 | Blank | 3 | 2 |
 
-Expected result: 23 checks PASS, 0 FAIL, 5 REVIEW. The workbook is identical, cell for cell, to the one the `drb-usage-report` skill's Python script builds from the same files.
+Expected result: 24 checks PASS, 0 FAIL, 5 REVIEW. The workbook follows the layout of the `drb-usage-report` skill's Q3 2026 workbook (two ways of counting active clients, QR by month).

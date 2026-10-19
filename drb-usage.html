@@ -80,7 +80,7 @@
       <div class="row2">
         <div class="field"><label for="cif-total">Total CIFs</label><input id="cif-total" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
         <div class="field"><label for="cif-enrolled">Total enrolled CIFs</label><input id="cif-enrolled" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
-        <div class="field"><label for="cif-usage">CIFs with usage</label><input id="cif-usage" type="number" min="0" step="1"><small>As supplied in the CIF Profile</small></div>
+        <div class="field"><label for="cif-usage">CIF w/ usage</label><input id="cif-usage" type="number" min="0" step="1"><small>As supplied in the CIF Profile</small></div>
         <div class="field"><label for="cif-inactive">Inactive CIFs (only if overriding)</label><input id="cif-inactive" type="number" min="0" step="1"><small>Leave blank to use the RIB Idle Accounts Report</small></div>
       </div>
       <div class="field hide" id="inactive-why-f"><label for="cif-inactive-why">Why the inactive count is typed</label><input id="cif-inactive-why" type="text" placeholder="e.g. The idle report for the quarter has no balances"></div>
@@ -160,8 +160,8 @@
     { k: 'dcb_stats', label: 'DRB DCB Stats (cross-check)', who: 'Sir Jun', need: false }
   ];
   var SENDERS = ['Ms. Hong', 'Sir Jun', 'Automailer', 'RIB Inbox shared drive'];
-  var PRIOR_LABELS = { total_cif: 'Total CIFs', enrolled: 'Total enrolled CIFs', cif_usage: 'CIFs with usage (as supplied)', fin: 'Active CIFs with financial transactions', login: 'Active CIFs, logged in only',
-    inactive: 'Inactive CIFs', female: 'Transacting CIFs – female', male: 'Transacting CIFs – male', txn_total: 'Successful financial transactions', ftob: 'Fund transfers to other banks (DRB)',
+  var PRIOR_LABELS = { total_cif: 'Total CIFs', enrolled: 'Total enrolled CIFs', cif_usage: 'CIF w/ usage (CIF Profile)', fin: 'Have financial transactions', cif_any: "Have any online activity (Sir RD's count, optional)",
+    login: 'Have logged in to their accounts', inactive: 'Inactive (not logged in for > 90 days)', female: 'Have financial transactions – female', male: 'Have financial transactions – male', txn_total: 'Successful financial transactions', ftob: 'Fund transfers to other banks (DRB)',
     ip_nonqr: '…of which InstaPay, regular (non-QR)', card: 'Transactions from cards', qr_ob: D.QRG[0], qr_p2m: D.QRG[1], qr_3p: D.QRG[2], qr_own: D.QRG[3], qr_p2b: D.QRG[4], qr_micro: D.QRG[5] };
   var PRIOR_NEED = ['total_cif', 'enrolled', 'cif_usage', 'fin', 'login', 'inactive', 'female', 'male'];
   var S = { files: {}, books: {}, scan: {}, agg: null, aggKey: '', extraMap: {}, result: null, inputs: null, synthetic: false };
@@ -217,11 +217,9 @@
   }
   function classify(f) {   // -> Promise<kind|null>
     if (/\.csv$/i.test(f.name)) return f.slice(0, 4000).text().then(function (t) { return /TRANSACTION_TYPE/.test(t) && /CIF_ID_NO/.test(t) ? 'raw' : null; });
+    if (/\.xlsb$/i.test(f.name)) return D.xlsbKind(f).then(function (r) { if (r.synthetic) S.synthetic = true; return r.kind; }, function () { return null; });   // binary workbook: header rows only
     if (!/\.(xlsx|xlsm|xls|zip|gz)$/i.test(f.name)) return Promise.resolve(null);
-    if (/\.(xlsx|xlsm)$/i.test(f.name) && f.size > 15e6) {   // too big to open whole: peek at the sheet names
-      return JSZip.loadAsync(f).then(function (z) { var w = z.file('xl/workbook.xml'); return w ? w.async('string') : ''; })
-        .then(function (x) { return /name="\s*RAW\s*"/i.test(x) ? 'raw' : null; }, function () { return null; });
-    }
+    if (/\.(xlsx|xlsm)$/i.test(f.name) && f.size > 15e6) return D.xlsxKind(f).catch(function () { return null; });   // too big to open whole: RAW sheet or header row only
     return book(f).then(function (bk) { if (hasSynth(bk)) S.synthetic = true; return kindOfBook(bk); }, function () { return null; });
   }
   function scan() {
@@ -298,7 +296,7 @@
     var genA = x.generations.reduce(function (s, g) { return s + (g[4] || 0); }, 0), genI = x.generations.reduce(function (s, g) { return s + (g[5] || 0); }, 0);
     var stA = x.staff.reduce(function (s, g) { return s + (g[2] || 0); }, 0), stI = x.staff.reduce(function (s, g) { return s + (g[3] || 0); }, 0);
     $('readback').innerHTML = !ok ? '<b>Type the CIF figures above.</b> They are read back here for you to check before the report is built.' :
-      '<b>Read these back against the CIF Profile:</b><dl><dt>Total CIFs</dt><dd>' + fmtN(c.total_cif) + '</dd><dt>Enrolled CIFs</dt><dd>' + fmtN(c.enrolled) + '</dd><dt>CIFs with usage</dt><dd>' + fmtN(c.cif_usage) + '</dd>' +
+      '<b>Read these back against the CIF Profile:</b><dl><dt>Total CIFs</dt><dd>' + fmtN(c.total_cif) + '</dd><dt>Total enrolled CIFs</dt><dd>' + fmtN(c.enrolled) + '</dd><dt>CIF w/ usage</dt><dd>' + fmtN(c.cif_usage) + '</dd>' +
       '<dt>Inactive CIFs</dt><dd>' + (c.inactive == null ? 'from the idle report' : fmtN(c.inactive) + ' (typed)') + '</dd><dt>Generation table, active / idle</dt><dd>' + fmtN(genA) + ' / ' + fmtN(genI) + '</dd><dt>Staff table, active / idle</dt><dd>' + fmtN(stA) + ' / ' + fmtN(stI) + '</dd></dl>' +
       (genA + genI !== stA + stI ? '<p class="k-warn">The generation total and the staff total differ (' + fmtN(genA + genI) + ' vs ' + fmtN(stA + stI) + '). The Checks sheet will show FAIL.</p>' : '') +
       '<label class="k-check"><input type="checkbox" id="cif-ok"' + (x.confirmed ? ' checked' : '') + '> These match the CIF Profile</label>';
@@ -373,7 +371,7 @@
   function problems() {
     var x = S.inputs, c = x.cif, out = [];
     SOURCES.forEach(function (s) { if (s.need && !chosen(s.k) && !(s.k === 'idle' && c.inactive != null)) out.push('Add the ' + s.label + ' (' + s.who + ').'); });
-    if (c.total_cif == null || c.enrolled == null || c.cif_usage == null) out.push('Type the Total CIFs, Enrolled CIFs and CIFs with usage from the CIF Profile.');
+    if (c.total_cif == null || c.enrolled == null || c.cif_usage == null) out.push('Type the Total CIFs, Total enrolled CIFs and CIF w/ usage from the CIF Profile.');
     if (x.generations.some(function (g) { return g[4] == null || g[5] == null; }) || x.staff.some(function (s) { return s[2] == null || s[3] == null; })) out.push('Fill in every Active and Idle cell in the generation and staff tables (0 if none).');
     if (!x.confirmed) out.push('Tick “These match the CIF Profile” after reading the figures back.');
     var miss = PRIOR_NEED.filter(function (k) { return x.prior[k] == null; });
@@ -387,23 +385,32 @@
     var files = {}; SOURCES.forEach(function (s) { var f = chosen(s.k); files[s.k] = f ? f.file.name : null; });
     if (c.inactive != null && !chosen('idle')) files.idle = null;
     var prior = {}; D.PRIOR_KEYS.forEach(function (k) { prior[k] = [x.prior[k] == null ? null : x.prior[k], x.priorNotes[k] || 'Typed']; });
-    return { quarter: i.quarter, period: i.period, months: months, prior_quarter: i.prior_quarter, prior_months: i.prior_months, as_of: i.as_of, files: files, display: D.DEFAULT_DISPLAY,
+    return { quarter: i.quarter, period: i.period, months: months, prior_quarter: i.prior_quarter, prior_months: i.prior_months, as_of: i.as_of, files: files, display: Object.assign({}, D.DEFAULT_DISPLAY, agg && agg.layout === 'v2' ? { raw: D.V2_DISPLAY } : {}),
       cif: { total_cif: [c.total_cif, 'CIF Profile (Ms. Maria Hong), net of dormant and closed'], enrolled: [c.enrolled, 'CIF Profile (Ms. Maria Hong), net of dormant and closed'],
-        cif_usage: [c.cif_usage, 'CIF Profile (Ms. Maria Hong)'], inactive: [c.inactive, c.inactive == null ? '' : (c.inactive_why || 'Typed override')] },
+        cif_usage: [c.cif_usage, 'CIF Profile (Ms. Maria Hong); usage net of Seniors, Neo below 18, BOS accts, Iremit, closed and dormant'], inactive: [c.inactive, c.inactive == null ? '' : (c.inactive_why || 'Typed override')] },
       generations: x.generations.map(function (g) { return g.slice(); }), staff: x.staff.map(function (s) { return s.slice(); }), prior: prior,
       prior_categories: x.prior_categories, prior_categories_source: x.prior_categories_source, open_items: x.open_items || [] };
   }
   function readRaw() {
-    var f = chosen('raw').file, k = key(f);
+    var f = chosen('raw').file, months = info().months, k = key(f) + '|' + months.join();
     if (S.agg && S.aggKey === k) return Promise.resolve(S.agg);
-    var agg = new D.RawAgg(tmap());
-    var job = /\.csv$/i.test(f.name) ? D.readRawCsv(f, agg, progress) : D.readRawXlsx(f, agg, progress);
-    return job.then(function () { S.agg = agg; S.aggKey = k; return agg; }, function (e) {
+    var agg = new D.RawAgg(tmap(), months);   // rows from outside the quarter's months are left out and counted
+    var job = /\.csv$/i.test(f.name) ? D.readRawCsv(f, agg, progress) : /\.xlsb$/i.test(f.name) ? D.readRawXlsb(f, agg, progress) : D.readRawXlsx(f, agg, progress);
+    return job.then(function (r) {
+      agg.layout = r && r.layout;
+      var out = Object.keys(agg.dropped);
+      if (!agg.n && out.length) throw new Error('None of the rows in the DRB Usage export are from ' + months.join(', ') + ' (it has ' + out.join(', ') + '). Check the quarter chosen in step 1.');
+      S.agg = agg; S.aggKey = k; return agg;
+    }, function (e) {
       if (e instanceof RangeError || /allocation|memory|Invalid string length|out of memory/i.test(String(e && e.message))) {
         throw new Error('This computer ran out of memory reading the DRB Usage export. Open it in Excel, save the RAW sheet as “CSV (Comma delimited)”, put the CSV in the Ms. Hong folder (or choose it), and try again.');
       }
       throw e;
     });
+  }
+  function outside(d, what) {   // e.g. " Left out 120 rows from OCTOBER (DRB Usage export, outside the quarter)."
+    var k = Object.keys(d); if (!k.length) return '';
+    return ' Left out ' + k.map(function (m) { return fmtN(d[m]) + ' row' + (d[m] === 1 ? '' : 's') + ' from ' + m; }).join(', ') + ' (' + what + ', outside the quarter).';
   }
   function run() {
     $('run-err').innerHTML = ''; $('c-map').classList.add('hide');
@@ -415,16 +422,22 @@
       if (raw.unmapped) { showMap(raw.unmapped, tm); $('btn-run').disabled = false; $('prog').classList.add('hide'); $('prog-msg').textContent = ''; return; }
       progress('Reading the other files…', 96);
       var books = {};
-      return Promise.all(['drb_summary', 'itcom_dcb', 'dcb_stats', 'idle', 'rib'].map(function (k) { var c = chosen(k); return c ? book(c.file).then(function (b) { books[k] = b; if (hasSynth(b)) S.synthetic = true; }) : null; })).then(function () {
+      var i = info(), q = { year: +i.quarter.slice(-4), months: i.months }, rib = null;
+      return Promise.all(['drb_summary', 'itcom_dcb', 'dcb_stats', 'idle', 'rib'].map(function (k) {
+        var c = chosen(k); if (!c) return null;
+        if (k === 'rib' && /\.xlsb$/i.test(c.file.name)) return D.readRibXlsb(c.file, null, q).then(function (r) { rib = r; });
+        return book(c.file).then(function (b) { books[k] = b; if (hasSynth(b)) S.synthetic = true; });
+      })).then(function () {
+        if (books.rib) rib = D.readRib(books.rib, q);
         var cfg = config(agg);
         if (!books.idle) cfg.files.idle = null;
         progress('Building the workbook…', 97);
-        var res = D.build({ cfg: cfg, tmap: tm, raw: raw, idle: books.idle ? D.readIdle(books.idle.grids[books.idle.sheetNames[0]]) : null, rib: books.rib ? D.readRib(books.rib) : null,
+        var res = D.build({ cfg: cfg, tmap: tm, raw: raw, idle: books.idle ? D.readIdle(books.idle.grids[books.idle.sheetNames[0]]) : null, rib: rib,
           books: { drb_summary: books.drb_summary, itcom_dcb: books.itcom_dcb, dcb_stats: books.dcb_stats }, today: new Date() });
         progress('Working out every figure…', 98);
         res.wb.calculate();
         S.result = { wb: res.wb, cfg: cfg, fig: D.figures(res.wb), synthetic: S.synthetic };
-        $('prog').classList.add('hide'); $('prog-msg').textContent = 'Read ' + agg.n.toLocaleString('en-US') + ' rows.'; $('btn-run').disabled = false;
+        $('prog').classList.add('hide'); $('prog-msg').textContent = 'Read ' + agg.n.toLocaleString('en-US') + ' rows from ' + i.period + '.' + outside(agg.dropped, 'DRB Usage export') + (rib && rib.dropped ? outside({ 'other dates': rib.dropped }, 'RIB Usage extraction') : ''); $('btn-run').disabled = false;
         review();
       });
     }).catch(function (e) { fail(e && e.message || String(e)); });

@@ -66,7 +66,7 @@
      ===================================================================== */
   var RAW_NEED = ['CIF_ID_NO', 'TRANSACTION_TYPE', 'TRANSACTION_MONTH', 'TRANSACTION STATUS', 'TRANSACTION SERVICE', 'BENEFICIARY BANK NAME',
     'BILLER/MERCHANT NAME', 'ACCOUNT_NUMBER', 'CARDTYPE', 'TRANSACTION_AMOUNT', 'GENDER', 'AGE', 'CIF_STAFF_TAGGING(Y/N)'];
-  function RawAgg(tmap) { this.tmap = tmap || null; this.ix = null; this.n = 0; this.pre = new Map(); this.cifs = new Map(); this.cardType = new Map(); this.cardSeen = new Set(); this.months = new Set(); }
+  function RawAgg(tmap, months) { this.tmap = tmap || null; this.keep = months ? new Set(months.map(function (m) { return String(m).trim().slice(0, 3).toUpperCase(); })) : null; this.dropped = {}; this.ix = null; this.n = 0; this.pre = new Map(); this.cifs = new Map(); this.cardType = new Map(); this.cardSeen = new Set(); this.months = new Set(); }
   DRB.RawAgg = RawAgg;
   RawAgg.prototype.header = function (cols) {
     var names = cols.map(function (c) { return c === null || c === undefined ? '' : String(c).trim(); }), ix = {}, miss = [];
@@ -80,9 +80,12 @@
   }
   RawAgg.prototype.row = function (arr) {
     var ix = this.ix, g = function (k) { return cell(arr[ix[k]]); };
-    var cif = g('CIF_ID_NO'); if (cif === null) return;
+    var cif = g('CIF_ID_NO'); if (cif === null || cif === 'CIF_ID_NO') return;   // (a header repeated on a later sheet is skipped)
+    var month = g('TRANSACTION_MONTH');
+    // only this quarter's months are counted (the RIB Usage Report V2 also carries the first day of the next month)
+    if (this.keep && !this.keep.has(String(month || '').trim().slice(0, 3).toUpperCase())) { this.dropped[month || '(blank)'] = (this.dropped[month || '(blank)'] || 0) + 1; return; }
     this.n++;
-    var type = g('TRANSACTION_TYPE'), month = g('TRANSACTION_MONTH'), status = g('TRANSACTION STATUS'), acct = g('ACCOUNT_NUMBER') || '';
+    var type = g('TRANSACTION_TYPE'), status = g('TRANSACTION STATUS'), acct = g('ACCOUNT_NUMBER') || '';
     var source = acct.length === 16 ? 'CARD' : acct.length > 0 ? 'ACCOUNT' : 'NONE';
     if (source === 'CARD') { this.cardSeen.add(acct); var ct = g('CARDTYPE'); if (ct !== null && !this.cardType.has(acct)) this.cardType.set(acct, ct); }
     // known types: keep the bank only for transfers to other banks and the biller only for bills payment (finish() would drop them anyway);
@@ -193,26 +196,47 @@
     return { rows: rows, accounts: acc };
   };
   // RIB Usage export (optional cross-check): rows across all sheets after the header row.
-  DRB.readRib = function (book) {
-    var hdr = null, frames = [];
-    book.sheetNames.forEach(function (sn, si) {
-      var g = book.grids[sn] || [];
-      g.forEach(function (r) {
-        var vals = r.map(function (x) { return x === null || x === undefined ? '' : x; });
-        if (hdr === null) { if (vals.indexOf('TRANSACTION_TYPE') >= 0) hdr = vals.map(function (x) { return String(x).trim(); }); return; }
-        if (vals.some(function (x) { return String(x).trim(); })) frames.push(vals);
-      });
-    });
-    if (!hdr) stop('This does not look like the RIB Usage Report: no TRANSACTION_TYPE header found.');
-    var ci = hdr.indexOf('CIF_ID_NO'), si = hdr.indexOf('STATUS'), ti = hdr.indexOf('TRANSACTION_TYPE');
-    var rows = 0, ok = 0, cifs = new Set(), ftob = 0;
-    frames.forEach(function (r) {
-      var cif = String(r[ci] === undefined ? '' : r[ci]).trim(); if (!cif.length) return;
-      rows++; cifs.add(cif);
-      var good = String(r[si] === undefined ? '' : r[si]).trim().toUpperCase().indexOf('SUCCESS') === 0, t = String(r[ti] === undefined ? '' : r[ti]).trim();
-      if (good) { ok++; if (t === 'FUND TRANSFER TO OTHER BANK' || t === 'QR FUND TRANSFER TO OTHER BANK') ftob++; }
-    });
-    return { 'Rows': rows, 'Successful rows': ok, 'Distinct CIFs': cifs.size, 'Successful transfers to other banks': ftob };
+  // q = { year, months: ['JULY', …] }: only rows dated in the quarter are counted (the extraction run on the 1st also carries that day's rows)
+  function RibAgg(q) {
+    this.hdr = null; this.rows = 0; this.ok = 0; this.cifs = new Set(); this.ftob = 0; this.dropped = 0;
+    this.keep = q ? new Set(q.months.map(function (m) { return q.year * 100 + MONTHS.indexOf(String(m).trim().toUpperCase()) + 1; })) : null;
+  }
+  var MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  function yearMonth(v) {   // Excel serial, Date or text -> yyyymm, or null when unreadable
+    if (v instanceof Date) return isNaN(v) ? null : v.getFullYear() * 100 + v.getMonth() + 1;
+    if (typeof v === 'number') { var d = new Date(Math.round((v - 25569) * 864e5)); return d.getUTCFullYear() * 100 + d.getUTCMonth() + 1; }
+    var t = String(v == null ? '' : v).trim(), m;
+    if ((m = /^(\d{4})-(\d{1,2})-\d{1,2}/.exec(t))) return +m[1] * 100 + +m[2];
+    if ((m = /^(\d{1,2})\/\d{1,2}\/(\d{4})/.exec(t))) return +m[2] * 100 + +m[1];
+    var d2 = t ? new Date(t) : null; return d2 && !isNaN(d2) ? d2.getFullYear() * 100 + d2.getMonth() + 1 : null;
+  }
+  RibAgg.prototype.row = function (r) {
+    var vals = r.map(function (x) { return x === null || x === undefined ? '' : x; });
+    if (this.hdr === null) {
+      if (vals.indexOf('TRANSACTION_TYPE') >= 0) { this.hdr = vals.map(function (x) { return String(x).trim(); }); this.ci = this.hdr.indexOf('CIF_ID_NO'); this.si = this.hdr.indexOf('STATUS'); this.ti = this.hdr.indexOf('TRANSACTION_TYPE'); this.di = this.hdr.indexOf('TRANSACTION_DATE'); }
+      return;
+    }
+    if (!vals.some(function (x) { return String(x).trim(); })) return;
+    var cif = String(vals[this.ci] === undefined ? '' : vals[this.ci]).trim(); if (!cif.length) return;
+    if (this.keep && this.di >= 0) { var ym = yearMonth(vals[this.di]); if (ym !== null && !this.keep.has(ym)) { this.dropped++; return; } }
+    this.rows++; this.cifs.add(cif);
+    var good = String(vals[this.si] === undefined ? '' : vals[this.si]).trim().toUpperCase().indexOf('SUCCESS') === 0, t = String(vals[this.ti] === undefined ? '' : vals[this.ti]).trim();
+    if (good) { this.ok++; if (t === 'FUND TRANSFER TO OTHER BANK' || t === 'QR FUND TRANSFER TO OTHER BANK') this.ftob++; }
+  };
+  RibAgg.prototype.finish = function () {
+    if (!this.hdr) stop('This does not look like the RIB Usage Report: no TRANSACTION_TYPE header found.');
+    var r = { 'Rows': this.rows, 'Successful rows': this.ok, 'Distinct CIFs': this.cifs.size, 'Successful transfers to other banks': this.ftob };
+    Object.defineProperty(r, 'dropped', { value: this.dropped });   // rows dated outside the quarter (not a workbook figure)
+    return r;
+  };
+  DRB.readRib = function (book, q) {   // parsed .xls/.xlsx book: rows across all sheets after the header row
+    var a = new RibAgg(q);
+    book.sheetNames.forEach(function (sn) { (book.grids[sn] || []).forEach(function (r) { a.row(r); }); });
+    return a.finish();
+  };
+  DRB.readRibXlsb = function (data, onProgress, q) {   // .xlsb, read as a stream of rows
+    var a = new RibAgg(q);
+    return DRB.xlsbRows(data, null, function (si, ri, cells) { a.row(cells); }, onProgress).then(function () { return a.finish(); });
   };
   // Monthly channel counts (ITCom DCB, DRB Reports, DRB DCB Stats).
   function grid(book, pat, label) {
@@ -351,7 +375,7 @@
 
     // ================================================================== Data_CIF
     ws = WS.Data_CIF;
-    page(ws, 'Transacting CIFs', 'Source: ' + dn('raw') + '. One row per CIF in the export, with its gender, age and staff tag as exported.',
+    page(ws, 'CIFs with financial transactions', 'Source: ' + dn('raw') + '. One row per CIF in the export, with its gender, age and staff tag as exported.',
       [24, 10, 8, 11, 15, 16, 17], 'each client (CIF) with any online activity in the quarter, listed once, with how many of its rows are financial transactions (money movements). Profile and Usage count from this list.', 'H');
     head(ws, 7, ['CIF_ID_NO', 'GENDER', 'AGE', 'STAFF TAG', 'ALL ACTIVITY ROWS', 'FINANCIAL ROWS (any status)', 'SUCCESSFUL FINANCIAL ROWS']);
     RAW.cifs.forEach(function (r, j) {
@@ -464,7 +488,7 @@
       ['Month 2', cfg.months[1], 'in_m2', ''], ['Month 3', cfg.months[2], 'in_m3', ''], ['Prior quarter', cfg.prior_quarter, 'in_pq', 'Typed'], ['CIF figures as of', cfg.as_of, 'in_asof', 'Typed']]
       .forEach(function (x, j) { var r = 9 + j; S(ws, 'B' + r, x[0]); S(ws, 'C' + r, x[1], 'input'); nm(x[2], ws, 'C' + r); S(ws, 'H' + r, x[3], 'note'); });
     S(ws, 'B18', 'CIF figures', 'h2'); head(ws, 19, ['Figure', 'This quarter', 'Prior quarter', '', '', '', 'Source / note']);
-    [['Total CIFs (net of dormant and closed)', 'total_cif'], ['Total enrolled CIFs', 'enrolled'], ['CIFs with usage (as supplied)', 'cif_usage'], ['Inactive CIFs used in the report', 'inactive']].forEach(function (x, j) {
+    [['Total CIFs (net of dormant and closed)', 'total_cif'], ['Total enrolled CIFs', 'enrolled'], ['CIF w/ usage (CIF Profile)', 'cif_usage'], ['Inactive CIFs used in the report', 'inactive']].forEach(function (x, j) {
       var r = 20 + j, k = x[1];
       S(ws, 'B' + r, x[0]); S(ws, 'D' + r, cfg.prior[k][0], 'input');
       if (k === 'inactive') { S(ws, 'C' + r, '=IF(in_inactive_ovr="",SUM(id_inact),in_inactive_ovr)', 'num'); S(ws, 'H' + r, 'Calculated: the override below if filled in, otherwise the count worked out on Data_Idle. Prior: ' + cfg.prior[k][1] + '.', 'note'); }
@@ -488,10 +512,11 @@
     S(ws, 'H' + T0, 'CIF Profile.', 'note');
     var T1 = T0 + cfg.staff.length - 1, PR0 = T1 + 4;
     S(ws, 'B' + (PR0 - 2), 'Prior-quarter figures', 'h2'); head(ws, PR0 - 1, ['Figure', 'Prior quarter', '', '', '', '', 'Source / note']);
-    var prl = [['fin', 'Active CIFs with financial transactions'], ['login', 'Active CIFs, logged in only'], ['female', 'Transacting CIFs – female'], ['male', 'Transacting CIFs – male'],
+    var prl = [['fin', 'Have financial transactions'], ['cif_any', "Have any online activity (Sir RD's count)"], ['login', 'Have logged in to their accounts'],
+      ['female', 'Have financial transactions – female'], ['male', 'Have financial transactions – male'],
       ['txn_total', 'Successful financial transactions'], ['ftob', 'Fund transfers to other banks (DRB)'], ['ip_nonqr', '…of which InstaPay, regular (non-QR)'],
       ['card', 'Transactions from cards'], ['qr_ob', QRG[0]], ['qr_p2m', QRG[1]], ['qr_3p', QRG[2]], ['qr_own', QRG[3]], ['qr_p2b', QRG[4]], ['qr_micro', QRG[5]]];
-    prl.forEach(function (x, j) { var r = PR0 + j; S(ws, 'B' + r, x[1]); S(ws, 'C' + r, cfg.prior[x[0]][0], 'input'); S(ws, 'H' + r, cfg.prior[x[0]][1], 'note'); nm('p_' + x[0], ws, 'C' + r); });
+    prl.forEach(function (x, j) { var r = PR0 + j, v = cfg.prior[x[0]] || [null, '']; S(ws, 'B' + r, x[1]); S(ws, 'C' + r, v[0], 'input'); S(ws, 'H' + r, v[1], 'note'); nm('p_' + x[0], ws, 'C' + r); });
     var PC0 = PR0 + prl.length + 3;
     S(ws, 'B' + (PC0 - 2), 'Prior-quarter successful transactions by type', 'h2'); head(ws, PC0 - 1, ['Transaction type', 'Prior quarter', '', '', '', '', 'Source / note']);
     var pcat = cfg.prior_categories || {};
@@ -504,22 +529,22 @@
     // ================================================================== Usage
     ws = WS.Usage;
     page(ws, 'Enrolment and usage', '="Sterling Bank Online | Digital Retail Banking (DRB)  ·  "&in_period&"  ·  compared with "&in_pq', [44, 14, 13, 14, 13, 14, 14, 54],
-      'how many clients (CIFs) are enrolled, and of those, how many used the platform. Active users = clients with transactions + clients who only logged in. Inactive = no login for more than 90 days.');
+      'how many clients (CIFs) are enrolled, and of those, how many used the platform. Active users = have financial transactions + have logged in to their accounts. Inactive = not logged in for > 90 days. All % are of total enrolled CIFs (net of dormant and closed).');
     S(ws, 'B7', 'Enrolment', 'h2'); src(ws, 8, 'CIF Profile (Inputs)');
     head(ws, 9, ['Measure', 'This quarter', 'Prior quarter', 'Change', '% change', '', '', 'How it is calculated']);
-    [['Total CIFs (net of dormant and closed)', '=in_total_cif', '=p_total_cif', INT, 'ref', 'From the CIF Profile'], ['Enrolled CIFs', '=in_enrolled', '=p_enrolled', INT, 'ref', 'From the CIF Profile'],
+    [['Total CIFs (net of dormant and closed)', '=in_total_cif', '=p_total_cif', INT, 'ref', 'From the CIF Profile'], ['Total enrolled CIFs', '=in_enrolled', '=p_enrolled', INT, 'ref', 'From the CIF Profile'],
       ['Enrolment rate', '=C11/C10', '=D11/D10', PCT, 'num', 'Enrolled CIFs ÷ Total CIFs'], ['CIFs not enrolled', '=C10-C11', '=D10-D11', INT, 'num', 'Total CIFs − Enrolled CIFs']].forEach(function (x, j) {
       var r = 10 + j; S(ws, 'B' + r, x[0]); S(ws, 'C' + r, x[1], x[4], x[3]); S(ws, 'D' + r, x[2], x[4], x[3]);
       S(ws, 'E' + r, x[3] === PCT ? pts('C' + r, 'D' + r) : chg('C' + r, 'D' + r), 'num', x[3] === PCT ? PTSF : CHG);
       S(ws, 'F' + r, x[3] === PCT ? '' : pchg('C' + r, 'D' + r), 'num', PCHG); S(ws, 'I' + r, x[5], 'note');
     });
     nm('u_enrol_pct', ws, 'C12'); nm('u_enrol_pct_p', ws, 'D12');
-    S(ws, 'B15', 'Usage of enrolled CIFs', 'h2'); src(ws, 16, 'transacting CIFs from ' + dn('raw') + ' (Data_CIF); inactive from the RIB Idle Accounts Report (Data_Idle) or the override; enrolled from the CIF Profile');
+    S(ws, 'B15', 'Usage of enrolled CIFs', 'h2'); src(ws, 16, 'CIFs with financial transactions from ' + dn('raw') + ' (Data_CIF); inactive from the RIB Idle Accounts Report (Data_Idle) or the override; enrolled from the CIF Profile');
     head(ws, 17, ['Group', 'This quarter', '% of enrolled', 'Prior quarter', 'Prior %', 'Change', '% change', 'How it is calculated']);
-    [['Active – with financial transactions', '=COUNTIF(cif_fin,">0")', '=p_fin', 'num', 'Clients on Data_CIF with at least one financial transaction (money movement, any status), as in the RIB Usage basis'],
-      ['Active – logged in, no financial transaction', '=in_enrolled-(C18+C21)', '=p_login', 'num', 'Enrolled − (with financial transactions + inactive)'],
-      ['Active users', '=C18+C19', '=E18+E19', 'total', 'With financial transactions + logged in only'],
-      ['Inactive (no login for more than 90 days)', '=in_inactive', '=p_inactive', 'ref', 'From the RIB Idle Accounts Report (worked below), or the typed override'],
+    [['Have financial transactions', '=COUNTIF(cif_fin,">0")', '=p_fin', 'num', 'Clients on Data_CIF with at least one financial transaction (money movement, any status), as in the RIB Usage basis'],
+      ['Have logged in to their accounts', '=in_enrolled-(C18+C21)', '=p_login', 'num', 'Enrolled − (with financial transactions + inactive)'],
+      ['Active users', '=C18+C19', '=E18+E19', 'total', 'Have financial transactions + have logged in to their accounts'],
+      ['Inactive (not logged in for > 90 days)', '=in_inactive', '=p_inactive', 'ref', 'From the RIB Idle Accounts Report (worked below), or the typed override'],
       ['Total enrolled CIFs', '=C20+C21', '=E20+E21', 'total', 'Active users + Inactive']].forEach(function (x, j) {
       var r = 18 + j, k = x[3], kk = k === 'total' ? 'total' : 'num';
       S(ws, 'B' + r, x[0], k === 'total' ? 'total' : 'body'); S(ws, 'C' + r, x[1], k, INT); S(ws, 'D' + r, '=C' + r + '/in_enrolled', kk, PCT);
@@ -542,13 +567,28 @@
     nm('u_inact_calc', ws, 'C32');
     S(ws, 'B37', 'Reference figures', 'h2'); src(ws, 38, 'CIF Profile (Inputs); ' + dn('raw') + ' (Data_CIF)');
     head(ws, 39, ['Figure', 'This quarter', '% of enrolled', 'Prior quarter', 'Prior %', 'Change', '% change', 'How it is calculated']);
-    S(ws, 'B40', 'CIFs with usage (as supplied)'); S(ws, 'C40', '=in_cif_usage', 'ref'); S(ws, 'D40', '=C40/in_enrolled', 'num', PCT); S(ws, 'E40', '=p_cif_usage', 'ref'); S(ws, 'F40', '=E40/p_enrolled', 'num', PCT);
+    S(ws, 'B40', 'CIF w/ usage (CIF Profile)'); S(ws, 'C40', '=in_cif_usage', 'ref'); S(ws, 'D40', '=C40/in_enrolled', 'num', PCT); S(ws, 'E40', '=p_cif_usage', 'ref'); S(ws, 'F40', '=E40/p_enrolled', 'num', PCT);
     S(ws, 'G40', chg('C40', 'E40'), 'num', CHG); S(ws, 'H40', pchg('C40', 'E40'), 'num', PCHG); S(ws, 'I40', 'From the CIF Profile. Shown for continuity; not traced to the export.', 'note', null, { wrap: true });
     S(ws, 'B41', 'CIFs with at least one successful financial transaction'); S(ws, 'C41', '=COUNTIF(cif_ok,">0")', 'num'); S(ws, 'D41', '=C41/in_enrolled', 'num', PCT); S(ws, 'I41', 'Clients on Data_CIF with SUCCESSFUL FINANCIAL ROWS above zero', 'note', null, { wrap: true });
     S(ws, 'B42', 'CIFs with failed financial transactions only'); S(ws, 'C42', '=C18-C41', 'num'); S(ws, 'D42', '=C42/in_enrolled', 'num', PCT); S(ws, 'I42', 'With financial transactions − with a successful one', 'note', null, { wrap: true });
-    S(ws, 'B43', 'CIFs with non-financial activity only'); S(ws, 'C43', '=COUNTA(cif_id)-C18', 'num'); S(ws, 'D43', '=C43/in_enrolled', 'num', PCT); S(ws, 'I43', "e.g. password change or sign-up only. They fall under 'logged in, no financial transaction'.", 'note', null, { wrap: true });
+    S(ws, 'B43', 'CIFs with non-financial activity only'); S(ws, 'C43', '=COUNTA(cif_id)-C18', 'num'); S(ws, 'D43', '=C43/in_enrolled', 'num', PCT); S(ws, 'I43', "e.g. password change or sign-up only. They fall under 'Have logged in to their accounts'.", 'note', null, { wrap: true });
     [41, 42, 43].forEach(function (r) { 'EFGH'.split('').forEach(function (c) { S(ws, c + r, null, 'num'); }); });
     nm('u_fin_ok', ws, 'C41');
+    S(ws, 'B46', 'Two ways of counting active clients', 'h2'); src(ws, 47, dn('raw') + ' (Data_CIF); enrolled from the CIF Profile; inactive as above. The report uses the first column.');
+    head(ws, 48, ['Measure', 'Report count', '% of enrolled', "Sir RD's count", '% of enrolled', 'Prior qtr (report)', 'Prior qtr (Sir RD)', 'What is counted']);
+    [['Have financial transactions / Have any online activity', '=u_fin', '=COUNTA(cif_id)', '=p_fin', '=IF(p_cif_any="","",p_cif_any)',
+      "Report count: CIFs with at least one money movement (transfer, bills payment, QR, loan, time deposit, check order), any status. Sir RD's count (Q2 2026 deck): CIFs with any row in the usage file, including password changes, sign-ups, favorites, alerts and statement requests."],
+      ['Have logged in to their accounts', '=in_enrolled-(C49+in_inactive)', '=in_enrolled-(E49+in_inactive)', '=p_login', '=IF(p_cif_any="","",p_enrolled-(p_cif_any+p_inactive))', 'Total enrolled − (first row + inactive), on each count.'],
+      ['Inactive (not logged in for > 90 days)', '=in_inactive', '=in_inactive', '=p_inactive', '=p_inactive', 'Same on both counts.'],
+      ['Active users', '=C49+C50', '=E49+E50', '=p_fin+p_login', '=IF(p_cif_any="","",G49+G50)', 'Same on both counts: the first row is subtracted to get the second, so it cancels out.']].forEach(function (x, j) {
+      var r = 49 + j;
+      S(ws, 'B' + r, x[0], r === 52 ? 'total' : 'body'); S(ws, 'C' + r, x[1], 'num', INT); S(ws, 'D' + r, '=C' + r + '/in_enrolled', 'num', PCT); S(ws, 'E' + r, x[2], 'num', INT); S(ws, 'F' + r, '=E' + r + '/in_enrolled', 'num', PCT);
+      S(ws, 'G' + r, x[3], 'ref', INT); S(ws, 'H' + r, x[4], 'ref', INT); S(ws, 'I' + r, x[5], 'note', null, { wrap: true });
+    });
+    S(ws, 'B53', 'Difference: CIFs with non-financial activity only'); S(ws, 'C53', '=E49-C49', 'num', INT); S(ws, 'D53', null, 'num', PCT); S(ws, 'E53', null, 'num'); S(ws, 'F53', null, 'num', PCT);
+    S(ws, 'G53', '=IF(p_cif_any="","",H49-G49)', 'ref', INT); S(ws, 'H53', null, 'ref');
+    S(ws, 'I53', 'Counted as having financial transactions by Sir RD; counted as logged in by the report.', 'note', null, { wrap: true });
+    nm('u_any', ws, 'E49');
     donut(ws, 'K7', 'Enrolled CIFs: active vs inactive', ref(ws, 3, 20, 3, 21), ref(ws, 2, 20, 2, 21), [AMBER, PEER]);
     bar(ws, 'K23', 'Usage groups: this quarter vs prior', 'col', 7.5, 15, [{ ref: ref(ws, 5, 18, 5, 19), titleRef: ref(ws, 5, 17), color: PEER }, { ref: ref(ws, 3, 18, 3, 19), titleRef: ref(ws, 3, 17), color: AMBER }], ref(ws, 2, 18, 2, 19), 'b');
     ws.freezeAt = 'C7';
@@ -557,7 +597,7 @@
     ws = WS.Profile;
     page(ws, 'User profile', '="Gender, generation and staff tag  ·  "&in_period', [34, 18, 13, 13, 15, 13, 13, 13],
       'who the users are. The first two tables cover clients with financial transactions this quarter; the active vs idle tables cover all enrolled clients, from the CIF Profile.');
-    S(ws, 'B7', 'Gender of transacting CIFs', 'h2'); src(ws, 8, dn('raw') + ' (Data_CIF, GENDER column); prior from Inputs');
+    S(ws, 'B7', 'Gender of CIFs with financial transactions', 'h2'); src(ws, 8, dn('raw') + ' (Data_CIF, GENDER column); prior from Inputs');
     head(ws, 9, ['Gender', 'CIFs', '% of known', 'Prior CIFs', 'Prior %', 'Change']);
     [['Female', 'F', 'p_female'], ['Male', 'M', 'p_male']].forEach(function (x, j) {
       var r = 10 + j; S(ws, 'B' + r, x[0]); S(ws, 'C' + r, '=COUNTIFS(cif_fin,">0",cif_gender,"' + x[1] + '")', 'num'); S(ws, 'D' + r, '=C' + r + '/C$12', 'num', PCT);
@@ -567,8 +607,8 @@
     S(ws, 'B13', 'Gender not stated (left out of the %)'); S(ws, 'C13', '=u_fin-C12', 'num');
     nm('pr_f_pct', ws, 'D10'); nm('pr_f', ws, 'C10'); nm('pr_m', ws, 'C11');
     var ng = cfg.generations.length, A0 = 18, A1 = A0 + ng - 1;
-    S(ws, 'B15', 'Generation of transacting CIFs', 'h2'); src(ws, 16, dn('raw') + ' (Data_CIF, AGE column) against the age bands on Inputs');
-    head(ws, 17, ['Generation', 'Born', 'Age from', 'Age to', 'Transacting CIFs', '% of known']);
+    S(ws, 'B15', 'Generation of CIFs with financial transactions', 'h2'); src(ws, 16, dn('raw') + ' (Data_CIF, AGE column) against the age bands on Inputs');
+    head(ws, 17, ['Generation', 'Born', 'Age from', 'Age to', 'CIFs with financial transactions', '% of known']);
     for (i = 0; i < ng; i++) {
       r_ = A0 + i; var s_ = G0 + i;
       S(ws, 'B' + r_, '=Inputs!B' + s_); S(ws, 'C' + r_, '=Inputs!C' + s_, 'refl'); S(ws, 'D' + r_, '=Inputs!D' + s_, 'ref', '0'); S(ws, 'E' + r_, '=Inputs!E' + s_, 'ref', '0');
@@ -593,8 +633,8 @@
     [INT, PCT, INT, PCT, INT, PCT].forEach(function (f, j) { var c = 'CDEFGH'[j]; S(ws, c + (B1 + 1), '=SUM(' + c + B0 + ':' + c + B1 + ')', 'total', f); });
     nm('pr_act_tbl', ws, 'C' + (B1 + 1)); nm('pr_idle_tbl', ws, 'E' + (B1 + 1)); nm('pr_all_tbl', ws, 'G' + (B1 + 1)); nm('pr_mill_enr_pct', ws, 'H' + (B0 + mi));
     var C0 = B1 + 7, C1 = C0 + cfg.staff.length;
-    S(ws, 'B' + (C0 - 3), 'Staff tag', 'h2'); src(ws, C0 - 2, 'transacting: ' + dn('raw') + ' (Data_CIF); active and idle: CIF Profile (Inputs)');
-    head(ws, C0 - 1, ['Staff tag', 'Transacting CIFs', '% of transacting', 'Active', 'Idle', 'Total enrolled', '% of enrolled']);
+    S(ws, 'B' + (C0 - 3), 'Staff tag', 'h2'); src(ws, C0 - 2, 'with financial transactions: ' + dn('raw') + ' (Data_CIF); active and idle: CIF Profile (Inputs)');
+    head(ws, C0 - 1, ['Staff tag', 'CIFs with financial transactions', '% of CIFs with fin. txns', 'Active', 'Idle', 'Total enrolled', '% of enrolled']);
     cfg.staff.forEach(function (s, j) {
       var r = C0 + j; S(ws, 'B' + r, s[0]);
       S(ws, 'C' + r, s[1] ? '=COUNTIFS(cif_fin,">0",cif_staff,"' + s[1] + '")' : '=u_fin-SUM(C' + C0 + ':C' + (r - 1) + ')', 'num'); S(ws, 'D' + r, '=C' + r + '/C$' + C1, 'num', PCT);
@@ -602,8 +642,8 @@
     });
     S(ws, 'B' + C1, 'Total', 'total');
     [INT, PCT, INT, INT, INT, PCT].forEach(function (f, j) { var c = 'CDEFGH'[j]; S(ws, c + C1, '=SUM(' + c + C0 + ':' + c + (C1 - 1) + ')', 'total', f); });
-    donut(ws, 'K7', 'Transacting CIFs by gender', ref(ws, 3, 10, 3, 11), ref(ws, 2, 10, 2, 11), [AMBER, NAVY]);
-    bar(ws, 'K22', 'Transacting CIFs by generation', 'col', 7.5, 15, [{ ref: ref(ws, 6, A0, 6, A1), color: NAVY }], ref(ws, 2, A0, 2, A1), null);
+    donut(ws, 'K7', 'CIFs with financial transactions by gender', ref(ws, 3, 10, 3, 11), ref(ws, 2, 10, 2, 11), [AMBER, NAVY]);
+    bar(ws, 'K22', 'CIFs with financial transactions by generation', 'col', 7.5, 15, [{ ref: ref(ws, 6, A0, 6, A1), color: NAVY }], ref(ws, 2, A0, 2, A1), null);
     bar(ws, 'K39', 'All enrolled CIFs by generation: active vs idle', 'col', 7.5, 15, [{ ref: ref(ws, 3, B0, 3, B1), titleRef: ref(ws, 3, B0 - 1), color: AMBER }, { ref: ref(ws, 5, B0, 5, B1), titleRef: ref(ws, 5, B0 - 1), color: PEER }], ref(ws, 2, B0, 2, B1), 'b');
     ws.freezeAt = 'C7';
 
@@ -752,8 +792,21 @@
     S(ws, 'F16', '=SUM(F10:F15)', 'total', PCT); S(ws, 'G16', '=C16-E16', 'total', CHG); S(ws, 'H16', '=IF(E16=0,"n/a",C16/E16-1)', 'total', PCHG);
     S(ws, 'B18', 'QR activation'); S(ws, 'C18', '=SUMIFS(tx_n,' + OKC + ',tx_qr,"QR activation")', 'num');
     S(ws, 'B19', 'All QR rows including activation', 'total'); S(ws, 'C19', '=C16+C18', 'total', INT);
-    nm('q_total', ws, 'C16'); nm('q_prior', ws, 'E16'); nm('q_chg', ws, 'H16');
-    bar(ws, 'B22', 'QR transactions: this quarter vs prior', 'col', 7.5, 17, [{ ref: ref(ws, 5, 10, 5, 15), titleRef: ref(ws, 5, 9), color: PEER }, { ref: ref(ws, 3, 10, 3, 15), titleRef: ref(ws, 3, 9), color: AMBER }], ref(ws, 2, 10, 2, 15), 'b');
+    nm('q_total', ws, 'C16'); nm('q_mtot', ws, 'F31'); nm('q_prior', ws, 'E16'); nm('q_chg', ws, 'H16');
+    S(ws, 'B22', 'QR transactions by month', 'h2'); src(ws, 23, dn('raw') + ' (Data_Txn: MONTH and QR GROUP columns), successful only');
+    head(ws, 24, ['QR transaction type', '=in_m1', '=in_m2', '=in_m3', 'Quarter total', 'Month 3 vs month 1', '% change']);
+    QRG.forEach(function (g, j) {
+      var r = 25 + j;
+      S(ws, 'B' + r, g); ['C', 'D', 'E'].forEach(function (c) { S(ws, c + r, '=SUMIFS(tx_n,' + OKC + ',tx_qr,$B' + r + ',tx_month,' + c + '$24)', 'num', INT); });
+      S(ws, 'F' + r, '=SUM(C' + r + ':E' + r + ')', 'num', INT); S(ws, 'G' + r, chg('E' + r, 'C' + r), 'num', CHG); S(ws, 'H' + r, pchg('E' + r, 'C' + r), 'num', PCHG);
+    });
+    S(ws, 'B31', 'Total QR transactions (excluding activation)', 'total'); 'CDEF'.split('').forEach(function (c) { S(ws, c + '31', '=SUM(' + c + '25:' + c + '30)', 'total', INT); });
+    S(ws, 'G31', '=E31-C31', 'total', CHG); S(ws, 'H31', '=IF(C31=0,"n/a",E31/C31-1)', 'total', PCHG);
+    S(ws, 'B32', 'Quarter total by month = quarter total above (C16)', 'note'); S(ws, 'F32', '=IF(F31=C16,"PASS","FAIL")', 'note');
+    S(ws, 'B52', 'The chart shows the total and the three largest QR types; QR P2B, QR own-account transfers and QR P2Micro are too small to show as lines and are in the table above.', 'note');
+    ws.charts.push({ type: 'line', title: 'QR transactions by month', anchor: 'B34', h: 8, w: 16.7, legend: 'b', cats: ref(ws, 3, 24, 5, 24),
+      series: [[31, NAVY, 'Total QR transactions'], [25, AMBER, QRG[0]], [26, '2e7d9a', QRG[1]], [27, SLATE, QRG[2]]].map(function (x) { return { ref: ref(ws, 3, x[0], 5, x[0]), title: x[2], color: x[1] }; }) });
+    bar(ws, 'J7', 'QR transactions: this quarter vs prior', 'col', 7.5, 17, [{ ref: ref(ws, 5, 10, 5, 15), titleRef: ref(ws, 5, 9), color: PEER }, { ref: ref(ws, 3, 10, 3, 15), titleRef: ref(ws, 3, 9), color: AMBER }], ref(ws, 2, 10, 2, 15), 'b');
     ws.freezeAt = 'C7';
 
     // ================================================================== Cards
@@ -786,10 +839,10 @@
       "every headline figure next to last quarter's. Green ▲ = went up; red ▼ = went down. Rates show the change in percentage points (pts).", 'G');
     S(ws, 'B7', 'Headline figures', 'h2'); src(ws, 8, 'the sheet named in the last column; prior quarter from Inputs');
     head(ws, 9, ['Measure', '=in_q', '=in_pq', 'Change', '% change', 'Worked on sheet']);
-    var qrows = [['Total CIFs', '=in_total_cif', '=p_total_cif', INT, 'Usage'], ['Enrolled CIFs', '=in_enrolled', '=p_enrolled', INT, 'Usage'], ['Enrolment rate', '=u_enrol_pct', '=u_enrol_pct_p', PCT, 'Usage'],
-      ['Active users', '=u_active', '=p_fin+p_login', INT, 'Usage'], ['Active – with financial transactions', '=u_fin', '=p_fin', INT, 'Usage'], ['Active – logged in only', '=u_login', '=p_login', INT, 'Usage'],
-      ['Inactive CIFs', '=in_inactive', '=p_inactive', INT, 'Usage'], ['Active rate (% of enrolled)', '=u_active_pct', '=u_active_pct_p', PCT, 'Usage'],
-      ['CIFs with usage (as supplied)', '=in_cif_usage', '=p_cif_usage', INT, 'Usage'], ['Female share of transacting CIFs', '=pr_f_pct', '=p_female/(p_female+p_male)', PCT, 'Profile'],
+    var qrows = [['Total CIFs', '=in_total_cif', '=p_total_cif', INT, 'Usage'], ['Total enrolled CIFs', '=in_enrolled', '=p_enrolled', INT, 'Usage'], ['Enrolment rate', '=u_enrol_pct', '=u_enrol_pct_p', PCT, 'Usage'],
+      ['Active users', '=u_active', '=p_fin+p_login', INT, 'Usage'], ['Have financial transactions', '=u_fin', '=p_fin', INT, 'Usage'], ['Have logged in to their accounts', '=u_login', '=p_login', INT, 'Usage'],
+      ['Inactive (not logged in for > 90 days)', '=in_inactive', '=p_inactive', INT, 'Usage'], ["Have any online activity (Sir RD's count)", '=u_any', '=IF(p_cif_any="","",p_cif_any)', INT, 'Usage'], ['Active users (% of enrolled)', '=u_active_pct', '=u_active_pct_p', PCT, 'Usage'],
+      ['CIF w/ usage (CIF Profile)', '=in_cif_usage', '=p_cif_usage', INT, 'Usage'], ['Female share of CIFs with financial transactions', '=pr_f_pct', '=p_female/(p_female+p_male)', PCT, 'Profile'],
       ['Successful financial transactions', '=t_total', '=IF(p_txn_total="","",p_txn_total)', INT, 'Transactions'], ['Fund transfers to other banks (DRB)', '=t_ftob', '=IF(p_ftob="","",p_ftob)', INT, 'Transactions'],
       ['DRB monthly average fund transfers', '=c_drb_avg', '=c_drb_p', INT, 'Channels'], ['DCB monthly average fund transfers', '=c_dcb_avg', '=c_dcb_p', INT, 'Channels'],
       ['API monthly average fund transfers', '=c_api_avg', '=c_api_p', INT, 'Channels'], ['All channels, monthly average', '=c_tot_avg', '=c_tot_p', INT, 'Channels'],
@@ -804,8 +857,9 @@
     var CF = QE + 5;
     S(ws, 'B' + (CF - 2), 'Carry-forward for next quarter', 'h2'); S(ws, 'B' + (CF - 1), 'Next quarter, copy these values into the prior-quarter cells on the Inputs sheet.', 'note');
     head(ws, CF, ['Inputs item', 'Value']);
-    var cfr = [['Total CIFs', '=in_total_cif'], ['Total enrolled CIFs', '=in_enrolled'], ['CIFs with usage (as supplied)', '=in_cif_usage'], ['Inactive CIFs', '=in_inactive'],
-      ['Active CIFs with financial transactions', '=u_fin'], ['Active CIFs, logged in only', '=u_login'], ['Transacting CIFs – female', '=pr_f'], ['Transacting CIFs – male', '=pr_m'],
+    var cfr = [['Total CIFs', '=in_total_cif'], ['Total enrolled CIFs', '=in_enrolled'], ['CIF w/ usage (CIF Profile)', '=in_cif_usage'], ['Inactive (not logged in for > 90 days)', '=in_inactive'],
+      ['Have financial transactions', '=u_fin'], ['Have logged in to their accounts', '=u_login'], ["Have any online activity (Sir RD's count)", '=u_any'],
+      ['Have financial transactions – female', '=pr_f'], ['Have financial transactions – male', '=pr_m'],
       ['Successful financial transactions', '=t_total'], ['Fund transfers to other banks (DRB)', '=t_ftob'], ['…of which InstaPay, regular (non-QR)', '=Channels!C32'], ['Transactions from cards', '=k_total']]
       .concat(QRG.map(function (g, j) { return [g, '=QR!C' + (10 + j)]; }));
     cfr.forEach(function (x, j) { var r = CF + 1 + j; S(ws, 'B' + r, x[0]); S(ws, 'C' + r, x[1], 'num'); });
@@ -824,35 +878,37 @@
       ['Rows counted = rows in the export file', '=t_rows', '=' + N, 'P', "B is the export's row count, read when the workbook was built."],
       ['Sum of types = successful rows', '=t_all', '=t_ok', 'P', 'Every successful row falls in exactly one type.'],
       ['Sum of the three months = quarter total', '=SUM(Transactions!D' + XG + ':F' + XG + ')', '=t_all', 'P', 'Fails if a month name on Inputs does not match the export.'],
+      ['QR by month: sum of the three months = QR quarter total', '=q_mtot', '=q_total', 'P', 'Fails if a month name on Inputs does not match the export.'],
       ['Map sheet row counts = total rows', '=Map!F' + (me + 1), '=t_rows', 'P', 'Map covers every row.'],
       ['Data_CIF transactions = total rows', '=SUM(cif_n)', '=t_rows', 'P', 'Every row belongs to a listed CIF.'],
       ['Biller list covers all bills payments', '=SUM(lb_cnt)', '=bb_bp_total', 'P', 'Fails if a biller is missing from the Lists sheet.'],
       ['Bank list covers all transfers to other banks', '=SUM(lk_cnt)', '=bb_ob_total', 'P', 'Fails if a bank is missing from the Lists sheet.'],
       ['InstaPay + PESONet = transfers to other banks', '=c_rail_tot', '=t_ftob', 'P', 'Every transfer to another bank has a rail.'],
       ['Amount ranges cover all transfers to other banks', '=c_amt_tot+c_amt_tot2', '=t_ftob', 'P', 'Every transfer falls in a range.'],
-      ['Gender: female + male + not stated = transacting CIFs', '=pr_f+pr_m+Profile!C13', '=u_fin', 'P', 'One gender per CIF.'],
-      ['Generation: bands + not determined = transacting CIFs', '=SUM(' + gs + ')+Profile!F' + (A1 + 2), '=u_fin', 'P', 'Age bands do not overlap or leave gaps.'],
+      ['Gender: female + male + not stated = CIFs with financial transactions', '=pr_f+pr_m+Profile!C13', '=u_fin', 'P', 'One gender per CIF.'],
+      ['Generation: bands + not determined = CIFs with financial transactions', '=SUM(' + gs + ')+Profile!F' + (A1 + 2), '=u_fin', 'P', 'Age bands do not overlap or leave gaps.'],
       ['Card list covers all card transactions', '=SUM(lc_cnt)', '=k_total', 'P', 'Every card transaction has a card ref on the Lists sheet.'],
-      ['Logged-in-only count is not negative', '=u_login', '=0', 'GE', 'Negative means inactive + transacting exceeds enrolled: the inputs are on different bases.'],
+      ['Have logged in to their accounts: count is not negative', '=u_login', '=0', 'GE', 'Negative means inactive + have financial transactions exceeds enrolled: the inputs are on different bases.'],
       ['Inactive count differs from prior quarter', '=in_inactive', '=p_inactive', 'NE', 'Equal values suggest the prior figure was not updated.'],
       ['Idle report carries balances', '=COUNTIF(id_bal,">0")', '=0', 'GT', "Zero means the report's balance column is empty, so the rule cannot be applied and a typed override is needed."],
       ['Inactive used = inactive calculated from the idle report', '=in_inactive', '=u_inact_calc', 'R', 'They differ when a typed override is in use.'],
       ['Active/idle table: generation total = staff total', '=pr_act_tbl+pr_idle_tbl', '=Profile!G' + C1, 'P', 'The two CIF tables describe the same clients.'],
-      ['DCB monthly counts: ITCom file = Stats file', '=SUM(' + dcc('dcb_ft') + ')', 'dcb_x' in DC ? '=SUM(' + dcc('dcb_x') + ')' : '=NA()', 'P', 'The two DCB sources agree for the quarter.'],
-      ['DRB monthly counts: Summary file = Stats file', '=SUM(' + dcc('drb_ft') + ')', 'drb_x' in DC ? '=SUM(' + dcc('drb_x') + ')' : '=NA()', 'P', 'The two DRB sources agree for the quarter.'],
+      ['DCB monthly counts: ITCom file = Stats file', '=SUM(' + dcc('dcb_ft') + ')', 'dcb_x' in DC ? '=SUM(' + dcc('dcb_x') + ')' : null, 'P', 'The two DCB sources agree for the quarter.'],
+      ['DRB monthly counts: Summary file = Stats file', '=SUM(' + dcc('drb_ft') + ')', 'drb_x' in DC ? '=SUM(' + dcc('drb_x') + ')' : null, 'P', 'The two DRB sources agree for the quarter.'],
       ['API: client table total = summary line', '=SUM(' + dcc('api_ft') + ')', '=SUM(' + dcc('api_sum') + ')', 'R', 'The report uses the client table total, as in prior reports.'],
       ['Enrolled total = active + idle table total', '=in_enrolled', '=pr_all_tbl', 'R', 'The enrolled total is net of dormant and closed; the active/idle table is not. Reason to be confirmed.'],
       ['Active users (computed) = active in CIF table', '=u_active', '=pr_act_tbl', 'R', 'Follows from the two enrolled bases above.'],
-      ['CIFs with usage (supplied) = transacting CIFs', '=in_cif_usage', '=u_fin', 'R', 'The supplied figure is not derived from the export; its source is to be confirmed.'],
-      ['Transacting CIFs: all statuses = successful only', '=u_fin', '=u_fin_ok', 'R', 'The report counts CIFs with any financial transaction, as in prior reports; B counts successful only.'],
+      ['CIF w/ usage (CIF Profile) = CIFs with financial transactions', '=in_cif_usage', '=u_fin', 'R', 'The supplied figure is not derived from the export; its source is to be confirmed.'],
+      ['CIFs with financial transactions: all statuses = successful only', '=u_fin', '=u_fin_ok', 'R', 'The report counts CIFs with any financial transaction, as in prior reports; B counts successful only.'],
       ['RIB vs DRB: successful financial transactions', '=t_total', '=rib_ok', 'R', 'Both exports should agree on financial transactions. n/a = RIB Usage not supplied this quarter.'],
-      ['RIB vs DRB: CIFs with financial transactions', '=u_fin', '=rib_cif', 'R', 'Both exports should agree on transacting clients.'],
+      ['RIB vs DRB: CIFs with financial transactions', '=u_fin', '=rib_cif', 'R', 'Both exports should agree on CIFs with financial transactions.'],
       ['RIB vs DRB: transfers to other banks', '=t_ftob', '=rib_ftob', 'R', 'Both exports should agree on transfers to other banks.']
     ];
     checks.forEach(function (x, j) {
       var r = 8 + j;
-      S(ws, 'B' + r, j + 1, 'num', '0'); S(ws, 'C' + r, x[0], 'body', null, { wrap: true }); S(ws, 'D' + r, x[1], 'num'); S(ws, 'E' + r, x[2], 'num'); S(ws, 'F' + r, '=IFERROR(D' + r + '-E' + r + ',"n/a")', 'num', INT);
+      S(ws, 'B' + r, j + 1, 'num', '0'); S(ws, 'C' + r, x[0], 'body', null, { wrap: true }); S(ws, 'D' + r, x[1], 'num'); S(ws, 'E' + r, x[2] === null ? 'not supplied' : x[2], 'num'); if (x[2] === null) { var es = ws.at('E' + r).s; es.font.size = 9; es.font.color = SLATE; delete es.align.h; } S(ws, 'F' + r, x[2] === null ? 'n/a' : '=IFERROR(D' + r + '-E' + r + ',"n/a")', 'num', INT);
       var rule = { P: 'IF(D' + r + '=E' + r + ',"PASS","FAIL")', GE: 'IF(D' + r + '>=E' + r + ',"PASS","FAIL")', GT: 'IF(D' + r + '>E' + r + ',"PASS","REVIEW")', NE: 'IF(D' + r + '<>E' + r + ',"PASS","REVIEW")', R: 'IF(D' + r + '=E' + r + ',"PASS","REVIEW")' }[x[3]];
+      if (x[2] === null) rule = '"n/a"';
       S(ws, 'G' + r, '=IFERROR(' + rule + ',"n/a")', 'body', null, { bold: true, align: 'center' }); S(ws, 'H' + r, x[4], 'note', null, { wrap: true }); ws.height(r, 26);
     });
     var CE = 7 + checks.length;
@@ -868,7 +924,7 @@
     head(ws, 7, ['Reference data (sent by)', 'What it contains', 'What this workbook takes from it', 'Where it is in this workbook']);
     var srows = [[dn('raw'), 'Every online banking activity in the quarter, one row per transaction or action', "Month, type, status, service, beneficiary bank, biller, card and amount; each CIF's gender, age and staff tag", 'Data_Txn, Data_CIF, Lists'],
       [dn('rib'), 'Financial transactions only, in the older RIB layout', files.rib ? 'Totals used only to cross-check the DRB Usage export' : 'Not supplied this quarter; cross-checks show n/a', 'Data_Channels (bottom table), Checks'],
-      [dn('cif'), 'Total CIFs, enrolled CIFs, CIFs with usage; active vs idle by generation and staff tag', 'Those figures, typed in from the text or snippet sent', 'Inputs'],
+      [dn('cif'), 'Total CIFs, total enrolled CIFs, CIF w/ usage; active vs idle by generation and staff tag', 'Those figures, typed in from the text or snippet sent', 'Inputs'],
       [dn('idle'), 'Every enrolled account with no login for 90 days or more, with its balance', files.idle ? "Each CIF's number of accounts, total balance and least idle days" : 'Not supplied this quarter', 'Data_Idle'],
       [dn('drb_summary'), 'Monthly DRB, API, InstaPay and PESONet counts', 'Monthly fund-transfer counts for DRB and API; InstaPay and PESONet sending and receiving', 'Data_Channels'],
       [dn('itcom_dcb'), 'Monthly DCB (corporate) transaction counts', 'Monthly DCB fund transfers to other banks', 'Data_Channels'],
@@ -887,12 +943,14 @@
     head(ws, 7, ['Figure', 'What it means', 'How it is calculated', 'Source']);
     var meth = [
       ['Total CIFs', 'All client records (CIFs), excluding dormant and closed.', 'Typed in.', 'CIF Profile'],
-      ['Enrolled CIFs', 'Clients enrolled in Sterling Bank Online, excluding dormant and closed.', 'Typed in.', 'CIF Profile'],
+      ['Total enrolled CIFs', 'Clients enrolled in Sterling Bank Online, excluding dormant and closed. Base for every usage %.', 'Typed in.', 'CIF Profile'],
       ['Enrolment rate', 'Share of all clients that are enrolled.', 'Enrolled CIFs ÷ Total CIFs.', 'Usage sheet'],
-      ['Active – with financial transactions', 'Enrolled clients who made at least one financial transaction (a money movement such as a transfer, QR payment or bills payment) this quarter, successful or not. Password changes, sign-ups and other settings do not count.', 'Clients on Data_CIF with FINANCIAL ROWS above zero. Same basis as the RIB Usage export used up to Q1 2026.', 'DRB Usage'],
-      ['Inactive', 'Enrolled clients with no login for more than 90 days who still hold a balance.', 'On Data_Idle: clients whose balance (summed across accounts) is above zero and whose least idle days exceed 90. Reproduces the Q1 2026 figure exactly.'  /* the skill's text quotes the figure; real figures stay out of the repo */, 'RIB Idle Accounts Report'],
-      ['Active – logged in only', 'Enrolled clients who logged in within 90 days but did not transact.', 'Enrolled − (with financial transactions + inactive).', 'Usage sheet'],
-      ['Active users', 'Enrolled clients who transacted or logged in within 90 days.', 'With financial transactions + logged in only.', 'Usage sheet'],
+      ['Have financial transactions', 'Enrolled clients who made at least one financial transaction (a money movement such as a transfer, QR payment or bills payment) this quarter, successful or not. Password changes, sign-ups and other settings do not count.', 'Clients on Data_CIF with FINANCIAL ROWS above zero. Same basis as the RIB Usage export used up to Q1 2026.', 'DRB Usage'],
+      ['Inactive (not logged in for > 90 days)', 'Enrolled clients with no login for more than 90 days who still hold a balance.', 'On Data_Idle: clients whose balance (summed across accounts) is above zero and whose least idle days exceed 90. Reproduces the Q1 2026 figure exactly.'  /* the skill's text quotes the figure; real figures stay out of the repo */, 'RIB Idle Accounts Report'],
+      ['Have logged in to their accounts', 'Enrolled clients who logged in within 90 days but did not transact.', 'Enrolled − (with financial transactions + inactive).', 'Usage sheet'],
+      ['Active users', 'Enrolled clients who transacted or logged in within 90 days.', 'Have financial transactions + have logged in to their accounts.', 'Usage sheet'],
+      ["Have any online activity (Sir RD's count)", "Enrolled clients with any row in the usage file this quarter, including password changes, sign-ups, favorites, alerts and statement requests. The Q2 2026 deck reported this as 'have financial transactions'. Shown for comparison only.", 'All clients on Data_CIF (COUNTA). Active users are the same on both counts.', 'DRB Usage'],
+      ['CIF w/ usage (CIF Profile)', "Ms. Hong's own usage figure, net of seniors, Neo below 18, BOS accounts, Iremit, closed and dormant.", 'Typed in; not traced to the export.', 'CIF Profile'],
       ['Gender and generation', 'Profile of clients who transacted. Clients with no gender or age are left out of the %.', "COUNTIF on Data_CIF's GENDER and AGE columns.", 'DRB Usage'],
       ['Generation, active vs idle', 'All enrolled clients by generation, split by login within 90 days.', 'Typed in; % are column shares.', 'CIF Profile'],
       ['Transaction count', 'Successful transactions, grouped into report types; financial transactions first, other online activity listed separately.', 'SUMIFS on Data_Txn by status, category and month. The Financial? flag comes from the Map sheet.', 'DRB Usage'],
@@ -917,7 +975,7 @@
       'the headline figures and what they show. Every number and sentence here is a formula linked to the detailed sheets, so it updates by itself.', 'M', false);
     var tiles = [['ENROLMENT RATE', '=u_enrol_pct', '0%', '=TEXT(in_enrolled,"#,##0")&" of "&TEXT(in_total_cif,"#,##0")&" CIFs"', '=(u_enrol_pct-u_enrol_pct_p)*100', PTSF],
       ['ACTIVE USERS', '=u_active_pct', '0%', '=TEXT(u_active,"#,##0")&" of enrolled CIFs"', '=(u_active_pct-u_active_pct_p)*100', PTSF],
-      ['CIFs WITH FIN. TXNS', '=u_fin', '#,##0', '=TEXT(u_fin_pct,"0%")&" of enrolled CIFs"', '=u_fin/p_fin-1', PCHG],
+      ['HAVE FIN. TXNS', '=u_fin', '#,##0', '=TEXT(u_fin_pct,"0%")&" of enrolled CIFs"', '=u_fin/p_fin-1', PCHG],
       ['FINANCIAL TXNS', '=t_total', '#,##0', '="Top type: "&TEXT(t_top1_pct,"0%")&" of total"', '=IF(p_txn_total="","no prior figure",t_total/p_txn_total-1)', PCHG],
       ['DRB MONTHLY AVG FT', '=c_drb_avg', '#,##0', '=TEXT(c_drb_share,"0%")&" of all channels"', '=c_drb_chg', PCHG],
       ['CARD TRANSACTIONS', '=k_total', '#,##0', '=TEXT(k_cards,"#,##0")&" cards with activity"', '=k_chg', PCHG]];
@@ -937,9 +995,9 @@
     S(ws, 'B14', 'What the data shows', 'h2');
     var stm = [
       '="Enrolment stands at "&TEXT(u_enrol_pct,"0%")&" of total CIFs ("&TEXT(in_enrolled,"#,##0")&" of "&TEXT(in_total_cif,"#,##0")&"), "&IF(in_enrolled>=p_enrolled,"up ","down ")&TEXT(ABS(in_enrolled/p_enrolled-1),"0%")&" from "&TEXT(p_enrolled,"#,##0")&" in "&in_pq&"."',
-      '=TEXT(u_active,"#,##0")&" enrolled CIFs ("&TEXT(u_active_pct,"0%")&") are active users: "&TEXT(u_fin,"#,##0")&" with financial transactions and "&TEXT(u_login,"#,##0")&" that logged in only. "&TEXT(in_inactive,"#,##0")&" ("&TEXT(u_inactive_pct,"0%")&") have not logged in for more than 90 days."',
-      '="CIFs with financial transactions "&IF(u_fin>=p_fin,"rose ","fell ")&TEXT(ABS(u_fin/p_fin-1),"0%")&" to "&TEXT(u_fin,"#,##0")&" from "&TEXT(p_fin,"#,##0")&"; logged-in-only CIFs "&IF(u_login>=p_login,"rose ","fell ")&TEXT(ABS(u_login/p_login-1),"0%")&" to "&TEXT(u_login,"#,##0")&" from "&TEXT(p_login,"#,##0")&"."',
-      '="Of transacting CIFs, "&TEXT(pr_f_pct,"0%")&" are female and "&TEXT(pr_mill_pct,"0%")&" are Millennials. Of all enrolled CIFs, Millennials are "&TEXT(pr_mill_enr_pct,"0%")&"."',
+      '=TEXT(u_active,"#,##0")&" enrolled CIFs ("&TEXT(u_active_pct,"0%")&") are active users: "&TEXT(u_fin,"#,##0")&" have financial transactions and "&TEXT(u_login,"#,##0")&" have logged in to their accounts. "&TEXT(in_inactive,"#,##0")&" ("&TEXT(u_inactive_pct,"0%")&") have not logged in for more than 90 days."',
+      '="CIFs with financial transactions "&IF(u_fin>=p_fin,"rose ","fell ")&TEXT(ABS(u_fin/p_fin-1),"0%")&" to "&TEXT(u_fin,"#,##0")&" from "&TEXT(p_fin,"#,##0")&"; CIFs that have logged in to their accounts "&IF(u_login>=p_login,"rose ","fell ")&TEXT(ABS(u_login/p_login-1),"0%")&" to "&TEXT(u_login,"#,##0")&" from "&TEXT(p_login,"#,##0")&"."',
+      '="Of CIFs with financial transactions, "&TEXT(pr_f_pct,"0%")&" are female and "&TEXT(pr_mill_pct,"0%")&" are Millennials. Of all enrolled CIFs, Millennials are "&TEXT(pr_mill_enr_pct,"0%")&"."',
       '="The top three transaction types are "&t_top1&" ("&TEXT(t_top1_pct,"0%")&"), "&t_top2&" ("&TEXT(t_top2_pct,"0%")&") and "&t_top3&" ("&TEXT(t_top3_pct,"0%")&"), out of "&TEXT(t_total,"#,##0")&" successful financial transactions"&IF(p_txn_total="","."," ("&TEXT(t_total/p_txn_total-1,"+0%;-0%")&" vs "&in_pq&").")',
       '="DRB fund transfers to and from other banks averaged "&TEXT(c_drb_avg,"#,##0")&" a month ("&TEXT(c_drb_chg,"+0%;-0%")&" vs "&in_pq&"); DCB averaged "&TEXT(c_dcb_avg,"#,##0")&" ("&TEXT(c_dcb_chg,"+0%;-0%")&") and API "&TEXT(c_api_avg,"#,##0")&" ("&TEXT(c_api_chg,"+0%;-0%")&")."',
       '="InstaPay carries "&TEXT(c_ip_pct+c_qrp2p_pct,"0%")&" of DRB transfers to other banks, of which QR P2P is "&TEXT(c_qrp2p_pct,"0%")&" of the total. "&bb_bank1&" receives "&TEXT(bb_bank1_pct,"0%")&" of these transfers."',
@@ -998,7 +1056,7 @@
     var checks = [], CE = 8;
     for (var r = 8; get('Checks', 'C' + r); r++) { checks.push({ n: get('Checks', 'B' + r), label: get('Checks', 'C' + r), a: get('Checks', 'D' + r), b: get('Checks', 'E' + r), result: get('Checks', 'G' + r), why: get('Checks', 'H' + r) }); CE = r; }
     var top = function (r0, n) { var out = []; for (var i = 0; i < n; i++) out.push({ name: get('Billers_Banks', 'C' + (r0 + i)), count: get('Billers_Banks', 'D' + (r0 + i)), pct: get('Billers_Banks', 'E' + (r0 + i)) }); return out; };
-    var qoq = []; for (r = 10; get('QoQ', 'B' + r) && r < 40; r++) qoq.push({ label: get('QoQ', 'B' + r), cur: get('QoQ', 'C' + r), prior: get('QoQ', 'D' + r), chg: get('QoQ', 'E' + r), pchg: get('QoQ', 'F' + r), pct: /rate|share/i.test(get('QoQ', 'B' + r)) });
+    var qoq = []; for (r = 10; get('QoQ', 'B' + r) && r < 40; r++) qoq.push({ label: get('QoQ', 'B' + r), cur: get('QoQ', 'C' + r), prior: get('QoQ', 'D' + r), chg: get('QoQ', 'E' + r), pchg: get('QoQ', 'F' + r), pct: /rate|share|%/i.test(get('QoQ', 'B' + r)) });
     var stm = []; for (r = 15; r < 23; r++) stm.push(get('Summary', 'B' + r));
     return {
       tiles: [
@@ -1017,9 +1075,12 @@
   /* ---------- prior quarter, read from last quarter's workbook (QoQ carry-forward + Transactions quarter totals) ---------- */
   var CARRY = { 'Total CIFs': 'total_cif', 'Total enrolled CIFs': 'enrolled', 'CIFs with usage (as supplied)': 'cif_usage', 'Inactive CIFs': 'inactive',
     'Active CIFs with financial transactions': 'fin', 'Active CIFs, logged in only': 'login', 'Transacting CIFs – female': 'female', 'Transacting CIFs – male': 'male',
+    // labels used from the Q3 2026 layout on (older workbooks use the ones above)
+    'CIF w/ usage (CIF Profile)': 'cif_usage', 'Inactive (not logged in for > 90 days)': 'inactive', 'Have financial transactions': 'fin', 'Have logged in to their accounts': 'login',
+    "Have any online activity (Sir RD's count)": 'cif_any', 'Have financial transactions – female': 'female', 'Have financial transactions – male': 'male',
     'Successful financial transactions': 'txn_total', 'Fund transfers to other banks (DRB)': 'ftob', '…of which InstaPay, regular (non-QR)': 'ip_nonqr', 'Transactions from cards': 'card' };
   QRG.forEach(function (g, j) { CARRY[g] = ['qr_ob', 'qr_p2m', 'qr_3p', 'qr_own', 'qr_p2b', 'qr_micro'][j]; });
-  DRB.PRIOR_KEYS = ['total_cif', 'enrolled', 'cif_usage', 'fin', 'login', 'inactive', 'female', 'male', 'txn_total', 'ftob', 'ip_nonqr', 'card', 'qr_ob', 'qr_p2m', 'qr_3p', 'qr_own', 'qr_p2b', 'qr_micro'];
+  DRB.PRIOR_KEYS = ['total_cif', 'enrolled', 'cif_usage', 'fin', 'cif_any', 'login', 'inactive', 'female', 'male', 'txn_total', 'ftob', 'ip_nonqr', 'card', 'qr_ob', 'qr_p2m', 'qr_3p', 'qr_own', 'qr_p2b', 'qr_micro'];
   DRB.readPrior = function (book) {   // book: parsed .xlsx (cached values)
     var q = book.grids.QoQ, t = book.grids.Transactions, inp = book.grids.Inputs;
     if (!q || !t) stop('This does not look like a DRB Usage worked-figures workbook (no QoQ or Transactions sheet).');
@@ -1110,7 +1171,7 @@
   }
   // -> Promise<{rows, sheet}>. data: Blob | ArrayBuffer | Uint8Array.
   DRB.readRawXlsx = function (data, agg, onProgress) {
-    var JSZip = root.JSZip, zip, sheetPath, sstPath = null, prog = onProgress || function () {};
+    var JSZip = root.JSZip, zip, paths, hasRaw, hdrRow = 1, sstPath = null, prog = onProgress || function () {};
     prog('Opening the file…', 0);
     return JSZip.loadAsync(data).then(function (z) {
       zip = z;
@@ -1124,42 +1185,54 @@
         var path = tg[1].charAt(0) === '/' ? tg[1].slice(1) : 'xl/' + tg[1].replace(/^\.\//, '');
         rels[id[1]] = path; if (ty && /sharedStrings$/.test(ty[1])) sstPath = path;
       }
-      var raw = sheets.filter(function (s) { return s.name.trim().toUpperCase() === 'RAW'; })[0] || (sheets.length === 1 ? sheets[0] : null);
-      if (!raw) stop('No sheet named RAW in the DRB Usage export (sheets: ' + sheets.map(function (s) { return s.name; }).join(', ') + ').');
-      sheetPath = rels[raw.id];
-      if (!zip.file(sheetPath)) stop('The RAW sheet could not be found inside the file.');
+      // the RAW sheet if there is one; otherwise every sheet in order (the RIB Usage Report V2 runs over several sheets)
+      var raw = sheets.filter(function (s) { return s.name.trim().toUpperCase() === 'RAW'; });
+      hasRaw = raw.length > 0;
+      paths = (hasRaw ? raw : sheets).map(function (s) { return rels[s.id]; }).filter(function (p) { return p && zip.file(p); });
+      if (!paths.length) stop('The sheet with the transactions could not be found inside the file.');
       if (sstPath && !zip.file(sstPath)) sstPath = null;
-      // pass 1: header row only
-      var header = null;
-      return streamEntry(zip.file(sheetPath), (function () {
-        var scan = sheetScanner(function (rn, cells) { if (!header) header = cells; });
-        return function (t, done) { scan(t, done); return !header; };
-      })()).then(function () { return header; });
-    }).then(function (header) {
-      if (!header) stop('The RAW sheet is empty.');
-      var want = {}; header.forEach(function (c) { if (c && c.s >= 0) want[c.s] = 1; });
-      return loadStrings(want, true).then(function (sst) {
-        var names = header.map(function (c) { if (!c) return ''; var v = c.s >= 0 ? sst[c.s] : c.v; return v === null || v === undefined ? '' : String(v).trim(); });
-        var cols = RAW_NEED.map(function (k) { return names.indexOf(k); });
+      // pass 1: the first 40 rows of the first sheet, to find the header row
+      var top = [], wantS = {};
+      return streamEntry(zip.file(paths[0]), (function () {
+        var scan = sheetScanner(function (rn, cells) {
+          if (top.length >= 40) return;
+          top.push({ rn: rn, cells: cells }); cells.forEach(function (c) { if (c && c.s >= 0) wantS[c.s] = 1; });
+        });
+        return function (t, done) { scan(t, done); return top.length < 40; };
+      })()).then(function () { return loadStrings(wantS, true); }).then(function (sst) {
+        var named = top.map(function (r) { return r.cells.map(function (c) { if (!c) return ''; var v = c.s >= 0 ? sst[c.s] : c.v; return v === null || v === undefined ? '' : String(v).trim(); }); });
+        var h = named.map(function (n) { return n.indexOf('TRANSACTION_TYPE') >= 0 && n.indexOf('CIF_ID_NO') >= 0; }).indexOf(true);
+        if (h < 0 && !hasRaw) stop('No header row with TRANSACTION_TYPE and CIF_ID_NO was found in this workbook. Is it the DRB Usage / RIB Usage Report V2 export?');
+        if (h < 0) h = 0;
+        if (!top.length) stop('The RAW sheet is empty.');
+        var cols = RAW_NEED.map(function (k) { return named[h].indexOf(k); });
         var miss = RAW_NEED.filter(function (k, i) { return cols[i] < 0; });
-        if (miss.length) stop('This does not look like the DRB Usage export: column(s) ' + miss.join(', ') + ' not found on the RAW sheet.');
+        if (miss.length) stop('This does not look like the DRB Usage export: column(s) ' + miss.join(', ') + ' not found' + (hasRaw ? ' on the RAW sheet.' : '.'));
+        hdrRow = top[h].rn;
         return cols;
       });
     }).then(function (cols) {
-      // pass 2: every row, the needed columns only
-      var rows = [], masks = [], needS = {}, first = true, want = {};
+      // pass 2: every row after the header, the needed columns only
+      var rows = [], masks = [], needS = {}, want = {}, si = 0;
       cols.forEach(function (c) { want[c] = true; });
-      var scan = sheetScanner(function (rn, cells) {
-        if (first) { first = false; return; }
-        var row = new Array(cols.length), mask = 0;
-        for (var k = 0; k < cols.length; k++) {
-          var c = cells[cols[k]];
-          if (!c) { row[k] = null; continue; }
-          if (c.s >= 0) { row[k] = c.s; mask |= 1 << k; needS[c.s] = 1; } else row[k] = c.v;
-        }
-        rows.push(row); masks.push(mask);
-      }, want);
-      return streamEntry(zip.file(sheetPath), function (t, done) { scan(t, done); }, function (p) { prog('Reading the transactions… ' + Math.round(p) + '%', p * 0.8); })
+      var scan = function () {
+        return sheetScanner(function (rn, cells) {
+          if (si === 0 && rn <= hdrRow) return;
+          var row = new Array(cols.length), mask = 0;
+          for (var k = 0; k < cols.length; k++) {
+            var c = cells[cols[k]];
+            if (!c) { row[k] = null; continue; }
+            if (c.s >= 0) { row[k] = c.s; mask |= 1 << k; needS[c.s] = 1; } else row[k] = c.v;
+          }
+          rows.push(row); masks.push(mask);
+        }, want);
+      };
+      return paths.reduce(function (pr, path, k) {
+        return pr.then(function () {
+          si = k; var sc = scan(), lab = paths.length > 1 ? ' (sheet ' + (k + 1) + ' of ' + paths.length + ')' : '';
+          return streamEntry(zip.file(path), function (t, done) { sc(t, done); }, function (p) { prog('Reading the transactions' + lab + '… ' + Math.round(p) + '%', (k + p / 100) / paths.length * 80); });
+        });
+      }, Promise.resolve())
         .then(function () { return loadStrings(needS, false); })
         .then(function (sst) {
           prog('Summarising ' + rows.length.toLocaleString('en-US') + ' rows…', 95);
@@ -1169,7 +1242,7 @@
             if (m) for (var k = 0; k < r.length; k++) if (m & (1 << k)) r[k] = sst[r[k]];
             agg.row(r); rows[i] = null;
           }
-          return { rows: agg.n };
+          return { rows: agg.n, layout: hasRaw ? 'raw' : 'v2' };
         });
     });
     function loadStrings(want, early) {   // shared strings, only the wanted indices
@@ -1186,6 +1259,45 @@
         return !(early && left <= 0);
       }, early ? null : function (p) { prog('Reading names and labels… ' + Math.round(p) + '%', 80 + p * 0.15); }).then(function () { return out; });
     }
+  };
+  // What a large .xlsx holds, without opening it whole: 'raw' (RAW sheet, or the V2 header on the first sheet) or null.
+  DRB.xlsxKind = function (data) {
+    var JSZip = root.JSZip, zip;
+    return JSZip.loadAsync(data).then(function (z) {
+      zip = z;
+      return Promise.all([z.file('xl/workbook.xml').async('string'), z.file('xl/_rels/workbook.xml.rels').async('string')]);
+    }).then(function (x) {
+      if (/<sheet\b[^>]*?name="\s*RAW\s*"/i.test(x[0])) return 'raw';
+      var first = /<sheet\b[^>]*?r:id="([^"]*)"/.exec(x[0]), rels = {}, sstPath = null, m, rr = /<Relationship\b([^>]*)\/?>/g;
+      while ((m = rr.exec(x[1]))) {
+        var id = /Id="([^"]*)"/.exec(m[1]), tg = /Target="([^"]*)"/.exec(m[1]), ty = /Type="([^"]*)"/.exec(m[1]);
+        if (!id || !tg) continue;
+        var path = tg[1].charAt(0) === '/' ? tg[1].slice(1) : 'xl/' + tg[1].replace(/^\.\//, '');
+        rels[id[1]] = path; if (ty && /sharedStrings$/.test(ty[1])) sstPath = path;
+      }
+      if (!first || !zip.file(rels[first[1]])) return null;
+      var top = [], want = {};
+      return streamEntry(zip.file(rels[first[1]]), (function () {
+        var scan = sheetScanner(function (rn, cells) { if (top.length < 40) { top.push(cells); cells.forEach(function (c) { if (c && c.s >= 0) want[c.s] = 1; }); } });
+        return function (t, done) { scan(t, done); return top.length < 40; };
+      })()).then(function () {
+        if (!sstPath || !zip.file(sstPath)) return {};
+        var out = {}, left = Object.keys(want).length, buf = '', idx = 0;
+        if (!left) return out;
+        return streamEntry(zip.file(sstPath), function (text, done) {
+          buf += text; var end = done ? buf.length : buf.lastIndexOf('</si>'); if (end < 0) return true; if (!done) end += 5;
+          var seg = buf.slice(0, end), re = /<si\b[^>]*?(?:\/>|>([\s\S]*?)<\/si>)/g, mm; buf = buf.slice(end);
+          while ((mm = re.exec(seg))) { if (want[idx]) { out[idx] = siText(mm[1] || ''); left--; } idx++; }
+          return left > 0;
+        }).then(function () { return out; });
+      }).then(function (sst) {
+        var hit = top.some(function (cells) {
+          var v = cells.map(function (c) { if (!c) return ''; var y = c.s >= 0 ? sst[c.s] : c.v; return y === null || y === undefined ? '' : String(y).trim(); });
+          return RAW_NEED.every(function (k) { return v.indexOf(k) >= 0; });
+        });
+        return hit ? 'raw' : null;
+      });
+    });
   };
   // CSV (the RAW sheet saved as CSV): streamed; quotes handled; same columns.
   DRB.readRawCsv = function (blob, agg, onProgress) {
@@ -1241,6 +1353,118 @@
     });
   };
 
+  /* ---------- .xlsb (Excel binary workbook): records read straight from the zip, one sheet at a time ---------- */
+  function biffRecords(u8, cb) {   // cb(type, start, len) for every record
+    var p = 0, n = u8.length;
+    while (p < n) {
+      var t = u8[p++]; if (t & 0x80) t = (t & 0x7F) | ((u8[p++] & 0x7F) << 7);
+      var len = 0, sh = 0, b;
+      for (var k = 0; k < 4; k++) { b = u8[p++]; len |= (b & 0x7F) << sh; sh += 7; if (!(b & 0x80)) break; }
+      if (cb(t, p, len) === false) return;
+      p += len;
+    }
+  }
+  var U16 = typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-16le') : null;
+  function wideStr(u8, dv, p) {   // XLWideString -> [text, nextPos]
+    var cch = dv.getUint32(p, true); p += 4;
+    if (cch === 0xFFFFFFFF) return [null, p];
+    return [U16.decode(u8.subarray(p, p + cch * 2)), p + cch * 2];
+  }
+  function rk(v) {
+    var x = v & 2 ? (v >> 2) : (function () { var b = new DataView(new ArrayBuffer(8)); b.setInt32(4, v & 0xFFFFFFFC, true); b.setInt32(0, 0, true); return b.getFloat64(0, true); })();
+    return v & 1 ? x / 100 : x;
+  }
+  // onRow(sheetIndex, rowIndex, cells[]) for every row of every sheet (or only the sheets onSheets(names) returns).
+  DRB.xlsbRows = function (data, onSheets, onRow, onProgress) {
+    var JSZip = root.JSZip, zip, prog = onProgress || function () {}, sst = [], halt = false;   // onRow may return false to stop
+    return JSZip.loadAsync(data).then(function (z) {
+      zip = z;
+      if (!z.file('xl/workbook.bin')) stop('This is not an Excel binary (.xlsb) workbook.');
+      return Promise.all([z.file('xl/workbook.bin').async('uint8array'), z.file('xl/_rels/workbook.bin.rels').async('string')]);
+    }).then(function (x) {
+      var wbb = x[0], dv = new DataView(wbb.buffer, wbb.byteOffset, wbb.byteLength), sheets = [], rels = {}, sstPath = null, m;
+      biffRecords(wbb, function (t, p, len) {
+        if (t === 0x9C) { var a = wideStr(wbb, dv, p + 8), b = wideStr(wbb, dv, a[1]); sheets.push({ id: a[0], name: b[0] }); }
+      });
+      var rr = /<Relationship\b([^>]*)\/?>/g;
+      while ((m = rr.exec(x[1]))) {
+        var id = /Id="([^"]*)"/.exec(m[1]), tg = /Target="([^"]*)"/.exec(m[1]), ty = /Type="([^"]*)"/.exec(m[1]);
+        if (!id || !tg) continue;
+        var path = tg[1].charAt(0) === '/' ? tg[1].slice(1) : 'xl/' + tg[1].replace(/^\.\//, '');
+        rels[id[1]] = path; if (ty && /sharedStrings$/.test(ty[1])) sstPath = path;
+      }
+      var use = onSheets ? onSheets(sheets.map(function (s) { return s.name; })) : sheets.map(function (s, i) { return i; });
+      var job = sstPath && zip.file(sstPath) ? zip.file(sstPath).async('uint8array').then(function (u) {
+        var d = new DataView(u.buffer, u.byteOffset, u.byteLength);
+        biffRecords(u, function (t, p) { if (t === 0x13) sst.push(wideStr(u, d, p + 1)[0]); });
+      }) : Promise.resolve();
+      return use.reduce(function (pr, si, k) {
+        return pr.then(function () {
+          if (halt) return;
+          prog('Reading sheet ' + (k + 1) + ' of ' + use.length + '…', 5 + 85 * k / use.length);
+          var f = zip.file(rels[sheets[si].id]); if (!f) return;
+          return f.async('uint8array').then(function (u) {
+            var d = new DataView(u.buffer, u.byteOffset, u.byteLength), row = -1, cells = null, col = -1;
+            var flush = function () { if (cells && onRow(k, row, cells) === false) halt = true; };
+            biffRecords(u, function (t, p) {
+              if (t === 0) { flush(); if (halt) return false; row = d.getUint32(p, true); cells = []; col = -1; return; }
+              if (t >= 1 && t <= 11) {
+                col = d.getUint32(p, true); var q = p + 8;
+                if (t === 2) cells[col] = rk(d.getInt32(q, true)); else if (t === 3) cells[col] = null; else if (t === 4) cells[col] = u[q] === 1;
+                else if (t === 5) cells[col] = d.getFloat64(q, true); else if (t === 6) cells[col] = wideStr(u, d, q)[0]; else if (t === 7) cells[col] = sst[d.getUint32(q, true)];
+                else if (t === 8) cells[col] = wideStr(u, d, q)[0]; else if (t === 9) cells[col] = d.getFloat64(q, true); else if (t === 10) cells[col] = u[q] === 1; else if (t === 11) cells[col] = null;
+                return;
+              }
+              if (t >= 12 && t <= 18) {
+                col++; var q2 = p + 4;
+                if (t === 13) cells[col] = rk(d.getInt32(q2, true)); else if (t === 15) cells[col] = u[q2] === 1; else if (t === 16) cells[col] = d.getFloat64(q2, true);
+                else if (t === 17) cells[col] = wideStr(u, d, q2)[0]; else if (t === 18) cells[col] = sst[d.getUint32(q2, true)]; else cells[col] = null;
+              }
+            });
+            if (!halt) flush();
+          });
+        });
+      }, job);
+    });
+  };
+  // What an .xlsb holds, from its first 40 rows: 'raw' (DRB Usage / RIB Usage Report V2 layout), 'rib' (Regular Extraction of RIB Usage Report) or null.
+  DRB.xlsbKind = function (data) {
+    var kind = null, synthetic = false, n = 0;
+    return DRB.xlsbRows(data, function () { return [0]; }, function (si, ri, cells) {
+      var v = cells.map(function (c) { return c === null || c === undefined ? '' : String(c).trim(); });
+      if (v.some(function (x) { return /synthetic test data/i.test(x); })) synthetic = true;
+      if (v.indexOf('TRANSACTION_TYPE') >= 0) {
+        kind = RAW_NEED.every(function (k) { return v.indexOf(k) >= 0; }) ? 'raw' : v.indexOf('STATUS') >= 0 && v.indexOf('CIF_ID_NO') >= 0 ? 'rib' : null;
+        return false;
+      }
+      return ++n < 40;
+    }).then(function () { return { kind: kind, synthetic: synthetic }; });
+  };
+  // The export as .xlsb (e.g. "RIB Usage Report V2"): header row found on the first sheet; later sheets carry on without one.
+  DRB.readRawXlsb = function (data, agg, onProgress) {
+    var cols = null, layout = 'v2';
+    return DRB.xlsbRows(data, function (names) {
+      var raw = names.map(function (n, i) { return n.trim().toUpperCase() === 'RAW' ? i : -1; }).filter(function (i) { return i >= 0; });
+      if (raw.length) layout = 'raw';
+      return raw.length ? raw : names.map(function (n, i) { return i; });
+    }, function (si, ri, cells) {
+      if (!cols) {
+        var names = cells.map(function (c) { return c === null || c === undefined ? '' : String(c).trim(); });
+        if (names.indexOf('TRANSACTION_TYPE') >= 0 && names.indexOf('CIF_ID_NO') >= 0) {
+          cols = RAW_NEED.map(function (k) { return names.indexOf(k); });
+          var miss = RAW_NEED.filter(function (k, i) { return cols[i] < 0; });
+          if (miss.length) stop('This does not look like the DRB Usage export: column(s) ' + miss.join(', ') + ' not found.');
+          agg.header(RAW_NEED);
+        }
+        return;
+      }
+      agg.row(cols.map(function (c) { var v = cells[c]; return v === undefined ? null : v; }));
+    }, onProgress).then(function () {
+      if (!cols) stop('No header row with TRANSACTION_TYPE and CIF_ID_NO was found in this workbook. Is it the DRB Usage / RIB Usage Report V2 export?');
+      return { rows: agg.n, layout: layout };
+    });
+  };
+
   /* ---------- quarter helpers ---------- */
   var QMONTHS = [['JANUARY', 'FEBRUARY', 'MARCH'], ['APRIL', 'MAY', 'JUNE'], ['JULY', 'AUGUST', 'SEPTEMBER'], ['OCTOBER', 'NOVEMBER', 'DECEMBER']];
   var QEND = ['31 March', '30 June', '30 September', '31 December'];
@@ -1249,8 +1473,9 @@
     return { quarter: 'Q' + q + ' ' + y, period: cap(QMONTHS[q - 1][0]) + ' – ' + cap(QMONTHS[q - 1][2]) + ' ' + y, months: QMONTHS[q - 1].slice(),
       prior_quarter: 'Q' + pq + ' ' + py, prior_months: QMONTHS[pq - 1].slice(), as_of: QEND[q - 1] + ' ' + y, folder: y + '-Q' + q, priorFolder: py + '-Q' + pq };
   };
+  DRB.V2_DISPLAY = 'RIB Usage Report V2 (shared folder RIBUsageMailerRecipients$), DRB Usage layout';   // raw source name when the export is the V2 report
   DRB.DEFAULT_DISPLAY = {
-    raw: 'DRB Usage (Ms. Maria Hong, Retail Banking Group)', rib: 'RIB Usage (shared folder RIBUsageMailerRecipients$)', cif: 'CIF Profile (Ms. Maria Hong)',
+    raw: 'DRB Usage (Ms. Maria Hong, Retail Banking Group)', rib: 'Regular Extraction of RIB Usage Report (shared folder RIBUsageMailerRecipients$)', cif: 'CIF Profile (Ms. Maria Hong)',
     itcom_dcb: 'ITCom DCB Reports (Sir Jun Salvador)', drb_summary: 'DRB Reports (Sir Jun Salvador)', idle: 'RIB Idle Accounts Report (ATUS automailer)', dcb_stats: 'DRB DCB Stats (optional cross-check)'
   };
   // Generations: the age bands as of 2026; move every band up by one each January (as the skill says).

@@ -3,7 +3,7 @@
    Supports: cell values and formulas (with cached values from core/xlsx-calc.js), fonts, fills, borders,
    alignment, number formats, cell protection, merges, column widths, row heights, frozen panes,
    auto-filter, tab colour, hidden gridlines, page setup + footer, sheet protection, defined names,
-   data validation, conditional formatting (cellIs), internal hyperlinks, bar and doughnut charts.
+   data validation, conditional formatting (cellIs), internal hyperlinks, bar, line and doughnut charts.
    Model only; no DOM. A string starting with "=" is a formula, as in openpyxl. */
 (function (root) {
   'use strict';
@@ -106,6 +106,12 @@
   function q(sheet) { return "'" + String(sheet).replace(/'/g, "''") + "'"; }
   function absRef(sheet, ref) { return q(sheet) + '!' + ref.replace(/([A-Z]+)(\d+)/g, '$$$1$$$2'); }
   function fill(c) { return '<a:solidFill><a:srgbClr val="' + String(c).toUpperCase() + '"/></a:solidFill>'; }
+  function axes(dir) {
+    return '<c:catAx><c:axId val="10"/><c:scaling><c:orientation val="' + (dir === 'bar' ? 'maxMin' : 'minMax') + '"/></c:scaling><c:delete val="0"/><c:axPos val="' + (dir === 'bar' ? 'l' : 'b') + '"/>' +
+        '<c:numFmt formatCode="General" sourceLinked="0"/><c:majorTickMark val="none"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/><c:crossAx val="100"/><c:crosses val="autoZero"/><c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/><c:noMultiLvlLbl val="0"/></c:catAx>' +
+        '<c:valAx><c:axId val="100"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="' + (dir === 'bar' ? 'b' : 'l') + '"/><c:numFmt formatCode="#,##0" sourceLinked="0"/>' +
+        '<c:majorTickMark val="none"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/><c:crossAx val="10"/><c:crosses val="autoZero"/><c:crossBetween val="between"/></c:valAx>';
+  }
   function chartXml(ch) {
     var title = '<c:title><c:tx><c:rich><a:bodyPr/><a:p><a:pPr><a:defRPr/></a:pPr><a:r><a:t>' + esc(ch.title) + '</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title><c:autoTitleDeleted val="0"/>';
     var body;
@@ -116,6 +122,16 @@
         '<c:cat><c:strRef><c:f>' + esc(ch.cats) + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + esc(s.ref) + '</c:f></c:numRef></c:val></c:ser>' +
         '<c:dLbls><c:showLegendKey val="0"/><c:showVal val="0"/><c:showCatName val="0"/><c:showSerName val="0"/><c:showPercent val="1"/><c:showBubbleSize val="0"/><c:showLeaderLines val="0"/></c:dLbls>' +
         '<c:firstSliceAng val="0"/><c:holeSize val="' + (ch.hole || 55) + '"/></c:doughnutChart>';
+    } else if (ch.type === 'line') {
+      body = '<c:lineChart><c:grouping val="standard"/><c:varyColors val="0"/>' +
+        ch.series.map(function (s, i) {
+          var tx = s.titleRef ? '<c:tx><c:strRef><c:f>' + esc(s.titleRef) + '</c:f></c:strRef></c:tx>' : s.title ? '<c:tx><c:v>' + esc(s.title) + '</c:v></c:tx>' : '';
+          var c = s.color ? fill(s.color) : '';
+          return '<c:ser><c:idx val="' + i + '"/><c:order val="' + i + '"/>' + tx + '<c:spPr><a:ln w="28440" cap="rnd">' + c + '<a:round/></a:ln></c:spPr>' +
+            '<c:marker><c:symbol val="circle"/><c:size val="7"/>' + (c ? '<c:spPr>' + c + '<a:ln>' + c + '</a:ln></c:spPr>' : '') + '</c:marker>' +
+            '<c:cat><c:strRef><c:f>' + esc(ch.cats) + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + esc(s.ref) + '</c:f></c:numRef></c:val><c:smooth val="0"/></c:ser>';
+        }).join('') +
+        '<c:marker val="1"/><c:axId val="10"/><c:axId val="100"/></c:lineChart>' + axes('col');
     } else {
       body = '<c:barChart><c:barDir val="' + (ch.dir === 'bar' ? 'bar' : 'col') + '"/><c:grouping val="clustered"/><c:varyColors val="0"/>' +
         ch.series.map(function (s, i) {
@@ -123,11 +139,7 @@
           return '<c:ser><c:idx val="' + i + '"/><c:order val="' + i + '"/>' + tx + (s.color ? '<c:spPr>' + fill(s.color) + '<a:ln>' + fill(s.color) + '</a:ln></c:spPr>' : '') +
             '<c:invertIfNegative val="0"/><c:cat><c:strRef><c:f>' + esc(ch.cats) + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + esc(s.ref) + '</c:f></c:numRef></c:val></c:ser>';
         }).join('') +
-        '<c:gapWidth val="150"/><c:axId val="10"/><c:axId val="100"/></c:barChart>' +
-        '<c:catAx><c:axId val="10"/><c:scaling><c:orientation val="' + (ch.dir === 'bar' ? 'maxMin' : 'minMax') + '"/></c:scaling><c:delete val="0"/><c:axPos val="' + (ch.dir === 'bar' ? 'l' : 'b') + '"/>' +
-        '<c:numFmt formatCode="General" sourceLinked="0"/><c:majorTickMark val="none"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/><c:crossAx val="100"/><c:crosses val="autoZero"/><c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/><c:noMultiLvlLbl val="0"/></c:catAx>' +
-        '<c:valAx><c:axId val="100"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="' + (ch.dir === 'bar' ? 'b' : 'l') + '"/><c:numFmt formatCode="#,##0" sourceLinked="0"/>' +
-        '<c:majorTickMark val="none"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/><c:crossAx val="10"/><c:crosses val="autoZero"/><c:crossBetween val="between"/></c:valAx>';
+        '<c:gapWidth val="150"/><c:axId val="10"/><c:axId val="100"/></c:barChart>' + axes(ch.dir);
     }
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<c:chartSpace xmlns:c="' + C_NS + '" xmlns:a="' + A_NS + '" xmlns:r="' + R_NS + '"><c:roundedCorners val="0"/><c:chart>' + title +
       '<c:plotArea><c:layout/>' + body + '</c:plotArea>' + (ch.legend ? '<c:legend><c:legendPos val="' + ch.legend + '"/><c:overlay val="0"/></c:legend>' : '') +
