@@ -66,6 +66,27 @@
      ===================================================================== */
   var RAW_NEED = ['CIF_ID_NO', 'TRANSACTION_TYPE', 'TRANSACTION_MONTH', 'TRANSACTION STATUS', 'TRANSACTION SERVICE', 'BENEFICIARY BANK NAME',
     'BILLER/MERCHANT NAME', 'ACCOUNT_NUMBER', 'CARDTYPE', 'TRANSACTION_AMOUNT', 'GENDER', 'AGE', 'CIF_STAFF_TAGGING(Y/N)'];
+  // The export's header row, as the skill's prep_raw.py finds it: the row with TRANSACTION_MONTH. Ms. Hong's file leaves the
+  // first header (the transaction type) blank; the first unnamed column is then TRANSACTION_TYPE. -> column indexes, or null.
+  function rawCols(cells) {
+    var names = Array.from(cells, function (c) { return c === null || c === undefined ? '' : String(c).trim(); });
+    if (names.indexOf('TRANSACTION_MONTH') < 0) return null;
+    if (names.indexOf('TRANSACTION_TYPE') < 0) {
+      var b = names.indexOf('');
+      if (b < 0) stop('The DRB Usage export has no TRANSACTION_TYPE column and no unnamed column to use for it.');
+      names[b] = 'TRANSACTION_TYPE';
+    }
+    if (names.indexOf('TRANSACTION STATUS') < 0) stop('This file has no TRANSACTION STATUS column: it looks like the RIB Usage layout, not the DRB Usage export. The Regular Extraction of RIB Usage Report goes in the RIB Inbox shared drive folder.');
+    var cols = RAW_NEED.map(function (k) { return names.indexOf(k); });
+    var miss = RAW_NEED.filter(function (k, i) { return cols[i] < 0; });
+    if (miss.length) stop('Column(s) missing from the DRB Usage export: ' + miss.join(', ') + '.');
+    return cols;
+  }
+  function headerKind(cells) {   // 'raw' | 'rib' | null for one row
+    var v = Array.from(cells, function (c) { return c === null || c === undefined ? '' : String(c).trim(); });
+    if (v.indexOf('TRANSACTION_MONTH') >= 0) { try { return rawCols(v) ? 'raw' : null; } catch (e) { return v.indexOf('STATUS') >= 0 && v.indexOf('CIF_ID_NO') >= 0 ? 'rib' : null; } }
+    return v.indexOf('TRANSACTION_TYPE') >= 0 && v.indexOf('STATUS') >= 0 && v.indexOf('CIF_ID_NO') >= 0 ? 'rib' : null;
+  }
   function RawAgg(tmap, months) { this.tmap = tmap || null; this.keep = months ? new Set(months.map(function (m) { return String(m).trim().slice(0, 3).toUpperCase(); })) : null; this.dropped = {}; this.ix = null; this.n = 0; this.pre = new Map(); this.cifs = new Map(); this.cardType = new Map(); this.cardSeen = new Set(); this.months = new Set(); }
   DRB.RawAgg = RawAgg;
   RawAgg.prototype.header = function (cols) {
@@ -583,11 +604,11 @@
       ['Active users', '=C49+C50', '=E49+E50', '=p_fin+p_login', '=IF(p_cif_any="","",G49+G50)', 'Same on both counts: the first row is subtracted to get the second, so it cancels out.']].forEach(function (x, j) {
       var r = 49 + j;
       S(ws, 'B' + r, x[0], r === 52 ? 'total' : 'body'); S(ws, 'C' + r, x[1], 'num', INT); S(ws, 'D' + r, '=C' + r + '/in_enrolled', 'num', PCT); S(ws, 'E' + r, x[2], 'num', INT); S(ws, 'F' + r, '=E' + r + '/in_enrolled', 'num', PCT);
-      S(ws, 'G' + r, x[3], 'ref', INT); S(ws, 'H' + r, x[4], 'ref', INT); S(ws, 'I' + r, x[5], 'note', null, { wrap: true });
+      S(ws, 'G' + r, x[3], 'ref', INT); S(ws, 'H' + r, x[4], 'ref', INT); S(ws, 'I' + r, x[5], 'note', null, { wrap: true }); ws.height(r, r === 49 ? 40 : 26);
     });
     S(ws, 'B53', 'Difference: CIFs with non-financial activity only'); S(ws, 'C53', '=E49-C49', 'num', INT); S(ws, 'D53', null, 'num', PCT); S(ws, 'E53', null, 'num'); S(ws, 'F53', null, 'num', PCT);
     S(ws, 'G53', '=IF(p_cif_any="","",H49-G49)', 'ref', INT); S(ws, 'H53', null, 'ref');
-    S(ws, 'I53', 'Counted as having financial transactions by Sir RD; counted as logged in by the report.', 'note', null, { wrap: true });
+    S(ws, 'I53', 'Counted as having financial transactions by Sir RD; counted as logged in by the report.', 'note', null, { wrap: true }); ws.height(53, 26);
     nm('u_any', ws, 'E49');
     donut(ws, 'K7', 'Enrolled CIFs: active vs inactive', ref(ws, 3, 20, 3, 21), ref(ws, 2, 20, 2, 21), [AMBER, PEER]);
     bar(ws, 'K23', 'Usage groups: this quarter vs prior', 'col', 7.5, 15, [{ ref: ref(ws, 5, 18, 5, 19), titleRef: ref(ws, 5, 17), color: PEER }, { ref: ref(ws, 3, 18, 3, 19), titleRef: ref(ws, 3, 17), color: AMBER }], ref(ws, 2, 18, 2, 19), 'b');
@@ -804,7 +825,7 @@
     S(ws, 'G31', '=E31-C31', 'total', CHG); S(ws, 'H31', '=IF(C31=0,"n/a",E31/C31-1)', 'total', PCHG);
     S(ws, 'B32', 'Quarter total by month = quarter total above (C16)', 'note'); S(ws, 'F32', '=IF(F31=C16,"PASS","FAIL")', 'note');
     S(ws, 'B52', 'The chart shows the total and the three largest QR types; QR P2B, QR own-account transfers and QR P2Micro are too small to show as lines and are in the table above.', 'note');
-    ws.charts.push({ type: 'line', title: 'QR transactions by month', anchor: 'B34', h: 8, w: 16.7, legend: 'b', cats: ref(ws, 3, 24, 5, 24),
+    ws.charts.push({ type: 'line', title: 'QR transactions by month', anchor: 'B35', h: 8, w: 17, legend: 'b', cats: ref(ws, 3, 24, 5, 24),
       series: [[31, NAVY, 'Total QR transactions'], [25, AMBER, QRG[0]], [26, '2e7d9a', QRG[1]], [27, SLATE, QRG[2]]].map(function (x) { return { ref: ref(ws, 3, x[0], 5, x[0]), title: x[2], color: x[1] }; }) });
     bar(ws, 'J7', 'QR transactions: this quarter vs prior', 'col', 7.5, 17, [{ ref: ref(ws, 5, 10, 5, 15), titleRef: ref(ws, 5, 9), color: PEER }, { ref: ref(ws, 3, 10, 3, 15), titleRef: ref(ws, 3, 9), color: AMBER }], ref(ws, 2, 10, 2, 15), 'b');
     ws.freezeAt = 'C7';
@@ -1080,6 +1101,7 @@
     "Have any online activity (Sir RD's count)": 'cif_any', 'Have financial transactions – female': 'female', 'Have financial transactions – male': 'male',
     'Successful financial transactions': 'txn_total', 'Fund transfers to other banks (DRB)': 'ftob', '…of which InstaPay, regular (non-QR)': 'ip_nonqr', 'Transactions from cards': 'card' };
   QRG.forEach(function (g, j) { CARRY[g] = ['qr_ob', 'qr_p2m', 'qr_3p', 'qr_own', 'qr_p2b', 'qr_micro'][j]; });
+  var PRIOR_LIST = ['total_cif', 'enrolled', 'cif_usage', 'fin', 'cif_any', 'login', 'inactive', 'female', 'male', 'txn_total', 'ftob', 'ip_nonqr', 'card', 'qr_ob', 'qr_p2m', 'qr_3p', 'qr_own', 'qr_p2b', 'qr_micro'];
   DRB.PRIOR_KEYS = ['total_cif', 'enrolled', 'cif_usage', 'fin', 'cif_any', 'login', 'inactive', 'female', 'male', 'txn_total', 'ftob', 'ip_nonqr', 'card', 'qr_ob', 'qr_p2m', 'qr_3p', 'qr_own', 'qr_p2b', 'qr_micro'];
   DRB.readPrior = function (book) {   // book: parsed .xlsx (cached values)
     var q = book.grids.QoQ, t = book.grids.Transactions, inp = book.grids.Inputs;
@@ -1088,16 +1110,18 @@
     var qi = (q.find(function (r) { return r && typeof r[1] === 'string' && /compared with/.test(r[1]); }) || [])[1];
     var start = q.findIndex(function (r) { return r && r[1] === 'Inputs item'; });
     if (start < 0) stop('The QoQ sheet of last quarter\'s workbook has no carry-forward table.');
+    if (q[9] == null || q[9][2] === null || q[9][2] === undefined || q[9][2] === '') stop('Last quarter\'s workbook has no stored values (it was saved without being calculated). Open it in Excel, save it, and try again.');
     for (var r = start + 1; r < q.length; r++) {
       var row = q[r] || [], k = CARRY[row[1]];
-      if (k) out.prior[k] = typeof row[2] === 'number' ? row[2] : null;
+      if (k) out.prior[k] = typeof row[2] === 'number' ? Math.round(row[2]) : null;
     }
+    out.missing = PRIOR_LIST.filter(function (k) { return out.prior[k] == null; });   // not in the carry-forward: to be typed
     if (inp) for (r = 0; r < inp.length; r++) if (inp[r] && inp[r][1] === 'Quarter') { out.quarter = inp[r][2]; break; }
     var hr = t.findIndex(function (r) { return r && r[2] === 'Transaction type' && r[6] === 'Quarter total'; });
     if (hr >= 0) for (r = hr + 1; r < t.length; r++) {
       var x = t[r] || [];
-      if (typeof x[1] === 'number' && typeof x[2] === 'string' && typeof x[6] === 'number') out.categories[x[2]] = x[6];
-      if (x[2] === 'All successful activity') break;
+      if (x[2] === 'Financial transactions' || x[2] === 'All successful activity') break;   // financial types only, as read_prior.py
+      if (typeof x[2] === 'string' && typeof x[6] === 'number') out.categories[x[2]] = Math.round(x[6]);
     }
     var m = book.grids.Method;
     if (m) { var oi = m.findIndex(function (r) { return r && r[1] === 'Open items'; }); if (oi >= 0) for (r = oi + 1; r < m.length; r++) { var s = m[r] && m[r][1]; if (typeof s === 'string' && s.indexOf('•') === 0) out.open_items.push(s.replace(/^•\s*/, '')); } }
@@ -1200,16 +1224,12 @@
         });
         return function (t, done) { scan(t, done); return top.length < 40; };
       })()).then(function () { return loadStrings(wantS, true); }).then(function (sst) {
-        var named = top.map(function (r) { return r.cells.map(function (c) { if (!c) return ''; var v = c.s >= 0 ? sst[c.s] : c.v; return v === null || v === undefined ? '' : String(v).trim(); }); });
-        var h = named.map(function (n) { return n.indexOf('TRANSACTION_TYPE') >= 0 && n.indexOf('CIF_ID_NO') >= 0; }).indexOf(true);
-        if (h < 0 && !hasRaw) stop('No header row with TRANSACTION_TYPE and CIF_ID_NO was found in this workbook. Is it the DRB Usage / RIB Usage Report V2 export?');
-        if (h < 0) h = 0;
         if (!top.length) stop('The RAW sheet is empty.');
-        var cols = RAW_NEED.map(function (k) { return named[h].indexOf(k); });
-        var miss = RAW_NEED.filter(function (k, i) { return cols[i] < 0; });
-        if (miss.length) stop('This does not look like the DRB Usage export: column(s) ' + miss.join(', ') + ' not found' + (hasRaw ? ' on the RAW sheet.' : '.'));
+        var named = top.map(function (r) { return Array.from(r.cells, function (c) { if (!c) return ''; var v = c.s >= 0 ? sst[c.s] : c.v; return v === null || v === undefined ? '' : String(v).trim(); }); });
+        var h = named.map(function (n) { return n.indexOf('TRANSACTION_MONTH') >= 0; }).indexOf(true);
+        if (h < 0) stop('No header row with TRANSACTION_MONTH was found' + (hasRaw ? ' on the RAW sheet' : ' in this workbook') + '. Is it the DRB Usage export?');
         hdrRow = top[h].rn;
-        return cols;
+        return rawCols(named[h]);
       });
     }).then(function (cols) {
       // pass 2: every row after the header, the needed columns only
@@ -1292,8 +1312,7 @@
         }).then(function () { return out; });
       }).then(function (sst) {
         var hit = top.some(function (cells) {
-          var v = cells.map(function (c) { if (!c) return ''; var y = c.s >= 0 ? sst[c.s] : c.v; return y === null || y === undefined ? '' : String(y).trim(); });
-          return RAW_NEED.every(function (k) { return v.indexOf(k) >= 0; });
+          return headerKind(Array.from(cells, function (c) { if (!c) return ''; var y = c.s >= 0 ? sst[c.s] : c.v; return y === null || y === undefined ? '' : String(y).trim(); })) === 'raw';
         });
         return hit ? 'raw' : null;
       });
@@ -1301,17 +1320,15 @@
   };
   // CSV (the RAW sheet saved as CSV): streamed; quotes handled; same columns.
   DRB.readRawCsv = function (blob, agg, onProgress) {
-    var prog = onProgress || function () {}, total = blob.size || 1, seen = 0, header = null, cols = null;
+    var prog = onProgress || function () {}, total = blob.size || 1, seen = 0, header = null, cols = null, pre = 0;
     var field = '', row = [], inQ = false, quoteSeen = false, pendingQuote = false, bom = true;
     function endRow() {
       row.push(field); field = '';
       if (row.length === 1 && row[0] === '' && !quoteSeen) { row = []; return; }
-      if (!header) {
-        header = row.map(function (h) { return h.trim(); });
-        cols = RAW_NEED.map(function (k) { return header.indexOf(k); });
-        var miss = RAW_NEED.filter(function (k, i) { return cols[i] < 0; });
-        if (miss.length) stop('This does not look like the DRB Usage export: column(s) ' + miss.join(', ') + ' not found in the CSV.');
-        agg.header(RAW_NEED);
+      if (!header) {   // header = first row with TRANSACTION_MONTH (within the first 40)
+        cols = rawCols(row);
+        if (cols) { header = row; agg.header(RAW_NEED); }
+        else if (++pre >= 40) stop('No header row with TRANSACTION_MONTH was found in the CSV. Is it the DRB Usage export?');
       } else {
         var r = cols.map(function (c) { return c < row.length ? row[c] : null; });
         agg.row(r);
@@ -1335,7 +1352,7 @@
     prog('Reading the CSV…', 0);
     function pump() {
       return reader.read().then(function (x) {
-        if (x.done) { feed(dec.decode()); if (pendingQuote) { pendingQuote = false; inQ = false; } if (field !== '' || row.length) endRow(); return { rows: agg.n }; }
+        if (x.done) { feed(dec.decode()); if (pendingQuote) { pendingQuote = false; inQ = false; } if (field !== '' || row.length) endRow(); if (!header) stop('No header row with TRANSACTION_MONTH was found in the CSV. Is it the DRB Usage export?'); return { rows: agg.n }; }
         seen += x.value.length; feed(dec.decode(x.value, { stream: true }));
         prog('Reading the CSV… ' + Math.round(seen / total * 100) + '%', seen / total * 95);
         return pump();
@@ -1431,12 +1448,9 @@
   DRB.xlsbKind = function (data) {
     var kind = null, synthetic = false, n = 0;
     return DRB.xlsbRows(data, function () { return [0]; }, function (si, ri, cells) {
-      var v = cells.map(function (c) { return c === null || c === undefined ? '' : String(c).trim(); });
+      var v = Array.from(cells, function (c) { return c === null || c === undefined ? '' : String(c).trim(); });
       if (v.some(function (x) { return /synthetic test data/i.test(x); })) synthetic = true;
-      if (v.indexOf('TRANSACTION_TYPE') >= 0) {
-        kind = RAW_NEED.every(function (k) { return v.indexOf(k) >= 0; }) ? 'raw' : v.indexOf('STATUS') >= 0 && v.indexOf('CIF_ID_NO') >= 0 ? 'rib' : null;
-        return false;
-      }
+      if (v.indexOf('TRANSACTION_MONTH') >= 0 || v.indexOf('TRANSACTION_TYPE') >= 0) { kind = headerKind(v); return false; }
       return ++n < 40;
     }).then(function () { return { kind: kind, synthetic: synthetic }; });
   };
@@ -1449,20 +1463,175 @@
       return raw.length ? raw : names.map(function (n, i) { return i; });
     }, function (si, ri, cells) {
       if (!cols) {
-        var names = cells.map(function (c) { return c === null || c === undefined ? '' : String(c).trim(); });
-        if (names.indexOf('TRANSACTION_TYPE') >= 0 && names.indexOf('CIF_ID_NO') >= 0) {
-          cols = RAW_NEED.map(function (k) { return names.indexOf(k); });
-          var miss = RAW_NEED.filter(function (k, i) { return cols[i] < 0; });
-          if (miss.length) stop('This does not look like the DRB Usage export: column(s) ' + miss.join(', ') + ' not found.');
-          agg.header(RAW_NEED);
-        }
+        cols = rawCols(cells);
+        if (cols) agg.header(RAW_NEED);
         return;
       }
       agg.row(cols.map(function (c) { var v = cells[c]; return v === undefined ? null : v; }));
     }, onProgress).then(function () {
-      if (!cols) stop('No header row with TRANSACTION_TYPE and CIF_ID_NO was found in this workbook. Is it the DRB Usage / RIB Usage Report V2 export?');
+      if (!cols) stop('No header row with TRANSACTION_MONTH was found in this workbook. Is it the DRB Usage export?');
       return { rows: agg.n, layout: layout };
     });
+  };
+
+  /* ---------- CIF Profile from Ms. Hong: pictures (OCR words), email text or an Excel sheet ---------- */
+  // Her email carries three pasted pictures: the totals line (TOTAL CIF / TOTAL ENROLLED / % / CIF W/ USAGE / %), the enrolled CIFs by
+  // generation (ACTIVE / IDLE / Grand Total) and by staff tag (NO / YES / Blank). Each picture is read in several passes; a figure is
+  // taken when the passes agree and the table's own totals add up (Active + Idle = Grand Total, rows add up to the Grand Total row,
+  // generation total = staff total, % enrolled and % with usage match). Anything else is left flagged for the user.
+  DRB.CIF_PASSES = [{ scale: 3, thr: 170, psm: 3 }, { scale: 4, thr: 0, psm: 11, wl: '0123456789,%' }, { scale: 4, thr: 200, psm: 11, wl: '0123456789,%' }];
+  var CIF_GEN = [['Gen Alpha', /alpha/i], ['Gen Z', /gen\s*z\b|\bz\s*\(/i], ['Millennials', /millen/i], ['Gen X', /gen\s*x\b|\bx\s*\(/i], ['Baby Boomers', /boomer/i],
+    ['Silent Gen', /silent/i], ['Greatest Gen', /greatest/i]];
+  var CIF_STAFF = [['Non-staff', 'N', /^no$/i], ['Staff', 'Y', /^yes$/i], ['Blank', '', /^blank$/i]];
+  function numTok(words) {   // number-looking words, with "23," + "147" joined back
+    var w = words.map(function (x) { return Object.assign({}, x, { t: x.text.replace(/[^\d,%]/g, ''), yc: (x.y0 + x.y1) / 2, h: x.y1 - x.y0 }); })
+      .filter(function (x) { return /\d/.test(x.t); }).sort(function (a, b) { return Math.abs(a.yc - b.yc) < a.h / 2 ? a.x0 - b.x0 : a.yc - b.yc; });
+    var out = [];
+    w.forEach(function (x) {
+      var p = out[out.length - 1];
+      if (p && /^\d{1,3},$/.test(p.t) && /^\d{3}(,\d{3})*%?$/.test(x.t) && Math.abs(p.yc - x.yc) < p.h / 2 && x.x0 - p.x1 < 2 * p.h) { p.t += x.t; p.x1 = x.x1; return; }
+      out.push(x);
+    });
+    return out.filter(function (x) { return /^(\d{1,3}(,\d{3})+|\d+)%?$/.test(x.t); })
+      .map(function (x) { return { v: +x.t.replace(/[,%]/g, ''), pct: /%$/.test(x.t), x0: x.x0, x1: x.x1, yc: x.yc, h: x.h }; });
+  }
+  function rowsOf(words) {   // words grouped into lines by height on the picture
+    var w = words.map(function (x) { return Object.assign({}, x, { yc: (x.y0 + x.y1) / 2, h: x.y1 - x.y0 }); }).sort(function (a, b) { return a.yc - b.yc; }), rows = [];
+    w.forEach(function (x) {
+      var r = rows[rows.length - 1];
+      if (r && Math.abs(r.yc - x.yc) < Math.max(r.h, x.h) * 0.6) { r.w.push(x); r.y0 = Math.min(r.y0, x.y0); r.y1 = Math.max(r.y1, x.y1); return; }
+      rows.push({ w: [x], yc: x.yc, h: x.h, y0: x.y0, y1: x.y1 });
+    });
+    rows.forEach(function (r) { r.w.sort(function (a, b) { return a.x0 - b.x0; }); r.text = r.w.map(function (x) { return x.text; }).join(' '); });
+    return rows;
+  }
+  function inRow(r, t) { var pad = (r.y1 - r.y0) * 0.35; return t.yc >= r.y0 - pad && t.yc <= r.y1 + pad; }
+  function tally(list) { var c = {}; list.forEach(function (v) { c[v] = (c[v] || 0) + 1; }); return c; }
+  // candidates per cell -> the choice for a row of [a, i, total] with a + i = total, most votes first
+  function pickRow(cands) {
+    var opts = cands.map(function (l) { var c = tally(l); var k = Object.keys(c).map(Number); return k.length ? k.map(function (v) { return { v: v, n: c[v] }; }) : [{ v: 0, n: 0, blank: true }]; });
+    var best = null;
+    opts[0].forEach(function (a) { opts[1].forEach(function (b) { opts[2].forEach(function (t) {
+      var ok = a.v + b.v === t.v, sc = (ok ? 100 : 0) + a.n + b.n + t.n;
+      if (!best || sc > best.sc) best = { sc: sc, ok: ok, v: [a.v, b.v, t.v], blank: [!!a.blank, !!b.blank, !!t.blank] };
+    }); }); });
+    return best;
+  }
+  function tableOf(pic, labels) {   // a 3-number table (ACTIVE / IDLE / Grand Total) -> { rows: {key: pick}, total: pick }
+    var rows = rowsOf(pic.passes[0]), hdr = rows.filter(function (r) { return /active/i.test(r.text) && /idle/i.test(r.text) && /total/i.test(r.text) && !/=/.test(r.text); })[0];   // not the ACTIVE = … / IDLE = … legend
+    if (!hdr) return null;
+    var hw = hdr.w, aw = hw.filter(function (x) { return /active/i.test(x.text); })[0], iw = hw.filter(function (x) { return /idle/i.test(x.text); })[0];
+    var tw = hw.filter(function (x) { return /total/i.test(x.text) && x.x0 > iw.x1; }).pop();
+    if (!aw || !iw || !tw) return null;
+    var anch = [aw.x1, iw.x1, tw.x1], gap = Math.min(anch[1] - anch[0], anch[2] - anch[1]) * 0.45;
+    var nums = pic.passes.map(function (ws) { return numTok(ws); });
+    function cellsOf(r) {
+      var c = [[], [], []];
+      nums.forEach(function (ns) { ns.forEach(function (t) {
+        if (t.pct || !inRow(r, t) || t.yc <= hdr.y1) return;
+        var d = anch.map(function (a) { return Math.abs(t.x1 - a); }), k = d.indexOf(Math.min.apply(null, d));
+        if (d[k] <= gap) c[k].push(t.v);
+      }); });
+      return c;
+    }
+    var out = { rows: {}, total: null, bands: {} };
+    rows.forEach(function (r) {
+      if (r.yc <= hdr.y1) return;
+      if (/grand/i.test(r.text)) { out.total = pickRow(cellsOf(r)); return; }
+      labels.forEach(function (l) {
+        var hit = l[1] instanceof RegExp && l[1].test(r.text) || r.w.some(function (x) { return l[2] && l[2].test(x.text); });
+        if (!hit || out.rows[l[0]]) return;
+        out.rows[l[0]] = pickRow(cellsOf(r));
+        var y = /(\d{4})\s*[-–—]\s*(\d{4})/.exec(r.text), a = /\(\s*(\d{1,3})\s*[-–—]\s*(\d{1,3}|above)\s*\)/i.exec(r.text);
+        out.bands[l[0]] = { born: y ? 'Born ' + y[1] + '–' + y[2] : null, from: a ? +a[1] : null, to: a && /^\d+$/.test(a[2]) ? +a[2] : null };
+      });
+    });
+    return out;
+  }
+  function totalsOf(pic) {   // the TOTAL line under TOTAL CIF / TOTAL ENROLLED / % ENROLLED / CIF W/ USAGE / % CIF W/ USAGE
+    var rows = rowsOf(pic.passes[0]);
+    var hdr = rows.filter(function (r) { return /enrolled/i.test(r.text); }).pop();
+    if (!hdr) return null;
+    var line = rows.filter(function (r) { return r.yc > hdr.y1 && /^total\b/i.test(r.text); }).pop();
+    var cand = [[], [], []], pc = [[], []];
+    pic.passes.forEach(function (ws) {
+      var ns = numTok(ws).filter(function (t) { return t.yc > hdr.y1 && (line ? inRow(line, t) : true); });
+      if (!line && ns.length) { var yl = Math.max.apply(null, ns.map(function (t) { return t.yc; })); ns = ns.filter(function (t) { return Math.abs(t.yc - yl) < t.h; }); }
+      var n = ns.filter(function (t) { return !t.pct; }), p = ns.filter(function (t) { return t.pct; });
+      if (n.length === 3) n.forEach(function (t, k) { cand[k].push(t.v); });
+      if (p.length === 2) p.forEach(function (t, k) { pc[k].push(t.v); });
+    });
+    var o = cand.map(function (l) { var c = tally(l); return Object.keys(c).map(Number).map(function (v) { return { v: v, n: c[v] }; }); });
+    var q = pc.map(function (l) { var c = tally(l); var k = Object.keys(c).sort(function (a, b) { return c[b] - c[a]; }); return k.length ? +k[0] : null; });
+    var best = null;
+    (o[0].length ? o[0] : [{ v: null, n: 0 }]).forEach(function (a) { (o[1].length ? o[1] : [{ v: null, n: 0 }]).forEach(function (b) { (o[2].length ? o[2] : [{ v: null, n: 0 }]).forEach(function (c) {
+      var ok1 = a.v && b.v != null && q[0] != null ? Math.round(100 * b.v / a.v) === q[0] : null, ok2 = b.v && c.v != null && q[1] != null ? Math.round(100 * c.v / b.v) === q[1] : null;
+      var sc = (ok1 ? 100 : 0) + (ok2 ? 100 : 0) + a.n + b.n + c.n;
+      if (!best || sc > best.sc) best = { sc: sc, v: [a.v, b.v, c.v], ok: [ok1, ok2], n: [a.n, b.n, c.n] };
+    }); }); });
+    return { v: best.v, ok: best.ok, n: best.n, pct: q };
+  }
+  // images: [{ name, passes: [words of pass 1, pass 2, …] }] in DRB.CIF_PASSES order -> what was read, with checks and flags
+  DRB.readCifPictures = function (images, year) {
+    var res = { cif: {}, generations: null, staff: null, checks: [], flags: [], found: [] }, gen = null, stf = null, tot = null;
+    images.forEach(function (pic) {
+      var all = pic.passes[0].map(function (w) { return w.text; }).join(' ');
+      if (!tot && /enrolled/i.test(all) && /usage/i.test(all) && !/active/i.test(all)) { tot = totalsOf(pic); if (tot) res.found.push(pic.name + ': totals'); }
+      else if (!gen && /generation|millen|boomer|alpha/i.test(all)) { gen = tableOf(pic, CIF_GEN); if (gen) res.found.push(pic.name + ': by generation'); }
+      else if (!stf && /staff|tagging/i.test(all)) { stf = tableOf(pic, CIF_STAFF.map(function (s) { return [s[0], null, s[2]]; })); if (stf) res.found.push(pic.name + ': by staff tag'); }
+    });
+    function chk(label, ok) { res.checks.push({ label: label, ok: ok }); if (!ok) res.flags.push(label); }
+    if (tot) {
+      res.cif = { total_cif: tot.v[0], enrolled: tot.v[1], cif_usage: tot.v[2] };
+      if (tot.ok[0] !== null) chk('% enrolled on the picture (' + tot.pct[0] + '%) = total enrolled ÷ total CIFs', tot.ok[0]);
+      if (tot.ok[1] !== null) chk('% with usage on the picture (' + tot.pct[1] + '%) = CIF w/ usage ÷ total enrolled', tot.ok[1]);
+      ['total_cif', 'enrolled', 'cif_usage'].forEach(function (k, i) { if (tot.v[i] == null) res.flags.push('Not read: ' + { total_cif: 'Total CIFs', enrolled: 'Total enrolled CIFs', cif_usage: 'CIF w/ usage' }[k]); });
+    } else res.flags.push('The totals picture (TOTAL CIF / TOTAL ENROLLED / CIF W/ USAGE) was not found.');
+    function table(t, names, what) {
+      if (!t) { res.flags.push('The ' + what + ' picture was not found.'); return null; }
+      var sa = 0, si = 0;
+      names.forEach(function (n) {
+        var r = t.rows[n];
+        if (!r) { res.flags.push(what + ': row "' + n + '" not read.'); return; }
+        if (!r.ok) res.flags.push(what + ': ' + n + ' – Active + Idle does not equal its Grand Total.');
+        sa += r.v[0]; si += r.v[1];
+      });
+      if (t.total) chk(what + ': rows add up to the Grand Total row', sa === t.total.v[0] && si === t.total.v[1] && t.total.ok);
+      return { a: sa, i: si };
+    }
+    {
+      var g = table(gen, CIF_GEN.map(function (x) { return x[0]; }), 'By generation');
+      if (gen) {
+        var def = DRB.defaultGenerations(year || 2026);
+        res.generations = def.map(function (d) {
+          var r = gen.rows[d[0]], b = gen.bands[d[0]] || {};
+          return [d[0], b.born || d[1], b.from != null ? b.from : d[2], b.to != null ? b.to : d[3], r ? r.v[0] : null, r ? r.v[1] : null];
+        });
+      }
+      var s = table(stf, CIF_STAFF.map(function (x) { return x[0]; }), 'By staff tag');
+      if (stf) res.staff = CIF_STAFF.map(function (x) { var r = stf.rows[x[0]]; return [x[0], x[1], r ? r.v[0] : null, r ? r.v[1] : null]; });
+      if (g && s) chk('Generation table total = staff table total (active and idle)', g.a === s.a && g.i === s.i);
+    }
+    return res;
+  };
+  // The same figures typed as text (email body, chat) or in an Excel sheet (rows joined with tabs).
+  DRB.readCifText = function (text, year) {
+    var t = String(text || ''), res = { cif: {}, generations: null, staff: null, checks: [], flags: [], found: [] };
+    function num(re) { var m = re.exec(t); return m ? +m[1].replace(/,/g, '') : null; }
+    res.cif = { total_cif: num(/total\s*cifs?\b[^\d\n]{0,40}([\d,]{1,12})/i), enrolled: num(/total\s*enrol+ed[^\d\n]{0,40}([\d,]{1,12})/i), cif_usage: num(/cifs?\s*w(?:ith|\/)\s*usage[^\d\n]{0,40}([\d,]{1,12})/i) };
+    var lines = t.split(/\r?\n/);
+    function three(re) {
+      var l = lines.filter(function (x) { return re.test(x); })[0]; if (!l) return null;
+      var n = (l.replace(/born\s*\d{4}\s*[-–—]\s*\d{4}/i, '').replace(/\(\s*\d+\s*[-–—]\s*(\d+|above)\s*\)/i, '').match(/\d[\d,]*/g) || []).map(function (x) { return +x.replace(/,/g, ''); });
+      return n.length >= 2 ? n : null;
+    }
+    var def = DRB.defaultGenerations(year || 2026), gotG = 0;
+    var gens = def.map(function (d, i) { var n = three(CIF_GEN[i][1]); if (n) gotG++; return [d[0], d[1], d[2], d[3], n ? (n.length === 3 ? n[0] : n[0]) : null, n ? n[1] : null]; });
+    if (gotG) res.generations = gens;
+    var gotS = 0, staff = CIF_STAFF.map(function (s) { var n = three(new RegExp('^\\s*(' + s[2].source.replace(/[\^$]/g, '') + ')\\b', 'i')); if (n) gotS++; return [s[0], s[1], n ? n[0] : null, n ? n[1] : null]; });
+    if (gotS) res.staff = staff;
+    if (res.cif.total_cif == null && !gotG && !gotS) res.flags.push('No CIF Profile figures were found in the text.');
+    return res;
   };
 
   /* ---------- quarter helpers ---------- */
@@ -1472,6 +1641,11 @@
     var pq = q === 1 ? 4 : q - 1, py = q === 1 ? y - 1 : y, cap = function (m) { return m.charAt(0) + m.slice(1).toLowerCase(); };
     return { quarter: 'Q' + q + ' ' + y, period: cap(QMONTHS[q - 1][0]) + ' – ' + cap(QMONTHS[q - 1][2]) + ' ' + y, months: QMONTHS[q - 1].slice(),
       prior_quarter: 'Q' + pq + ' ' + py, prior_months: QMONTHS[pq - 1].slice(), as_of: QEND[q - 1] + ' ' + y, folder: y + '-Q' + q, priorFolder: py + '-Q' + pq };
+  };
+  // the Method sheet's open item for rows left out, worded as the skill's prep_raw.py: "120 rows … (OCTOBER: 120) and are excluded."
+  DRB.outsideNote = function (dropped, quarter) {
+    var k = Object.keys(dropped || {}).sort(), n = k.reduce(function (t, m) { return t + dropped[m]; }, 0), f = function (v) { return v.toLocaleString('en-US'); };
+    return n ? f(n) + ' rows in the transaction export are dated outside ' + quarter + ' (' + k.map(function (m) { return m + ': ' + f(dropped[m]); }).join(', ') + ') and are excluded.' : null;
   };
   DRB.V2_DISPLAY = 'RIB Usage Report V2 (shared folder RIBUsageMailerRecipients$), DRB Usage layout';   // raw source name when the export is the V2 report
   DRB.DEFAULT_DISPLAY = {

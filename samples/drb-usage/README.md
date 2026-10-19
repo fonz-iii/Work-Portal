@@ -8,6 +8,7 @@ They live in the practice portal folder:
 samples/SBA Portal Files (practice)/DRB Usage/
   2026-Q3/
     Ms. Hong/                 SYNTHETIC DRB Usage Q3 2026.xlsx       (RAW sheet, 4,000 rows)
+                              SYNTHETIC CIF Profile as of September 2026.eml   (CIF Profile email with three pasted pictures)
     Sir Jun/                  SYNTHETIC DRB REPORTS Sep 2026 Summary.xlsx
                               SYNTHETIC Sep 2026 ITCom DCB REPORTS.xlsx
                               SYNTHETIC DRB DCB Stats Q3 2026.xlsx
@@ -16,7 +17,9 @@ samples/SBA Portal Files (practice)/DRB Usage/
   Outputs/                    DRB Usage Q2 2026 - Worked Figures (TEST DATA).xlsx   (last quarter, read for the comparison)
 ```
 
-## CIF Profile to type (Q3 2026, practice)
+## CIF Profile (Q3 2026, practice)
+
+Read by the page from the synthetic email's pictures; the figures it should show (or type them if you remove the email):
 
 | Figure | Value |
 |---|---|

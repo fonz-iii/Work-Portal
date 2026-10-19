@@ -380,10 +380,12 @@
       p.body.split('--' + bd).slice(1).forEach(function (part) { if (!/^--/.test(part)) walkMime(part.replace(/^\r?\n/, ''), acc); });
       return;
     }
-    if (/attachment/i.test(h['content-disposition'] || '')) return;
-    if (type !== 'text/plain' && type !== 'text/html') return;
     var cte = (h['content-transfer-encoding'] || '').toLowerCase(), bin = p.body;
     if (cte === 'base64') bin = b64(bin); else if (cte === 'quoted-printable') bin = qp(bin);
+    if (/attachment/i.test(h['content-disposition'] || '') || (type !== 'text/plain' && type !== 'text/html')) {   // attachments and pasted pictures
+      (acc.files = acc.files || []).push({ name: decodeWords(param(h['content-disposition'], 'filename') || param(ct, 'name') || ''), type: type, bytes: strToBytes(bin) });
+      return;
+    }
     var txt = decodeBytes(bin, param(ct, 'charset'));
     if (type === 'text/plain' && acc.plain == null) acc.plain = txt;
     if (type === 'text/html' && acc.html == null) acc.html = txt;
@@ -400,16 +402,22 @@
     var h = p.h || {};
     return {
       subject: decodeWords(h.subject || ''), from: decodeWords(h.from || ''), date: h.date || '',
-      body: acc.plain != null ? acc.plain.replace(/\r\n?/g, '\n') : (acc.html != null ? htmlToText(acc.html) : '')
+      body: acc.plain != null ? acc.plain.replace(/\r\n?/g, '\n') : (acc.html != null ? htmlToText(acc.html) : ''), files: acc.files || []
     };
   }
   function parseMsg(buf) {
     if (!window.CFB) throw new Error('The .msg reader (vendor/cfb.min.js) is not loaded.');
-    var cfb = window.CFB.read(new Uint8Array(buf), { type: 'array' }), top = {};
+    var cfb = window.CFB.read(new Uint8Array(buf), { type: 'array' }), top = {}, att = {};
     cfb.FullPaths.forEach(function (p, i) {
       var m = /^[^/]+\/__substg1\.0_([0-9A-F]{4})([0-9A-F]{4})$/i.exec(p);
       if (m) top[(m[1] + m[2]).toUpperCase()] = cfb.FileIndex[i].content;
+      var a = /^[^/]+\/__attach_version1\.0_#([0-9A-F]{8})\/__substg1\.0_([0-9A-F]{8})$/i.exec(p);   // attachments and pasted pictures
+      if (a) (att[a[1]] = att[a[1]] || {})[a[2].toUpperCase()] = cfb.FileIndex[i].content;
     });
+    function u16(c) { return c ? new TextDecoder('utf-16le').decode(new Uint8Array(c)).replace(/\u0000+$/, '') : ''; }
+    var files = Object.keys(att).sort().map(function (k) {
+      var x = att[k]; return { name: u16(x['3707001F']) || u16(x['3704001F']), type: (u16(x['370E001F']) || '').toLowerCase(), bytes: x['37010102'] ? new Uint8Array(x['37010102']) : null };
+    }).filter(function (f) { return f.bytes; });
     function str(id) {
       var u = top[id + '001F'];
       if (u) return new TextDecoder('utf-16le').decode(new Uint8Array(u)).replace(/\u0000+$/, '');
@@ -423,9 +431,9 @@
       var html = hb ? new TextDecoder('utf-8').decode(new Uint8Array(hb)) : str('1013');
       if (html) body = htmlToText(html);
     }
-    if (!body.trim()) throw new Error('This .msg file has no plain-text or HTML body. Open the email and paste its text instead.');
+    if (!body.trim() && !files.length) throw new Error('This .msg file has no plain-text or HTML body. Open the email and paste its text instead.');
     var headers = str('007D'), dm = /^Date:\s*(.+)$/mi.exec(headers);
-    return { subject: str('0037'), from: str('0C1A') || str('5D01'), date: dm ? dm[1].trim() : '', body: body.replace(/\r\n?/g, '\n') };
+    return { subject: str('0037'), from: str('0C1A') || str('5D01'), date: dm ? dm[1].trim() : '', body: body.replace(/\r\n?/g, '\n'), files: files };
   }
 
   function cleanSubject(s) {

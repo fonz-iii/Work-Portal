@@ -30,6 +30,12 @@
 .drb .readback { margin-top: 14px; padding: 14px 16px; border-radius: var(--r-md); border: 1px solid var(--sky-2); background: var(--sky); }
 .drb .readback dl { display: grid; grid-template-columns: auto auto; gap: 4px 18px; margin: 8px 0 10px; font-size: 14px; }
 .drb .readback dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.drb .src-box { margin: 4px 0 14px; padding: 12px 16px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface-2, var(--bg)); }
+.drb .src-box ul { margin: 6px 0 0 18px; padding: 0; font-size: 13.5px; }
+.drb .src-box li.ok::marker { content: '✓  '; color: var(--ok, #1f7a4d); }
+.drb .src-box li.bad::marker { content: '!  '; color: var(--bad, #b3261e); }
+.drb .cif-pics { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.drb .cif-pics img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
 .drb .progress { margin-top: 12px; height: 8px; border-radius: 999px; background: var(--line-2); overflow: hidden; }
 .drb .progress > i { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s; }
 .drb .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
@@ -76,7 +82,11 @@
 
     <section class="card" id="c-cif">
       <h2><span class="step">3</span>CIF Profile (from Ms. Hong)</h2>
-      <p class="help">Type the figures exactly as sent. They are saved with this quarter in your portal folder (on this PC only).</p>
+      <p class="help">Save Ms. Hong's email (“DRB Usage &amp; CIF Profile as of …”) in the <b>Ms. Hong</b> folder: the figures are read from it, including the pictures pasted in it. Check them against the pictures, then tick below. They are saved with this quarter in your portal folder (on this PC only).</p>
+      <div class="src-box" id="cif-box"><div id="cif-src">Looking for Ms. Hong's email…</div><ul id="cif-checks"></ul><div class="cif-pics" id="cif-pics"></div>
+        <div class="actions-row" style="margin:10px 0 0"><label class="btn">Choose the email or picture<input type="file" id="cif-file" accept=".msg,.eml,.png,.jpg,.jpeg,.xlsx,.xls,.txt" multiple hidden></label><button class="btn" id="btn-cif-reread" type="button">Read again</button></div>
+        <details class="more"><summary>Or paste the email text</summary><textarea id="cif-paste" rows="5" placeholder="Paste the CIF Profile text here"></textarea><div class="actions-row" style="margin:8px 0 0"><button class="btn" id="btn-cif-paste" type="button">Read the pasted text</button></div></details>
+      </div>
       <div class="row2">
         <div class="field"><label for="cif-total">Total CIFs</label><input id="cif-total" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
         <div class="field"><label for="cif-enrolled">Total enrolled CIFs</label><input id="cif-enrolled" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
@@ -94,7 +104,8 @@
 
     <section class="card" id="c-prior">
       <h2><span class="step">4</span>Last quarter's figures</h2>
-      <p class="help" id="prior-src"></p>
+      <p class="help">Read by itself from last quarter's DRB Usage workbook, found by what is inside it (in <b>DRB Usage › Outputs</b> or last quarter's folder), whatever its name.</p>
+      <div class="readback" id="prior-src"></div>
       <div class="actions-row" style="margin-top:0"><label class="btn">Choose last quarter's workbook<input type="file" id="prior-file" accept=".xlsx" hidden></label><button class="btn" id="btn-prior-reload" type="button">Read it again</button></div>
       <details class="more" id="prior-box"><summary>Show and edit last quarter's figures</summary>
         <table class="t" style="margin-top:10px"><thead><tr><th>Figure</th><th class="n">Prior quarter</th><th>Source</th></tr></thead><tbody id="prior-t"></tbody></table>
@@ -144,6 +155,9 @@
 <script src="core/xlsx-calc.js"></script>
 <script src="core/xlsx-writer.js"></script>
 <script src="data/drb-txn-map.js"></script>
+<script src="vendor/cfb.min.js"></script>
+<script src="skills/rib-advisory.js"></script>
+<script src="core/ocr.js"></script>
 <script src="skills/drb-usage.js"></script>
 <script>
 (function () {
@@ -253,7 +267,7 @@
       return '<tr><td><b>' + esc(s.label) + '</b><br><span class="fname">' + esc(s.who) + '</span></td><td>' + st + '</td><td class="n"><label class="btn">Choose file<input type="file" data-src="' + s.k + '" hidden></label>' +
         (S.files[s.k] ? ' <button class="linkbtn-dark" type="button" data-unpick="' + s.k + '">Use the folder\'s</button>' : '') + '</td></tr>';
     }).join('');
-    $('synth').classList.toggle('hide', !S.synthetic);
+    $('synth').classList.toggle('hide', !(S.synthetic || CIF.synthetic));
   }
 
   /* ---------- CIF Profile + prior ---------- */
@@ -279,8 +293,13 @@
   }
   function paintPrior() {
     var x = S.inputs;
-    $('prior-src').innerHTML = x.priorFrom ? 'Read from <b>' + esc(x.priorFrom) + '</b>. Check the figures below if anything looks off.' :
-      'Last quarter\'s workbook (<b>' + esc(D.fileName(info().prior_quarter)) + '.xlsx</b>) was not found in <b>DRB Usage › Outputs</b>. Choose it, or type the figures below.';
+    var pq = info().prior_quarter, KEYF = ['total_cif', 'enrolled', 'fin', 'login', 'inactive', 'cif_any', 'txn_total', 'card'];
+    var miss = (x.priorMissing || []).filter(function (k) { return x.prior[k] == null; });
+    $('prior-src').innerHTML = x.priorFrom ? '<b>Read from ' + esc(x.priorFrom) + '</b> (' + esc(pq) + '). Read these back:<dl>' +
+        KEYF.map(function (k) { return '<dt>' + esc(PRIOR_LABELS[k]) + '</dt><dd>' + (x.prior[k] == null ? '<span class="muted">not stated</span>' : fmtN(x.prior[k])) + '</dd>'; }).join('') + '</dl>' +
+        (miss.length ? '<p class="k-warn">Not in that workbook, so type ' + (miss.length === 1 ? 'it' : 'them') + ' under “Show and edit”: ' + miss.map(function (k) { return esc(PRIOR_LABELS[k]); }).join(', ') + '.</p>' : '') +
+        '<label class="k-check"><input type="checkbox" id="prior-ok"' + (x.priorConfirmed ? ' checked' : '') + '> These are last quarter\'s figures</label>' :
+      'Last quarter\'s workbook (' + esc(pq) + ') was not found in <b>DRB Usage › Outputs</b> or last quarter\'s folder. Put it there and click <b>Read it again</b>, choose it, or type the figures under “Show and edit”.';
     $('prior-t').innerHTML = D.PRIOR_KEYS.map(function (k) {
       var v = x.prior[k];
       return '<tr><td>' + esc(PRIOR_LABELS[k]) + (PRIOR_NEED.indexOf(k) >= 0 ? ' <span class="req">*</span>' : '') + '</td><td class="n"><input class="num" type="number" step="1" data-p="' + k + '" value="' + (v == null ? '' : v) + '"></td><td><input type="text" data-pn="' + k + '" value="' + esc(x.priorNotes[k] || '') + '"></td></tr>';
@@ -302,9 +321,10 @@
       '<label class="k-check"><input type="checkbox" id="cif-ok"' + (x.confirmed ? ' checked' : '') + '> These match the CIF Profile</label>';
   }
   function saveInputs() { return writeJson(qpath() + '/portal-inputs.json', 'drb-inputs-' + info().folder, S.inputs); }
-  function loadPrior(file) {   // last quarter's workbook -> prior figures (only fills what the user has not typed)
-    return P.parse.excel(file).then(function (bk) {
+  function loadPrior(file, book) {   // last quarter's workbook -> prior figures
+    return (book ? Promise.resolve(book) : P.parse.excel(file)).then(function (bk) {
       var r = D.readPrior(bk), x = S.inputs, pq = info().prior_quarter;
+      x.priorMissing = r.missing || []; x.priorConfirmed = false;
       D.PRIOR_KEYS.forEach(function (k) { x.prior[k] = r.prior[k] != null ? r.prior[k] : x.prior[k]; x.priorNotes[k] = pq + ' workbook (QoQ carry-forward)'; });
       x.prior_categories = r.categories; x.prior_categories_source = pq + ' workbook, Transactions sheet (Quarter total)';
       if (!x.open_items || !x.open_items.length) x.open_items = r.open_items;
@@ -312,12 +332,25 @@
       paintPrior(); return saveInputs();
     });
   }
+  // last quarter's workbook, found by what is inside it (Inputs › Quarter = last quarter, with a QoQ carry-forward table), whatever its name
   function findPrior() {
     if (F.status() !== 'connected') return Promise.resolve(null);
-    var want = D.fileName(info().prior_quarter).toLowerCase();
-    return F.list('DRB Usage/Outputs').then(function (es) {
-      var c = es.filter(function (e) { return e.kind === 'file' && /\.xlsx$/i.test(e.name) && e.name.toLowerCase().indexOf(want) === 0; }).sort(function (a, b) { return b.file.lastModified - a.file.lastModified; });
-      return c[0] ? c[0].file : null;
+    var i = info(), pq = i.prior_quarter, want = D.fileName(pq).toLowerCase().replace(/[\s_-]+/g, ' ');
+    var dirs = ['DRB Usage/Outputs', 'DRB Usage/' + i.priorFolder, 'DRB Usage/' + i.priorFolder + '/Outputs'].concat(SENDERS.map(function (sd) { return 'DRB Usage/' + i.priorFolder + '/' + sd; }));
+    return Promise.all(dirs.map(function (d) { return F.list(d).catch(function () { return []; }); })).then(function (ls) {
+      var c = [].concat.apply([], ls).filter(function (e) { return e.kind === 'file' && /\.xlsx$/i.test(e.name) && !/^~\$/.test(e.name); });
+      var named = function (e) { return e.name.toLowerCase().replace(/[\s_-]+/g, ' ').indexOf(want) === 0 ? 1 : 0; };
+      c.sort(function (a, b) { return (named(b) - named(a)) || (b.file.lastModified - a.file.lastModified); });
+      return c.reduce(function (pr, e) {
+        return pr.then(function (hit) {
+          if (hit) return hit;
+          return P.parse.excel(e.file).then(function (bk) {
+            if (!bk.grids.QoQ || !bk.grids.Inputs) return null;
+            var r; try { r = D.readPrior(bk); } catch (er) { return null; }
+            return r.quarter === pq ? { file: e.file, book: bk } : null;
+          }, function () { return null; });
+        });
+      }, Promise.resolve(null));
     });
   }
   function loadQuarter() {
@@ -329,9 +362,94 @@
     return Promise.all([readJson(qpath() + '/portal-inputs.json', 'drb-inputs-' + i.folder), readJson('DRB Usage/txn_map.json', 'drb-txn-map')]).then(function (v) {
       S.extraMap = v[1] || {};
       var x = v[0] || defaults(); x.priorNotes = x.priorNotes || {}; S.inputs = x; paintInputs();
-      var p = x.priorFrom ? Promise.resolve() : findPrior().then(function (f) { return f ? loadPrior(f) : null; });
-      return Promise.all([p, scan()]);
+      var p = x.priorFrom ? Promise.resolve() : findPrior().then(function (f) { return f ? loadPrior(f.file, f.book) : null; }).catch(function (er) { $('prior-src').innerHTML = '<span class="k-warn">' + esc(er.message || er) + '</span>'; });
+      return Promise.all([p, scan(), cifAuto()]);
     });
+  }
+
+  /* ---------- CIF Profile from Ms. Hong (step 3): her email, its pasted pictures, an Excel file or pasted text ---------- */
+  var CIF = { src: null, shown: null, synthetic: false };
+  function isPic(n, ty) { return /^image\//i.test(ty || '') || /\.(png|jpe?g|gif|bmp)$/i.test(n || ''); }
+  // files -> { name, key, pics: [{ name, bytes }], text } or null when nothing in them looks like the CIF Profile
+  function cifSource(files, where) {
+    var pics = files.filter(function (f) { return isPic(f.name, f.type); });
+    if (pics.length && pics.length === files.length) {
+      return Promise.all(pics.map(function (f) { return f.arrayBuffer().then(function (b) { return { name: f.name, bytes: new Uint8Array(b) }; }); }))
+        .then(function (ps) { return { name: pics.length === 1 ? pics[0].name : pics.length + ' pictures', where: where, key: pics.map(key).join('/'), pics: ps, text: '' }; });
+    }
+    var f = files[0], k = key(f);
+    if (/\.(msg|eml)$/i.test(f.name)) {
+      return f.arrayBuffer().then(function (b) {
+        var m = /\.msg$/i.test(f.name) ? window.RIB.parseMsg(b) : window.RIB.parseEml(b), all = (m.subject || '') + '\n' + (m.body || '');
+        var ps = (m.files || []).filter(function (a) { return isPic(a.name, a.type); }).map(function (a) { return { name: a.name, bytes: a.bytes }; });
+        if (!/cif\s*profile|total\s*enrol/i.test(all) && !ps.length) return null;
+        return { name: f.name, where: where, key: k, pics: ps, text: m.body || '', synthetic: /synthetic test data/i.test(all) };
+      });
+    }
+    if (/\.(xlsx|xls)$/i.test(f.name)) {
+      return book(f).then(function (bk) {
+        var t = bk.sheetNames.map(function (n) { return (bk.grids[n] || []).map(function (r) { return (r || []).map(function (c) { return c == null ? '' : String(c); }).join('\t'); }).join('\n'); }).join('\n');
+        return /total\s*enrol/i.test(t) ? { name: f.name, where: where, key: k, pics: [], text: t, synthetic: hasSynth(bk) } : null;
+      }, function () { return null; });
+    }
+    if (/\.txt$/i.test(f.name)) return f.text().then(function (t) { return /total\s*enrol/i.test(t) ? { name: f.name, where: where, key: k, pics: [], text: t } : null; });
+    return Promise.resolve(null);
+  }
+  function findCif() {   // newest email (or Excel file) in the Ms. Hong folder that holds the CIF Profile; else the pictures saved there
+    if (F.status() !== 'connected') return Promise.resolve(null);
+    return F.list(qpath() + '/Ms. Hong').catch(function () { return []; }).then(function (es) {
+      var fs = es.filter(function (e) { return e.kind === 'file' && !/\.json$/i.test(e.name) && !/^~\$/.test(e.name); }).map(function (e) { return e.file; })
+        .sort(function (a, b) { return b.lastModified - a.lastModified; });
+      var docs = fs.filter(function (f) { return /\.(msg|eml|xlsx|xls|txt)$/i.test(f.name); }), pics = fs.filter(function (f) { return isPic(f.name); });
+      return docs.reduce(function (pr, f) { return pr.then(function (hit) { return hit || cifSource([f], 'Ms. Hong folder').catch(function () { return null; }); }); }, Promise.resolve(null))
+        .then(function (hit) { return hit || (pics.length ? cifSource(pics.sort(function (a, b) { return a.name < b.name ? -1 : 1; }), 'Ms. Hong folder') : null); });
+    });
+  }
+  function showPics(src) {   // the pictures beside the form, to compare (data URLs: they are a few KB)
+    if (CIF.shown === src) return; CIF.shown = src;
+    $('cif-pics').innerHTML = '';
+    (src && src.pics || []).forEach(function (p) {
+      var bin = '', u = p.bytes; for (var i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+      var ty = /\.jpe?g$/i.test(p.name) ? 'image/jpeg' : /\.gif$/i.test(p.name) ? 'image/gif' : 'image/png';
+      var im = new Image(); im.src = 'data:' + ty + ';base64,' + btoa(bin); im.alt = p.name; im.title = p.name; $('cif-pics').appendChild(im);
+    });
+  }
+  function paintCif() {
+    var x = S.inputs, c = x && x.cifFrom;
+    if (!c) { $('cif-src').innerHTML = F.status() === 'connected' ? 'Ms. Hong\'s email was not found in <b>DRB Usage › ' + esc(info().folder) + ' › Ms. Hong</b>. Save it there (in Outlook: File › Save As), choose it below, or type the figures.' : 'Choose Ms. Hong\'s email (or its pictures) below, or type the figures.'; $('cif-checks').innerHTML = ''; return; }
+    var bad = (c.flags || []).length;
+    $('cif-src').innerHTML = '<b>Read from ' + esc(c.name) + '</b>' + (c.where ? ' (' + esc(c.where) + ')' : '') + (c.pics ? ', ' + c.pics + ' picture' + (c.pics === 1 ? '' : 's') : '') + '. ' +
+      (bad ? '<span class="k-warn">Check the items marked ! and correct the figures below.</span>' : 'The figures add up' + (c.pics ? '; compare them with the pictures below' : '') + ', then tick “These match the CIF Profile”.');
+    var seen = {};
+    $('cif-checks').innerHTML = (c.checks || []).map(function (k) { seen[k.label] = 1; return '<li class="' + (k.ok ? 'ok' : 'bad') + '">' + esc(k.label) + '</li>'; }).join('') +
+      (c.flags || []).filter(function (f) { return !seen[f]; }).map(function (f) { return '<li class="bad">' + esc(f) + '</li>'; }).join('');
+  }
+  function readCif(src) {
+    var x = S.inputs, y = +$('q-year').value; CIF.src = src; CIF.synthetic = !!src.synthetic; showPics(src);
+    if (CIF.synthetic) $('synth').classList.remove('hide');
+    var job = src.pics.length ? src.pics.reduce(function (pr, p, k) {
+      return pr.then(function (acc) {
+        return P.ocr.read(p.bytes, D.CIF_PASSES, function (m) { $('cif-src').textContent = 'Picture ' + (k + 1) + ' of ' + src.pics.length + ': ' + m; })
+          .then(function (ws) { acc.push({ name: p.name, passes: ws }); return acc; });
+      });
+    }, Promise.resolve([])).then(function (imgs) { return D.readCifPictures(imgs, y); }) : Promise.resolve(D.readCifText(src.text, y));
+    $('cif-src').textContent = 'Reading ' + src.name + '…';
+    return job.then(function (r) {
+      ['total_cif', 'enrolled', 'cif_usage'].forEach(function (k) { if (r.cif[k] != null) x.cif[k] = r.cif[k]; });
+      if (r.generations) x.generations = r.generations.map(function (g, i) { var o = x.generations[i] || g; return [g[0], g[1], g[2], g[3], g[4] != null ? g[4] : o[4], g[5] != null ? g[5] : o[5]]; });
+      if (r.staff) x.staff = r.staff.map(function (s_, i) { var o = x.staff[i] || s_; return [s_[0], s_[1], s_[2] != null ? s_[2] : o[2], s_[3] != null ? s_[3] : o[3]]; });
+      x.confirmed = false;
+      x.cifFrom = { name: src.name, where: src.where || '', key: src.key, pics: src.pics.length, checks: r.checks, flags: r.flags, found: r.found };
+      paintInputs(); paintCif(); return saveInputs();
+    }).catch(function (e) { $('cif-src').innerHTML = '<span class="k-warn">Could not read ' + esc(src.name) + ': ' + esc(e && e.message || e) + '</span> Type the figures below instead.'; });
+  }
+  function cifAuto(force) {   // on opening the quarter: read Ms. Hong's email when it is new (the figures are saved, so it is not read twice)
+    return findCif().then(function (src) {
+      CIF.src = src; CIF.synthetic = !!(src && src.synthetic); showPics(src);
+      if (CIF.synthetic) $('synth').classList.remove('hide');
+      if (src && (force || !S.inputs.cifFrom || S.inputs.cifFrom.key !== src.key)) return readCif(src);
+      paintCif();
+    }).catch(function () { paintCif(); });
   }
 
   /* ---------- events ---------- */
@@ -347,6 +465,8 @@
     if (t.matches('[data-src]')) { if (t.files[0]) { S.files[t.getAttribute('data-src')] = { file: t.files[0], where: '' }; if (/synthetic/i.test(t.files[0].name)) S.synthetic = true; paintFiles(); } t.value = ''; return; }
     if (t.id === 'prior-file' && t.files[0]) { S.inputs.priorFrom = ''; loadPrior(t.files[0]).catch(function (er) { $('prior-src').innerHTML = '<span class="k-warn">' + esc(er.message || er) + '</span>'; }); t.value = ''; return; }
     if (t.id === 'cif-ok') { S.inputs.confirmed = t.checked; saveInputs(); return; }
+    if (t.id === 'prior-ok') { S.inputs.priorConfirmed = t.checked; saveInputs(); return; }
+    if (t.id === 'cif-file' && t.files.length) { var fl = Array.from(t.files); t.value = ''; cifSource(fl, '').then(function (src) { if (src) readCif(src); else $('cif-src').innerHTML = '<span class="k-warn">No CIF Profile figures or pictures were found in that file.</span>'; }); return; }
   });
   document.addEventListener('click', function (e) {
     var u = e.target.closest('[data-unpick]'); if (u) { delete S.files[u.getAttribute('data-unpick')]; paintFiles(); }
@@ -363,7 +483,9 @@
     var pc = t.getAttribute('data-pc'); if (pc) { x.prior_categories[pc] = numOrNull(t.value); saveInputs(); return; }
     if (t.id === 'open-items') { x.open_items = t.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean); saveInputs(); }
   });
-  $('btn-prior-reload').addEventListener('click', function () { S.inputs.priorFrom = ''; findPrior().then(function (f) { if (f) return loadPrior(f); paintPrior(); }); });
+  $('btn-prior-reload').addEventListener('click', function () { S.inputs.priorFrom = ''; findPrior().then(function (f) { if (f) return loadPrior(f.file, f.book); paintPrior(); }).catch(function (er) { $('prior-src').innerHTML = '<span class="k-warn">' + esc(er.message || er) + '</span>'; }); });
+  $('btn-cif-reread').addEventListener('click', function () { if (CIF.src) readCif(CIF.src); else cifAuto(true); });
+  $('btn-cif-paste').addEventListener('click', function () { var t = $('cif-paste').value; if (t.trim()) readCif({ name: 'the pasted text', key: 'paste:' + t.length, text: t, pics: [] }); });
 
   /* ---------- run ---------- */
   function progress(msg, p) { $('prog').classList.remove('hide'); $('prog').firstChild.style.width = Math.max(2, Math.min(100, p || 0)) + '%'; $('prog-msg').textContent = msg; }
@@ -374,6 +496,7 @@
     if (c.total_cif == null || c.enrolled == null || c.cif_usage == null) out.push('Type the Total CIFs, Total enrolled CIFs and CIF w/ usage from the CIF Profile.');
     if (x.generations.some(function (g) { return g[4] == null || g[5] == null; }) || x.staff.some(function (s) { return s[2] == null || s[3] == null; })) out.push('Fill in every Active and Idle cell in the generation and staff tables (0 if none).');
     if (!x.confirmed) out.push('Tick “These match the CIF Profile” after reading the figures back.');
+    if (x.priorFrom && !x.priorConfirmed) out.push('Tick “These are last quarter\'s figures” in step 4.');
     var miss = PRIOR_NEED.filter(function (k) { return x.prior[k] == null; });
     if (miss.length) out.push('Last quarter\'s figures are missing: ' + miss.map(function (k) { return PRIOR_LABELS[k]; }).join(', ') + '.');
     return out;
@@ -389,7 +512,9 @@
       cif: { total_cif: [c.total_cif, 'CIF Profile (Ms. Maria Hong), net of dormant and closed'], enrolled: [c.enrolled, 'CIF Profile (Ms. Maria Hong), net of dormant and closed'],
         cif_usage: [c.cif_usage, 'CIF Profile (Ms. Maria Hong); usage net of Seniors, Neo below 18, BOS accts, Iremit, closed and dormant'], inactive: [c.inactive, c.inactive == null ? '' : (c.inactive_why || 'Typed override')] },
       generations: x.generations.map(function (g) { return g.slice(); }), staff: x.staff.map(function (s) { return s.slice(); }), prior: prior,
-      prior_categories: x.prior_categories, prior_categories_source: x.prior_categories_source, open_items: x.open_items || [] };
+      prior_categories: x.prior_categories, prior_categories_source: x.prior_categories_source,
+      // the rows left out of the export are noted on the Method sheet (as the skill's prep_raw.py does), replacing last quarter's note
+      open_items: (x.open_items || []).filter(function (o) { return !/dated outside/.test(o); }).concat(agg && D.outsideNote(agg.dropped, i.quarter) ? [D.outsideNote(agg.dropped, i.quarter)] : []) };
   }
   function readRaw() {
     var f = chosen('raw').file, months = info().months, k = key(f) + '|' + months.join();
@@ -400,6 +525,8 @@
       agg.layout = r && r.layout;
       var out = Object.keys(agg.dropped);
       if (!agg.n && out.length) throw new Error('None of the rows in the DRB Usage export are from ' + months.join(', ') + ' (it has ' + out.join(', ') + '). Check the quarter chosen in step 1.');
+      var have = Array.from(agg.months).map(function (m) { return String(m).trim().slice(0, 3).toUpperCase(); }), none = months.filter(function (m) { return have.indexOf(m.slice(0, 3)) < 0; });
+      if (none.length) throw new Error('The DRB Usage export has no rows for ' + none.join(', ') + '. Ask Ms. Hong for the full-quarter file, or check the quarter chosen in step 1.');
       S.agg = agg; S.aggKey = k; return agg;
     }, function (e) {
       if (e instanceof RangeError || /allocation|memory|Invalid string length|out of memory/i.test(String(e && e.message))) {
@@ -436,7 +563,7 @@
           books: { drb_summary: books.drb_summary, itcom_dcb: books.itcom_dcb, dcb_stats: books.dcb_stats }, today: new Date() });
         progress('Working out every figure…', 98);
         res.wb.calculate();
-        S.result = { wb: res.wb, cfg: cfg, fig: D.figures(res.wb), synthetic: S.synthetic };
+        S.result = { wb: res.wb, cfg: cfg, fig: D.figures(res.wb), synthetic: S.synthetic || CIF.synthetic };
         $('prog').classList.add('hide'); $('prog-msg').textContent = 'Read ' + agg.n.toLocaleString('en-US') + ' rows from ' + i.period + '.' + outside(agg.dropped, 'DRB Usage export') + (rib && rib.dropped ? outside({ 'other dates': rib.dropped }, 'RIB Usage extraction') : ''); $('btn-run').disabled = false;
         review();
       });
