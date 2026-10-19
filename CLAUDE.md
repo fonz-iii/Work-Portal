@@ -23,7 +23,7 @@ SBA-Portal/
   modules.html          Product Management page (section tabs) + skill runner (#skill/<id>) + coming-soon team pages (#cat/<id>)
   help.html             How to use the site (plain-language guide, error table, FAQ)
   knowledge.html        Employee Info page (phone directory + Code of Conduct; more sections later). Logic in core/knowledge.js
-  assets/               css, images, icons (all local)
+  assets/               css (tokens.css, portal.css, components.css), images, icons (all local)
   core/                 shared engine (see below)
   skills/               one .js file per skill module
   skills/registry.js    ordered list of skill files to load
@@ -119,6 +119,7 @@ Files: `rib.html` (page and UI), `skills/rib-advisory.js` (templates, builders, 
 - **Scroll-reactive background:** fixed layer of soft blurred shapes + dot grid behind the content. Each section has `data-scene` (hero, sky, gold, mint, navy, calm); the scene of the section most on screen colors the shapes, and they drift with scroll. Cards fade up as they come into view. All motion is off under `prefers-reduced-motion` and in print.
 - **Light / Dark toggle** in the top utility bar (default Light, never follows the OS). Choice stored in localStorage (try/catch) and applied as `data-theme` on `<html>` by an inline head script, so there is no flash. Dark values redefine the same CSS custom properties under `:root[data-theme="dark"]` in `assets/css/portal.css`. Generated reports, Word/Excel exports and print always stay light.
 - Components: KPI cards with big numbers, navy-header tables with light zebra rows, rounded cards, process/flow visuals. Every output has a print stylesheet.
+- **Stylesheets (fintech restyle, 2026-10-19):** every page loads `assets/css/tokens.css` (palette + type scale, spacing, radius, elevation, focus, mono/tabular numbers; light and dark) → `portal.css` (layout) → `components.css` (visual layer: segmented nav and tabs, hairline cards with short shadows, status pills with a dot, uppercase micro-labels, ledger-style numbers, navy hero with a faint data grid; RIB's `--rib-*` variables mapped to the portal tokens). `rib.html` loads `components.css` after its own `<style>`. Report content inside `.output-html`, exports and print are left unchanged. `[hidden]` always hides.
 
 ## Working rules for Claude Code
 

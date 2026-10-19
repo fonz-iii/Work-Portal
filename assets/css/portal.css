@@ -2,27 +2,7 @@
    Navy + corporate blue on soft cool greys, a hint of SBA yellow. System fonts only. Tuned for 1366x768.
    Light is the default; :root[data-theme="dark"] redefines the same custom properties.
    Generated reports (.output-html) and print always use the light values. */
-:root {
-  --ink: #0b1a2e; --navy: #0d2240; --navy-2: #163560; --navy-3: #22497f;
-  --blue: #1f5fbf; --blue-2: #174c9a; --sky: #e9f1fc; --sky-2: #d4e3f8;
-  --bg: #f4f6fa; --surface: #ffffff; --line: #e1e6ee; --line-2: #eef1f6;
-  --text: #1a2433; --muted: #5b6676; --faint: #8a94a3;
-  --gold: #f0b323; --gold-2: #d99a0b; --gold-soft: #fdf4dc; --gold-ink: #8a6100;
-  --chrome: #0b1a2e; --link: #1f5fbf; --zebra: #f8fafc; --field-line: #cdd5e0; --bad-line: #f3c7c2; --stripe-a: #f1f4f8; --stripe-b: #eaeef4;
-  --ok: #1d7a4f; --ok-bg: #e8f5ee; --warn: #9a5800; --warn-bg: #fdf3e3; --bad: #b42318; --bad-bg: #fdecea;
-  --band-alt: rgba(255, 255, 255, .55); --glass: rgba(255, 255, 255, .78);
-  --r: 16px; --r-md: 12px; --r-sm: 8px;
-  --shadow: 0 1px 2px rgba(13, 34, 64, .05), 0 2px 8px rgba(13, 34, 64, .05);
-  --shadow-lg: 0 14px 34px rgba(13, 34, 64, .13);
-  --ease: cubic-bezier(.2, .7, .2, 1);
-  --font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  /* scroll background scenes */
-  --b1: #d6e5fa; --b2: #e6edf8; --b3: #fbefd2; --bg-op: .7;
-}
-:root[data-scene="sky"], :root[data-scene="hero"] { --b1: #cfe0fa; --b2: #dfeafb; --b3: #e9f1ff; }
-:root[data-scene="gold"] { --b1: #fbe6b5; --b2: #e3ebf8; --b3: #fdf1d6; }
-:root[data-scene="mint"] { --b1: #d3ebf2; --b2: #dfe8f7; --b3: #e6f3f6; }
-:root[data-scene="navy"] { --b1: #c9d6ea; --b2: #dde5f2; --b3: #eef1f8; }
+/* Design tokens (colours, type, spacing, radius, elevation) live in tokens.css, loaded before this file. */
 
 * { box-sizing: border-box; }
 #shell { display: contents; }
@@ -587,23 +567,6 @@ mark.cur { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
 
 /* ---------- dark theme (user toggle; stored in localStorage, applied as data-theme on <html>) ---------- */
 :root[data-theme="dark"] mark { background: #8a6d14; color: #fff; }
-:root[data-theme="dark"] {
-  --ink: #eef2f8; --navy: #1d3f73; --navy-2: #2a5290; --navy-3: #3a64a8;
-  --sky: #1b2c47; --sky-2: #2a4369;
-  --bg: #0b1320; --surface: #131c2b; --line: #26324a; --line-2: #1d283b;
-  --text: #d5dce7; --muted: #a3adbc; --faint: #8692a4;
-  --gold-soft: #3a2f12; --gold-ink: #f0c75e;
-  --link: #8fbaf3; --zebra: #172133; --field-line: #3a4864; --bad-line: #6b2a25; --stripe-a: #172133; --stripe-b: #1b2639;
-  --ok: #6fcf97; --ok-bg: #12301f; --warn: #e8b05a; --warn-bg: #33270f; --bad: #f28b82; --bad-bg: #3a1714;
-  --band-alt: rgba(19, 28, 43, .45); --glass: rgba(14, 22, 36, .78);
-  --shadow: 0 1px 2px rgba(0, 0, 0, .35); --shadow-lg: 0 14px 34px rgba(0, 0, 0, .5);
-  --b1: #13284b; --b2: #101d33; --b3: #2a2310; --bg-op: .8;
-  color-scheme: dark;
-}
-:root[data-theme="dark"][data-scene="sky"], :root[data-theme="dark"][data-scene="hero"] { --b1: #173263; --b2: #10203a; --b3: #142a4d; }
-:root[data-theme="dark"][data-scene="gold"] { --b1: #3a2c0c; --b2: #122039; --b3: #2b230f; }
-:root[data-theme="dark"][data-scene="mint"] { --b1: #0f3440; --b2: #112038; --b3: #0e2a33; }
-:root[data-theme="dark"][data-scene="navy"] { --b1: #1a2a4f; --b2: #0f1a2e; --b3: #18243e; }
 :root[data-theme="dark"] .nav a.active { background: #2a5290; }
 :root[data-theme="dark"] .team-live { background: radial-gradient(500px 260px at 100% 0%, rgba(91, 143, 214, .25), transparent 60%), linear-gradient(135deg, #12274a, #1c3d6e); }
 /* Generated reports are official outputs: always light, whatever the screen theme. */
