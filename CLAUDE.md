@@ -81,14 +81,23 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 |---|---|---|---|---|
 | 1 | Industry Ranking | BSP thrift-bank ranking PDFs (public), this + previous quarter; old workbook fills prior gaps | HTML slide deck (14 slides), 2-page Word report, Excel figures | **Done 2026-10-06** (`skills/industry-ranking.js`; thrift only) |
 | 2 | QR Ph P2B Biller Directory | Biller masterlist Excel (+ previous, optional) | Alphabetized Word directory on SBA letterhead (.docx), PDF version (print view), Excel check sheet | **Done 2026-10-08** (`skills/qrph-p2b-directory.js`; port of the Claude skill) |
-| 3 | DRB Usage | Excel | Report + charts | **On hold** (2026-10-07): Fons is writing the skill |
-| 4 | DRB Enrollees | Excel | Report + charts | Needs column spec |
-| 5 | DRB Idle Accounts | Excel | Report + charts | Needs column spec |
-| 6 | RIB Advisory Generator | .eml / .msg email, pasted email text, or manual form | Subject + body (Trebuchet MS, size 3; formatted or plain copy), status tracker, filterable Prod compilation (Word / PDF) | **Built 2026-10-09** (`rib.html` + `skills/rib-advisory.js`), in Product Management › RIB |
+| 3 | DRB Usage (includes enrolment and user profile, top billers and banks, quarter-on-quarter; replaces the old DRB Enrollees / Idle Accounts rows) | DRB Usage export, CIF Profile (typed), ITCom DCB + DRB Reports, RIB Idle Accounts, RIB Usage (optional), last quarter's workbook | Worked-figures Excel workbook (same as the `drb-usage-report` skill) + on-screen review | **In progress** (2026-10-19): port of the skill; plan below |
+| 4 | KRI Report (Key Risk Indicators) | TBD | TBD | **Planned** (new 2026-10-19) |
+| 6 | RIB Advisory Generator | .eml / .msg email, pasted email text, or manual form | Subject + body (Trebuchet MS, size 3; formatted or plain copy), status tracker, filterable Prod compilation (Word / PDF) | **Built 2026-10-09** (`rib.html` + `skills/rib-advisory.js`), in Product Management › Digital Banking |
 | 7 | Research Library | Past studies + templates | Browse, search, new-study template | — |
-| 8 | Types of Complaints | TBD | Report + charts | **On hold** pending Customer Service |
+| 8 | Types of Complaints | TBD | Report + charts | **Moved to the Customer Service team** (2026-10-19); not shown yet |
 
 **Employee Info** page (`knowledge.html`, renamed from Knowledge 2026-10-07; not a skill): searchable **Employee Directory** tab (renamed from Phone Directory 2026-10-07; own search box plus the page-wide one; SBA phone directory .xls: Name/Local/Direct block sheets, Branches sheet, Globe mobile list) and Code of Conduct reader (PDF split into Article/Chapter/Section with page numbers), plus a **QR Ph Billers** tab (2026-10-12): searchable list of QR Ph = Y billers (name, category, biller code, New/Updated tags) built with the QR Ph skill's own `readMasterlist`/`buildRows`, so it matches the published directory; it reads the newest masterlist in `QR Ph Billers\` (knowledge.html loads `skills/qrph-p2b-directory.js`). **These are real internal files: they are loaded on the office PC and cached only in that browser's IndexedDB; never commit them or anything derived from them.** Practice files: `samples/employee-info/` (synthetic). Later sections: org chart, products/fees, templates.
+
+## Module 3: DRB Usage (port of the `drb-usage-report` skill, decided 2026-10-19 with Fons)
+
+- **One card, one run** under Digital Banking; own page `drb-usage.html` + pure engine `skills/drb-usage.js` + built-in transaction map `data/drb-txn-map.js` (type names only).
+- **Outputs:** the same "DRB Usage Qn YYYY - Worked Figures.xlsx" as the skill (same sheets, live formulas, charts, colour key, checks), written as OOXML with JSZip with cached values computed in JS (no LibreOffice step); plus an on-screen review (headline figures vs prior, Checks FAIL/REVIEW, top billers and banks, QoQ). Saved to `DRB Usage\Outputs`.
+- **Portal folder:** `DRB Usage\<YYYY-Qn>\` with sender subfolders `Ms. Hong` (DRB Usage raw), `Sir Jun` (ITCom DCB, DRB Reports, DRB DCB Stats), `Automailer` (RIB Idle Accounts), `RIB Inbox shared drive` (RIB Usage). Newest quarter folder is used; files recognised by contents.
+- **Typed inputs:** CIF Profile form with read-back confirmation (saved per quarter in the portal folder, never in the repo). Prior-quarter figures read automatically from last quarter's workbook in `DRB Usage\Outputs`, editable.
+- **Big raw file:** streamed .xlsx read; if the PC runs out of memory, ask for the RAW sheet as CSV.
+- **New transaction types:** mapped on screen; saved to `DRB Usage\txn_map.json` in the portal folder over the built-in map.
+- **Verification:** golden check vs the Python script on synthetic files and on Fons's real Q3 2026 files (local only, never committed).
 
 ## Module 6: RIB Advisory Generator (built 2026-10-09)
 
@@ -108,11 +117,11 @@ Files: `rib.html` (page and UI), `skills/rib-advisory.js` (templates, builders, 
 - **Checks:** weekday vs date, year vs posting year, CPR release date inside its week, repeated words, double spaces, space before punctuation, known typos, footer off, missing fields.
 - **Compilation:** one list of all Prod posts (date, category, text, Prod screenshots; no UAT). Filter by category, date range and keyword. Export the filtered view to Word (MHTML .doc with images) or print to PDF.
 - **Storage:** the portal folder (2026-10-09 integration) → `RIB Advisories/entries/<id>.json`, `screenshots/`, `emails/` (one file per advisory so two users do not overwrite each other). Without folder access it falls back to browser storage, with backup export/import (JSON with embedded images). The compilation starts from posts on or after 2026-09-07 (starter backup kept outside the repo).
-- **In the portal (2026-10-09):** `rib.html` uses the portal shell (top bar, nav, breadcrumbs, Light/Dark, fabs); its CSS is scoped under `.rib` with `--rib-*` variables. Storage uses the portal folder (`Portal.files`, project folder `RIB Advisories`); Word export and backup save to `RIB Advisories\Outputs`. Menu tile via `page: 'rib.html'` (Product Management › RIB).
+- **In the portal (2026-10-09):** `rib.html` uses the portal shell (top bar, nav, breadcrumbs, Light/Dark, fabs); its CSS is scoped under `.rib` with `--rib-*` variables. Storage uses the portal folder (`Portal.files`, project folder `RIB Advisories`); Word export and backup save to `RIB Advisories\Outputs`. Menu tile via `page: 'rib.html'` (Product Management › Digital Banking).
 
 ## Design
 
-- **Site structure (2026-10-06, per Fons):** four teams. **Product Management** (live) holds every module, in sections Benchmarking, DRB Reports, RIB, Research, Customer Insights and Demo. **Creatives**, **Customer Service** and **Fraud Management System** are "Coming soon" pages. A skill may set optional `category` (default `'pm'`); `group` is its section. Teams and section order live in `core/ui.js` (`TEAMS`, `SECTION_ORDER`).
+- **Site structure (2026-10-06, per Fons):** four teams. **Product Management** (live) holds every module, in sections (regrouped 2026-10-19, per Fons) **Market & Research** (Industry Ranking, Research Library), **Digital Banking** (DRB Usage, RIB Advisory Generator), **Payments & Risk** (KRI Report, QR Ph P2B Biller Directory) and Demo. **Creatives**, **Customer Service** and **Fraud Management System** are "Coming soon" pages. A skill may set optional `category` (default `'pm'`); `group` is its section. Teams and section order live in `core/ui.js` (`TEAMS`, `SECTION_ORDER`).
 - **Pages:** Home (`index.html`: search box, team picker, section shortcuts, picture slots from `data/home.js` + `assets/images/`, how-it-works), Product Management (`modules.html`), Employee Info (`knowledge.html`), How to use (`help.html`). Every page has breadcrumbs ("You are here"), back links on report pages and a floating "How to use" button. Plain, layman wording throughout.
 - The site is for the **Marketing Group only**; say so in the top bar, Home hero and footer.
 - **Look:** modern corporate, a little playful. Deep navy + corporate blue on soft cool greys, a hint of SBA yellow (#f0b323: active menu underline, Home primary button, footer rule, restricted badge, icon accents). Rounded cards (16px), pill buttons, soft shadows, hover lift. System font stack only. Readable at 1366×768.
@@ -132,7 +141,8 @@ Files: `rib.html` (page and UI), `skills/rib-advisory.js` (templates, builders, 
 ## Open items
 
 - [x] Feasibility test passed on the office desktop, Chrome 154 via `file://` (2026-10-05): Excel read, PDF text read, folder connect + write, folder remembered after reopen, Excel/Word/PDF exports. Chrome is the reference browser; Edge not yet tested.
-- [ ] Column layouts for DRB Usage, Enrollees, Idle Accounts (DRB Usage on hold 2026-10-07 while Fons writes its skill)
+- [x] DRB Usage spec: the `drb-usage-report` skill (2026-10-19); Enrollees and Idle Accounts are part of it
+- [ ] DRB Usage port: waiting for Fons's real Q3 2026 inputs + the skill's Q3 workbook for the golden check
 - [x] RIB advisory format rules (module 6 above)
 - [ ] Edge test of `rib.html` (clipboard formatting, folder access, .msg reading) on the office desktop
 - [ ] Complaints data format (Customer Service)

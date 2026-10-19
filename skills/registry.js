@@ -4,10 +4,10 @@
 (function (root) {
   'use strict';
   var SKILL_FILES = [
+    'industry-ranking.js',    // Market & Research: BSP thrift-bank ranking deck + report (first in its section)
     'placeholders.js',        // menu tiles for modules not built yet
-    'industry-ranking.js',    // Benchmarking: BSP thrift-bank ranking deck + report
-    'qrph-p2b-directory.js',  // RIB: QR Ph P2B biller directory (Word + PDF)
-    'rib-advisory.js',        // RIB: Advisory Generator (its own page, rib.html)
+    'qrph-p2b-directory.js',  // Payments & Risk: QR Ph P2B biller directory (Word + PDF)
+    'rib-advisory.js',        // Digital Banking: RIB Advisory Generator (its own page, rib.html)
     'demo-branch-deposits.js' // milestone 1 demo (synthetic data only)
   ];
 

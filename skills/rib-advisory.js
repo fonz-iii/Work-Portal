@@ -562,6 +562,6 @@
   };
 
   if (window.Portal && typeof window.Portal.registerSkill === 'function') {
-    try { window.Portal.registerSkill({ id: 'rib-advisory', title: 'RIB Advisory Generator', group: 'RIB', description: 'Draft RIB Inbox advisories, track UAT to Prod, and keep the compilation', page: 'rib.html' }); } catch (e) { /* shell may use a stricter contract */ }
+    try { window.Portal.registerSkill({ id: 'rib-advisory', title: 'RIB Advisory Generator', group: 'Digital Banking', description: 'Draft RIB Inbox advisories, track UAT to Prod, and keep the compilation', page: 'rib.html' }); } catch (e) { /* shell may use a stricter contract */ }
   }
 })();

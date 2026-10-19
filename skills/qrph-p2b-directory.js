@@ -1,4 +1,4 @@
-/* skills/qrph-p2b-directory.js: QR Ph P2B Biller Directory (Product Management › RIB).
+/* skills/qrph-p2b-directory.js: QR Ph P2B Biller Directory (Product Management › Payments & Risk).
    Port of the Claude skill "qrph-p2b-directory" (scripts/build_directory.py). Same rules, same warnings,
    same Word layout: the SBA letterhead templates in data/qrph-templates.js are filled row by row.
    Twice a month: BancNet/InstaPay "P2B Biller Masterlist" .xlsx -> "QR PH P2B List of Billers (as of …)". */
@@ -326,7 +326,7 @@
   P.registerSkill({
     id: 'qrph-p2b-directory',
     title: 'QR Ph P2B Biller Directory',
-    group: 'RIB',
+    group: 'Payments & Risk',
     status: 'ready',
     description: 'Alphabetized "QR PH P2B List of Billers" on SBA letterhead (Word and PDF) from the BancNet/InstaPay biller masterlist.',
     inputs: [

@@ -778,7 +778,7 @@
   P.registerSkill({
     id: 'industry-ranking',
     title: 'Industry Ranking',
-    group: 'Benchmarking',
+    group: 'Market & Research',
     status: 'ready',
     description: 'Thrift-bank ranking slide deck and 2-page President’s report from the BSP ranking PDFs.',
     inputs: [

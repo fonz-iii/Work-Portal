@@ -19,18 +19,17 @@
   /* ---------- site structure ---------- */
   var TEAMS = [
     { id: 'pm', name: 'Product Management', short: 'Product Management', icon: 'chart', live: true,
-      blurb: 'DRB usage reports, benchmarking, RIB content and research.' },
+      blurb: 'Benchmarking, research, digital banking reports, RIB content, payments and risk.' },
     { id: 'creatives', name: 'Creatives', short: 'Creatives', icon: 'brush', blurb: 'Tools for the Creatives team are being planned.' },
     { id: 'customer-service', name: 'Customer Service', short: 'Customer Service', icon: 'chat', blurb: 'Tools for Customer Service are being planned.' },
     { id: 'fraud', name: 'Fraud Management System', short: 'Fraud Management', icon: 'shield', blurb: 'Tools for fraud management are being planned.' }
   ];
-  var SECTION_ORDER = ['Benchmarking', 'DRB Reports', 'RIB', 'Research', 'Customer Insights', 'Demo'];
+  // Sections set 2026-10-19 (Fons): Market & Research, Digital Banking, Payments & Risk (+ Demo).
+  var SECTION_ORDER = ['Market & Research', 'Digital Banking', 'Payments & Risk', 'Demo'];
   var SECTION_META = {
-    'Benchmarking': { id: 'benchmarking', icon: 'trophy', blurb: 'Where SBA ranks against other banks, from BSP data.' },
-    'DRB Reports': { id: 'drb', icon: 'chart', blurb: 'Usage, enrollee and idle-account reports for digital retail banking.' },
-    'RIB': { id: 'rib', icon: 'screen', blurb: 'Internet banking content: biller directory and customer advisories.' },
-    'Research': { id: 'research', icon: 'book', blurb: 'Past studies and templates for new research.' },
-    'Customer Insights': { id: 'insights', icon: 'chat', blurb: 'What customers tell us, by type of concern.' },
+    'Market & Research': { id: 'market-research', icon: 'trophy', blurb: 'Where SBA ranks against other banks, plus past studies and research templates.' },
+    'Digital Banking': { id: 'digital-banking', icon: 'screen', blurb: 'Sterling Bank Online usage reports and RIB Inbox advisories.' },
+    'Payments & Risk': { id: 'payments-risk', icon: 'shield', blurb: 'QR Ph biller directory and key risk indicators.' },
     'Demo': { id: 'demo', icon: 'flask', blurb: 'A practice module on made-up data. Safe to try anything.' }
   };
   var STATUS_LABEL = { planned: 'Coming soon', 'on-hold': 'On hold', demo: 'Practice', ready: 'Ready to use' };
