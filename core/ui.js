@@ -102,7 +102,7 @@
   /* ---------- shell ---------- */
   var page = '';
   function navKey() {
-    if (page === 'rib') return 'team:pm';
+    if (page === 'rib' || page === 'drb') return 'team:pm';
     if (page !== 'modules') return page;
     var c = /^cat\/(.+)$/.exec(location.hash.slice(1));
     return c ? 'team:' + c[1] : 'team:pm';

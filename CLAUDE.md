@@ -23,6 +23,7 @@ SBA-Portal/
   modules.html          Product Management page (section tabs) + skill runner (#skill/<id>) + coming-soon team pages (#cat/<id>)
   help.html             How to use the site (plain-language guide, error table, FAQ)
   knowledge.html        Employee Info page (phone directory + Code of Conduct; more sections later). Logic in core/knowledge.js
+  drb-usage.html        DRB Usage page (module 3). Engine in skills/drb-usage.js; core/xlsx-calc.js + core/xlsx-writer.js
   assets/               css (tokens.css, portal.css, components.css), images, icons (all local)
   core/                 shared engine (see below)
   skills/               one .js file per skill module
@@ -81,7 +82,7 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 |---|---|---|---|---|
 | 1 | Industry Ranking | BSP thrift-bank ranking PDFs (public), this + previous quarter; old workbook fills prior gaps | HTML slide deck (14 slides), 2-page Word report, Excel figures | **Done 2026-10-06** (`skills/industry-ranking.js`; thrift only) |
 | 2 | QR Ph P2B Biller Directory | Biller masterlist Excel (+ previous, optional) | Alphabetized Word directory on SBA letterhead (.docx), PDF version (print view), Excel check sheet | **Done 2026-10-08** (`skills/qrph-p2b-directory.js`; port of the Claude skill) |
-| 3 | DRB Usage (includes enrolment and user profile, top billers and banks, quarter-on-quarter; replaces the old DRB Enrollees / Idle Accounts rows) | DRB Usage export, CIF Profile (typed), ITCom DCB + DRB Reports, RIB Idle Accounts, RIB Usage (optional), last quarter's workbook | Worked-figures Excel workbook (same as the `drb-usage-report` skill) + on-screen review | **In progress** (2026-10-19): port of the skill; plan below |
+| 3 | DRB Usage (includes enrolment and user profile, top billers and banks, quarter-on-quarter; replaces the old DRB Enrollees / Idle Accounts rows) | DRB Usage export, CIF Profile (typed), ITCom DCB + DRB Reports, RIB Idle Accounts, RIB Usage (optional), last quarter's workbook | Worked-figures Excel workbook (same as the `drb-usage-report` skill) + on-screen review | **Built 2026-10-19** (`drb-usage.html` + `skills/drb-usage.js`); golden-checked vs the Python script on synthetic files; real Q3 2026 check pending |
 | 4 | KRI Report (Key Risk Indicators) | TBD | TBD | **Planned** (new 2026-10-19) |
 | 6 | RIB Advisory Generator | .eml / .msg email, pasted email text, or manual form | Subject + body (Trebuchet MS, size 3; formatted or plain copy), status tracker, filterable Prod compilation (Word / PDF) | **Built 2026-10-09** (`rib.html` + `skills/rib-advisory.js`), in Product Management › Digital Banking |
 | 7 | Research Library | Past studies + templates | Browse, search, new-study template | — |
@@ -97,7 +98,8 @@ An input may add `source: { folder, match?, pick: 'newest'|'second' }` or `sourc
 - **Typed inputs:** CIF Profile form with read-back confirmation (saved per quarter in the portal folder, never in the repo). Prior-quarter figures read automatically from last quarter's workbook in `DRB Usage\Outputs`, editable.
 - **Big raw file:** streamed .xlsx read; if the PC runs out of memory, ask for the RAW sheet as CSV.
 - **New transaction types:** mapped on screen; saved to `DRB Usage\txn_map.json` in the portal folder over the built-in map.
-- **Verification:** golden check vs the Python script on synthetic files and on Fons's real Q3 2026 files (local only, never committed).
+- **Engine files:** `core/xlsx-calc.js` (formula evaluator: SUMIFS/COUNTIF(S)/INDEX/MATCH/LARGE/TEXT…, Excel semantics) and `core/xlsx-writer.js` (styled OOXML writer: styles, merges, names, validation, conditional formats, hyperlinks, bar/doughnut charts) are generic and reusable. `skills/drb-usage.js` copies pandas behaviours that change figures (default na_values such as "NA"/"NULL" read as blank; numeric-looking CIF ids in the idle report lose leading zeros; value_counts ties in first-seen order).
+- **Verification (2026-10-19):** three synthetic sets (CSV and .xlsx raw, with/without idle report, RIB, DCB Stats; typed override) give workbooks identical to `build_drb_usage.py` + LibreOffice recalc on every cell (formula, cached value, style, merges, widths, names, charts) and identical `_expected.json` (one deliberate difference: the Method sheet's inactive note does not quote the real Q1 2026 figure). Big-file test: synthetic 99 MB / 450,000-row export read in headless Chrome in about 80 s, peak JS heap about 1.3 GB (a real ~50 MB export should need about half; CSV fallback offered on out-of-memory). Practice set in `samples/SBA Portal Files (practice)/DRB Usage/` (0 FAIL). Real Q3 2026 golden check: waiting for Fons's files (local only, never committed).
 
 ## Module 6: RIB Advisory Generator (built 2026-10-09)
 
@@ -142,7 +144,7 @@ Files: `rib.html` (page and UI), `skills/rib-advisory.js` (templates, builders, 
 
 - [x] Feasibility test passed on the office desktop, Chrome 154 via `file://` (2026-10-05): Excel read, PDF text read, folder connect + write, folder remembered after reopen, Excel/Word/PDF exports. Chrome is the reference browser; Edge not yet tested.
 - [x] DRB Usage spec: the `drb-usage-report` skill (2026-10-19); Enrollees and Idle Accounts are part of it
-- [ ] DRB Usage port: waiting for Fons's real Q3 2026 inputs + the skill's Q3 workbook for the golden check
+- [ ] DRB Usage: golden check on Fons's real Q3 2026 inputs + the skill's Q3 workbook (upload in a session; never committed); office test of a real 50 MB export in Chrome
 - [x] RIB advisory format rules (module 6 above)
 - [ ] Edge test of `rib.html` (clipboard formatting, folder access, .msg reading) on the office desktop
 - [ ] Complaints data format (Customer Service)

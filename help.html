@@ -31,7 +31,7 @@
     <nav class="kside no-print" aria-label="Guide sections"><p>On this page</p>
       <a href="#around">Finding your way around</a><a href="#reports">Making a report</a><a href="#saving">Saving your files</a>
       <a href="#errors">Fixing file errors</a><a href="#theme">Light and dark mode</a><a href="#home-pics">Pictures on Home</a>
-      <a href="#privacy">Privacy and sharing</a><a href="#suggest">Suggesting a change</a><a href="#employee">Employee Info</a><a href="#qrph">QR Ph biller directory</a><a href="#folder">Your portal folder</a><a href="#rib">RIB advisories</a><a href="#faq">Common questions</a></nav>
+      <a href="#privacy">Privacy and sharing</a><a href="#suggest">Suggesting a change</a><a href="#employee">Employee Info</a><a href="#qrph">QR Ph biller directory</a><a href="#folder">Your portal folder</a><a href="#rib">RIB advisories</a><a href="#drb">DRB Usage</a><a href="#faq">Common questions</a></nav>
     <div>
       <section class="card hsec reveal" id="around"><h2><span class="num">1</span>Finding your way around</h2>
         <ul>
@@ -157,6 +157,19 @@
           <li><b>Compilation.</b> Every advisory posted on Prod, newest first. Search, pick a kind or dates, then <b>Download Word file</b> or <b>Print / Save as PDF</b>.</li>
         </ol>
         <p class="tip"><b>First time:</b> in Compilation, open <b>Backup and restore</b> › <b>Restore from a backup file</b> and choose the starter file <i>RIB_advisories_starter_from_Sept_7_2026.json</i> (keep it on your PC; it is not part of the portal). Advisories are kept in your portal folder under <b>RIB Advisories</b>; without a portal folder they stay in this browser until you choose one.</p>
+      </section>
+
+      <section class="card hsec reveal" id="drb"><h2><span class="num">13</span>DRB Usage (quarterly)</h2>
+        <p>Open <span class="ui-chip">Product Management</span> › Digital Banking › <b>DRB Usage</b>. It builds the same “DRB Usage Qn YYYY - Worked Figures” Excel workbook as before: every figure is a live formula, with the Summary, Usage, Profile, Transactions, Channels, Billers_Banks, QR, Cards, QoQ and Checks sheets.</p>
+        <ol>
+          <li><b>Pick the quarter.</b> Click <b>Create this quarter's folders</b> once. Your portal folder gets <b>DRB Usage › 2026-Q3</b> with a folder per sender: <b>Ms. Hong</b> (DRB Usage export), <b>Sir Jun</b> (DRB Reports and ITCom DCB Reports, quarter-end month editions; DRB DCB Stats if you have it), <b>Automailer</b> (RIB Idle Accounts Report) and <b>RIB Inbox shared drive</b> (RIB Usage, optional).</li>
+          <li><b>Check the files.</b> Each line should say <b>Ready</b>. Files are recognised by what is inside them, so the names do not matter. <b>Choose file</b> uses another file.</li>
+          <li><b>Type the CIF Profile</b> from Ms. Hong: total, enrolled, CIFs with usage, and the generation and staff tables. Read them back and tick <b>These match the CIF Profile</b>. Leave <i>Inactive CIFs</i> blank unless you must override the idle report.</li>
+          <li><b>Last quarter's figures</b> are read by themselves from last quarter's workbook in <b>DRB Usage › Outputs</b>. Check them; for the first quarter, put last quarter's workbook there (or choose it).</li>
+          <li><b>Create report</b>, read the review (headline figures, checks, top billers and banks, quarter on quarter), then <b>Save the workbook</b>. It is saved to <b>DRB Usage › Outputs</b>, where next quarter's run finds it.</li>
+        </ol>
+        <p class="tip"><b>Checks:</b> PASS and REVIEW are fine; a <b>FAIL</b> means an input is wrong (for example the generation and staff tables do not add up to the same total) and the workbook cannot be saved until it is fixed. <b>New transaction type?</b> The page lists it; pick its report category and whether it is a money movement, and it is remembered. <b>Very large export?</b> If the PC runs out of memory, open it in Excel, save the RAW sheet as CSV and use that instead.</p>
+        <p class="tip">Practice files: <code>samples/SBA Portal Files (practice)/DRB Usage/</code> (made-up data; the CIF figures to type are in <code>samples/drb-usage/README.md</code>).</p>
       </section>
 
       <section class="hsec faq reveal" id="faq"><h2><span class="num">?</span>Common questions</h2>

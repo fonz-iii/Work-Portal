@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRB Usage · Marketing Portal</title>
+<script>(function(){var t='light';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
+<link rel="icon" href="assets/icons/portal.svg">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/portal.css">
+<style>
+.drb .hide { display: none !important; }
+.drb .card h2 .step { margin-right: 2px; }
+.drb .row2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px 18px; }
+.drb .field small, .drb .hint { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; margin-top: 3px; }
+.drb .field input[type=number], .drb .field input[type=text], .drb .field select { width: 100%; }
+.drb table.t { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.drb table.t th { text-align: left; background: var(--navy); color: #fff; padding: 9px 10px; font-size: 12px; font-weight: 600; letter-spacing: .04em; }
+.drb table.t th:first-child { border-top-left-radius: 8px; } .drb table.t th:last-child { border-top-right-radius: 8px; }
+.drb table.t td { padding: 7px 10px; border-bottom: 1px solid var(--line-2); vertical-align: middle; }
+.drb table.t tbody tr:nth-child(even) td { background: var(--zebra); }
+.drb table.t td.n, .drb table.t th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.drb table.t input { width: 100%; min-height: 34px; padding: 5px 8px; }
+.drb table.t input.num { text-align: right; max-width: 130px; }
+.drb .st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.drb .st::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.drb .st.ok { background: var(--ok-bg); color: var(--ok); } .drb .st.bad { background: var(--bad-bg); color: var(--bad); } .drb .st.warn { background: var(--warn-bg); color: var(--warn); } .drb .st.off { background: var(--line-2); color: var(--muted); }
+.drb .fname { font-size: 12.5px; color: var(--muted); word-break: break-all; }
+.drb .actions-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+.drb .readback { margin-top: 14px; padding: 14px 16px; border-radius: var(--r-md); border: 1px solid var(--sky-2); background: var(--sky); }
+.drb .readback dl { display: grid; grid-template-columns: auto auto; gap: 4px 18px; margin: 8px 0 10px; font-size: 14px; }
+.drb .readback dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.drb .progress { margin-top: 12px; height: 8px; border-radius: 999px; background: var(--line-2); overflow: hidden; }
+.drb .progress > i { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s; }
+.drb .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+.drb .tile { padding: 16px 18px; border-radius: var(--r-md); background: var(--navy); color: #c8d2e4; }
+.drb .tile small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8fa2c2; }
+.drb .tile b { display: block; font-size: 28px; color: #fff; font-variant-numeric: tabular-nums; margin: 4px 0 2px; }
+.drb .tile .chg { font-weight: 700; font-size: 13px; } .drb .up { color: #6fcf97; } .drb .down { color: #f28b82; }
+.drb .lst { margin: 0; padding-left: 20px; } .drb .lst li { margin-bottom: 6px; }
+.drb .two { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.drb .msg { margin-top: 12px; }
+.drb details.more summary { cursor: pointer; font-weight: 600; color: var(--link); margin-top: 10px; }
+@media (max-width: 1100px) { .drb .tiles, .drb .two { grid-template-columns: 1fr; } }
+</style>
+<link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+<header id="shell" class="no-print"></header>
+<main id="main">
+  <header class="page-head no-print" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="index.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><a href="modules.html">Product Management</a><span aria-hidden="true">›</span><a href="modules.html#digital-banking">Digital Banking</a><span aria-hidden="true">›</span><b>DRB Usage</b></nav>
+    <div class="page-title"><div><h1>DRB Usage</h1><p class="lede">The quarterly Sterling Bank Online usage workbook: enrolment and user profile, transactions, channels, top billers and banks, QR, cards and the quarter-on-quarter comparison. Every figure is a live formula worked from the source files.</p></div></div>
+  </div></header>
+  <div class="wrap page-body drb" data-scene="sky">
+    <a class="backlink" href="modules.html#digital-banking"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Back to Digital Banking</a>
+    <div class="guide no-print"><b>How to use this page:</b><ol><li>Pick the quarter</li><li>Check the files</li><li>Type the CIF Profile</li><li>Check last quarter's figures</li><li>Create, review, save</li></ol><a href="help.html#drb">More help</a></div>
+    <div id="synth" class="card errors hide" role="alert"><b>Practice files.</b> These files are marked SYNTHETIC TEST DATA. The workbook will be stamped TEST DATA. Do not use the figures.</div>
+
+    <section class="card" id="c-quarter">
+      <h2><span class="step">1</span>Which quarter?</h2>
+      <div class="row2">
+        <div class="field"><label for="q-year">Year</label><select id="q-year"></select></div>
+        <div class="field"><label for="q-q">Quarter</label><select id="q-q"><option value="1">Q1 (January – March)</option><option value="2">Q2 (April – June)</option><option value="3">Q3 (July – September)</option><option value="4">Q4 (October – December)</option></select></div>
+      </div>
+      <p class="help" id="q-where"></p>
+      <div class="actions-row"><button class="btn" id="btn-mkdirs" type="button">Create this quarter's folders</button><span class="hint" id="mkdirs-note"></span></div>
+    </section>
+
+    <section class="card" id="c-files">
+      <h2><span class="step">2</span>The files</h2>
+      <p class="help">Files are recognised by what is inside them, not by their names. Use <b>Choose file</b> to use a different file.</p>
+      <table class="t"><thead><tr><th>File (sent by)</th><th>Status</th><th></th></tr></thead><tbody id="files-t"></tbody></table>
+      <div class="actions-row"><button class="btn" id="btn-rescan" type="button">Look again</button><span class="hint" id="scan-note"></span></div>
+    </section>
+
+    <section class="card" id="c-cif">
+      <h2><span class="step">3</span>CIF Profile (from Ms. Hong)</h2>
+      <p class="help">Type the figures exactly as sent. They are saved with this quarter in your portal folder (on this PC only).</p>
+      <div class="row2">
+        <div class="field"><label for="cif-total">Total CIFs</label><input id="cif-total" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
+        <div class="field"><label for="cif-enrolled">Total enrolled CIFs</label><input id="cif-enrolled" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
+        <div class="field"><label for="cif-usage">CIFs with usage</label><input id="cif-usage" type="number" min="0" step="1"><small>As supplied in the CIF Profile</small></div>
+        <div class="field"><label for="cif-inactive">Inactive CIFs (only if overriding)</label><input id="cif-inactive" type="number" min="0" step="1"><small>Leave blank to use the RIB Idle Accounts Report</small></div>
+      </div>
+      <div class="field hide" id="inactive-why-f"><label for="cif-inactive-why">Why the inactive count is typed</label><input id="cif-inactive-why" type="text" placeholder="e.g. The idle report for the quarter has no balances"></div>
+      <h3 class="k-sub">Enrolled CIFs by generation, active vs idle</h3>
+      <table class="t"><thead><tr><th>Generation</th><th>Born</th><th class="n">Age from</th><th class="n">Age to</th><th class="n">Active</th><th class="n">Idle</th></tr></thead><tbody id="gen-t"></tbody></table>
+      <p class="hint">Age bands move up by one every January; they are set for the year you picked.</p>
+      <h3 class="k-sub">Enrolled CIFs by staff tag, active vs idle</h3>
+      <table class="t"><thead><tr><th>Staff tag</th><th>Code in the export</th><th class="n">Active</th><th class="n">Idle</th></tr></thead><tbody id="staff-t"></tbody></table>
+      <div class="readback" id="readback"></div>
+    </section>
+
+    <section class="card" id="c-prior">
+      <h2><span class="step">4</span>Last quarter's figures</h2>
+      <p class="help" id="prior-src"></p>
+      <div class="actions-row" style="margin-top:0"><label class="btn">Choose last quarter's workbook<input type="file" id="prior-file" accept=".xlsx" hidden></label><button class="btn" id="btn-prior-reload" type="button">Read it again</button></div>
+      <details class="more" id="prior-box"><summary>Show and edit last quarter's figures</summary>
+        <table class="t" style="margin-top:10px"><thead><tr><th>Figure</th><th class="n">Prior quarter</th><th>Source</th></tr></thead><tbody id="prior-t"></tbody></table>
+        <h3 class="k-sub">Successful transactions by type, last quarter</h3>
+        <table class="t"><thead><tr><th>Transaction type</th><th class="n">Prior quarter</th></tr></thead><tbody id="pcat-t"></tbody></table>
+        <div class="field" style="margin-top:14px"><label for="open-items">Open items (one per line; carried forward)</label><textarea id="open-items" rows="5"></textarea></div>
+      </details>
+    </section>
+
+    <section class="card" id="c-run">
+      <h2><span class="step">5</span>Create the report</h2>
+      <p class="help">Reading a large DRB Usage export can take a minute. Keep this tab open.</p>
+      <div class="actions-row" style="margin-top:0"><button class="btn primary lg" id="btn-run" type="button">Create report</button><span class="hint" id="run-note"></span></div>
+      <div class="progress hide" id="prog"><i></i></div>
+      <p class="hint" id="prog-msg"></p>
+      <div id="run-err"></div>
+    </section>
+
+    <section class="card hide" id="c-map">
+      <h2>New transaction types</h2>
+      <p class="help">The export has transaction types the portal does not know yet. For each one, pick the report category it belongs to and whether it is a financial transaction (a money movement). Your choices are saved in your portal folder and used from now on.</p>
+      <table class="t"><thead><tr><th>Transaction type (as exported)</th><th class="n">Rows</th><th>Report category</th><th>QR group</th><th>Financial?</th></tr></thead><tbody id="map-t"></tbody></table>
+      <div class="actions-row"><button class="btn primary" id="btn-map" type="button">Save and continue</button></div>
+    </section>
+
+    <section id="c-review" class="hide">
+      <div class="results-bar"><h2>Review</h2><div class="out-buttons"><button class="btn primary" id="btn-save" type="button">Save the workbook</button></div><p id="save-msg"></p></div>
+      <div class="card"><h2>Headline figures <span class="muted" id="rv-q" style="font-weight:500;font-size:14px"></span></h2><div class="tiles" id="rv-tiles"></div><h3 class="k-sub">What the data shows</h3><ul class="lst" id="rv-stm"></ul></div>
+      <div class="card"><h2>Checks <span id="rv-ck"></span></h2><p class="help">PASS = the numbers agree. FAIL = something is wrong and must be fixed before the figures are used. REVIEW = a known difference between sources that needs a decision.</p>
+        <table class="t"><thead><tr><th>#</th><th>Check</th><th class="n">Value A</th><th class="n">Value B</th><th>Result</th></tr></thead><tbody id="rv-checks"></tbody></table></div>
+      <div class="two">
+        <div class="card"><h2>Top billers</h2><table class="t"><thead><tr><th>#</th><th>Biller</th><th class="n">Count</th><th class="n">Share</th></tr></thead><tbody id="rv-billers"></tbody></table></div>
+        <div class="card"><h2>Top beneficiary banks</h2><table class="t"><thead><tr><th>#</th><th>Bank</th><th class="n">Count</th><th class="n">Share</th></tr></thead><tbody id="rv-banks"></tbody></table></div>
+      </div>
+      <div class="card"><h2>Quarter on quarter</h2><table class="t"><thead><tr><th>Measure</th><th class="n" id="rv-cq">This quarter</th><th class="n" id="rv-pq">Prior quarter</th><th class="n">Change</th><th class="n">% change</th></tr></thead><tbody id="rv-qoq"></tbody></table></div>
+    </section>
+  </div>
+</main>
+<footer id="foot" class="foot no-print"></footer>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="core/parse.js"></script>
+<script src="core/files.js"></script>
+<script src="data/feedback.js"></script>
+<script src="core/ui.js"></script>
+<script>Portal.ui.boot('drb');</script>
+<script src="core/xlsx-calc.js"></script>
+<script src="core/xlsx-writer.js"></script>
+<script src="data/drb-txn-map.js"></script>
+<script src="skills/drb-usage.js"></script>
+<script>
+(function () {
+  'use strict';
+  var P = window.Portal, D = window.DRB, F = P.files, $ = function (id) { return document.getElementById(id); };
+  var esc = P.ui.esc, fmtN = function (v) { return typeof v === 'number' ? v.toLocaleString('en-US', { maximumFractionDigits: 0 }) : (v === null || v === undefined ? '' : esc(String(v))); };
+  var pct = function (v, d) { return typeof v === 'number' ? (v * 100).toFixed(d == null ? 1 : d) + '%' : (v == null ? '' : esc(String(v))); };
+  var SOURCES = [
+    { k: 'raw', label: 'DRB Usage export', who: 'Ms. Hong', need: true },
+    { k: 'drb_summary', label: 'DRB Reports (quarter-end month)', who: 'Sir Jun', need: true },
+    { k: 'itcom_dcb', label: 'ITCom DCB Reports (quarter-end month)', who: 'Sir Jun', need: true },
+    { k: 'idle', label: 'RIB Idle Accounts Report', who: 'Automailer', need: true },
+    { k: 'rib', label: 'RIB Usage (cross-check)', who: 'RIB Inbox shared drive', need: false },
+    { k: 'dcb_stats', label: 'DRB DCB Stats (cross-check)', who: 'Sir Jun', need: false }
+  ];
+  var SENDERS = ['Ms. Hong', 'Sir Jun', 'Automailer', 'RIB Inbox shared drive'];
+  var PRIOR_LABELS = { total_cif: 'Total CIFs', enrolled: 'Total enrolled CIFs', cif_usage: 'CIFs with usage (as supplied)', fin: 'Active CIFs with financial transactions', login: 'Active CIFs, logged in only',
+    inactive: 'Inactive CIFs', female: 'Transacting CIFs – female', male: 'Transacting CIFs – male', txn_total: 'Successful financial transactions', ftob: 'Fund transfers to other banks (DRB)',
+    ip_nonqr: '…of which InstaPay, regular (non-QR)', card: 'Transactions from cards', qr_ob: D.QRG[0], qr_p2m: D.QRG[1], qr_3p: D.QRG[2], qr_own: D.QRG[3], qr_p2b: D.QRG[4], qr_micro: D.QRG[5] };
+  var PRIOR_NEED = ['total_cif', 'enrolled', 'cif_usage', 'fin', 'login', 'inactive', 'female', 'male'];
+  var S = { files: {}, books: {}, scan: {}, agg: null, aggKey: '', extraMap: {}, result: null, inputs: null, synthetic: false };
+
+  /* ---------- quarter ---------- */
+  function lastQuarter() { var d = new Date(), q = Math.floor(d.getMonth() / 3); return q === 0 ? { y: d.getFullYear() - 1, q: 4 } : { y: d.getFullYear(), q: q }; }
+  (function () {
+    var lq = lastQuarter(), ys = $('q-year');
+    for (var y = lq.y + 1; y >= 2025; y--) ys.insertAdjacentHTML('beforeend', '<option>' + y + '</option>');
+    ys.value = lq.y; $('q-q').value = lq.q;
+  })();
+  function info() { return D.quarterInfo(+$('q-year').value, +$('q-q').value); }
+  function qpath() { return 'DRB Usage/' + info().folder; }
+
+  /* ---------- storage (portal folder, else this browser) ---------- */
+  function readJson(path, lsKey) {
+    if (F.status() === 'connected') {
+      var parts = path.split('/'), name = parts.pop();
+      return F.folder(parts.join('/')).then(function (d) { return d.getFileHandle(name); }).then(function (h) { return h.getFile(); }).then(function (f) { return f.text(); })
+        .then(function (t) { return JSON.parse(t); }).catch(function () { return null; });
+    }
+    try { return Promise.resolve(JSON.parse(localStorage.getItem(lsKey) || 'null')); } catch (e) { return Promise.resolve(null); }
+  }
+  function writeJson(path, lsKey, obj) {
+    var txt = JSON.stringify(obj, null, 1);
+    if (F.status() === 'connected') {
+      var parts = path.split('/'), name = parts.pop();
+      return F.folder(parts.join('/'), true).then(function (d) { return d.getFileHandle(name, { create: true }); }).then(function (h) { return h.createWritable(); })
+        .then(function (w) { return w.write(txt).then(function () { return w.close(); }); }).catch(function () {});
+    }
+    try { localStorage.setItem(lsKey, txt); } catch (e) { /* storage blocked */ }
+    return Promise.resolve();
+  }
+  function tmap() { var m = Object.assign({}, window.SBA_DRB_TXN_MAP || {}); Object.keys(S.extraMap).forEach(function (k) { m[k] = S.extraMap[k]; }); return m; }
+
+  /* ---------- files: find and recognise ---------- */
+  function key(f) { return f.name + '|' + f.size + '|' + f.lastModified; }
+  function book(f) {
+    var k = key(f); if (S.books[k]) return Promise.resolve(S.books[k]);
+    return D.maybeGunzip(f).then(function (b) { return P.parse.excel(new File([b], f.name, { lastModified: f.lastModified })); }).then(function (bk) { bk.name = f.name; S.books[k] = bk; return bk; });
+  }
+  function hasSynth(bk) { return bk.sheetNames.some(function (n) { return (bk.grids[n] || []).slice(0, 8).some(function (r) { return (r || []).some(function (c) { return /synthetic test data/i.test(String(c || '')); }); }); }); }
+  function kindOfBook(bk) {
+    var sn = bk.sheetNames, any = function (re) { return sn.some(function (s) { return re.test(s); }); };
+    if (any(/RIB Stats/i) && any(/API Channel/i) && any(/Insta-Peso-QR/i)) return 'drb_summary';
+    if (any(/^DRB/i) && any(/^DCB/i)) return 'dcb_stats';
+    if (any(/^DCB/i)) return 'itcom_dcb';
+    if (sn.some(function (s) { return s.trim().toUpperCase() === 'RAW'; })) return 'raw';
+    var g = bk.grids[sn[0]] || [], h6 = (g[5] || []).map(function (c) { return String(c || '').trim(); });
+    if (h6.indexOf('CIF_ID_NO') >= 0 && h6.indexOf('IDLE') >= 0 && h6.indexOf('ADB') >= 0) return 'idle';
+    var rib = sn.some(function (s) { return (bk.grids[s] || []).slice(0, 30).some(function (r) { var v = (r || []).map(function (c) { return String(c || '').trim(); }); return v.indexOf('TRANSACTION_TYPE') >= 0 && v.indexOf('STATUS') >= 0; }); });
+    return rib ? 'rib' : null;
+  }
+  function classify(f) {   // -> Promise<kind|null>
+    if (/\.csv$/i.test(f.name)) return f.slice(0, 4000).text().then(function (t) { return /TRANSACTION_TYPE/.test(t) && /CIF_ID_NO/.test(t) ? 'raw' : null; });
+    if (!/\.(xlsx|xlsm|xls|zip|gz)$/i.test(f.name)) return Promise.resolve(null);
+    if (/\.(xlsx|xlsm)$/i.test(f.name) && f.size > 15e6) {   // too big to open whole: peek at the sheet names
+      return JSZip.loadAsync(f).then(function (z) { var w = z.file('xl/workbook.xml'); return w ? w.async('string') : ''; })
+        .then(function (x) { return /name="\s*RAW\s*"/i.test(x) ? 'raw' : null; }, function () { return null; });
+    }
+    return book(f).then(function (bk) { if (hasSynth(bk)) S.synthetic = true; return kindOfBook(bk); }, function () { return null; });
+  }
+  function scan() {
+    S.scan = {}; S.synthetic = false; $('scan-note').textContent = '';
+    if (F.status() !== 'connected') { paintFiles(); return Promise.resolve(); }
+    $('scan-note').textContent = 'Looking in your portal folder…';
+    var base = qpath(), found = [];
+    return Promise.all([''].concat(SENDERS).map(function (sub) {
+      return F.list(base + (sub ? '/' + sub : '')).then(function (es) { es.forEach(function (e) { if (e.kind === 'file' && !/\.json$/i.test(e.name)) found.push({ file: e.file, where: sub || '(quarter folder)' }); }); });
+    })).then(function () {
+      return Promise.all(found.map(function (x) { return classify(x.file).then(function (k) { x.kind = k; }); }));
+    }).then(function () {
+      var end = ['', 'mar|march|-03-|_03_', 'jun|june|-06-|_06_', 'sep|sept|september|-09-|_09_', 'dec|december|-12-|_12_'][+$('q-q').value], endRe = new RegExp(end, 'i');
+      SOURCES.forEach(function (s) {
+        var c = found.filter(function (x) { return x.kind === s.k; });
+        c.sort(function (a, b) { return (endRe.test(b.file.name) - endRe.test(a.file.name)) || (b.file.lastModified - a.file.lastModified); });
+        if (c.length) S.scan[s.k] = { file: c[0].file, where: c[0].where, others: c.length - 1 };
+      });
+      if (/synthetic/i.test(S.scan.raw && S.scan.raw.file.name || '')) S.synthetic = true;
+      $('scan-note').textContent = found.length ? found.length + ' file(s) looked at in ' + F.folderName() + '\\' + base.replace(/\//g, '\\') + '.' : 'No files yet in ' + F.folderName() + '\\' + base.replace(/\//g, '\\') + '.';
+      paintFiles();
+    });
+  }
+  function chosen(k) { return S.files[k] || S.scan[k] || null; }
+  function paintFiles() {
+    var inactiveTyped = $('cif-inactive').value !== '';
+    $('files-t').innerHTML = SOURCES.map(function (s) {
+      var c = chosen(s.k), need = s.need && !(s.k === 'idle' && inactiveTyped);
+      var st = c ? '<span class="st ok">Ready</span> <span class="fname">' + esc(c.file.name) + (c.where ? ' · ' + esc(c.where) : ' · chosen by you') + (c.others ? ' · ' + c.others + ' other file(s) of this kind; using the quarter-end edition' : '') + '</span>'
+        : need ? '<span class="st bad">Missing</span>' : '<span class="st off">Optional, not supplied</span>';
+      return '<tr><td><b>' + esc(s.label) + '</b><br><span class="fname">' + esc(s.who) + '</span></td><td>' + st + '</td><td class="n"><label class="btn">Choose file<input type="file" data-src="' + s.k + '" hidden></label>' +
+        (S.files[s.k] ? ' <button class="linkbtn-dark" type="button" data-unpick="' + s.k + '">Use the folder\'s</button>' : '') + '</td></tr>';
+    }).join('');
+    $('synth').classList.toggle('hide', !S.synthetic);
+  }
+
+  /* ---------- CIF Profile + prior ---------- */
+  function defaults() {
+    var i = info(), y = +$('q-year').value;
+    return { cif: { total_cif: null, enrolled: null, cif_usage: null, inactive: null, inactive_why: '' }, generations: D.defaultGenerations(y), staff: D.STAFF.map(function (s) { return [s[0], s[1], null, null]; }),
+      confirmed: false, prior: {}, priorNotes: {}, prior_categories: {}, prior_categories_source: '', open_items: [], priorFrom: '' , quarter: i.quarter };
+  }
+  function numOrNull(v) { if (v === '' || v === null || v === undefined) return null; var n = Number(v); return isFinite(n) ? n : null; }
+  function paintInputs() {
+    var x = S.inputs;
+    $('cif-total').value = x.cif.total_cif == null ? '' : x.cif.total_cif; $('cif-enrolled').value = x.cif.enrolled == null ? '' : x.cif.enrolled;
+    $('cif-usage').value = x.cif.cif_usage == null ? '' : x.cif.cif_usage; $('cif-inactive').value = x.cif.inactive == null ? '' : x.cif.inactive; $('cif-inactive-why').value = x.cif.inactive_why || '';
+    $('inactive-why-f').classList.toggle('hide', x.cif.inactive == null);
+    $('gen-t').innerHTML = x.generations.map(function (g, i) {
+      return '<tr><td><input type="text" data-g="' + i + ',0" value="' + esc(g[0]) + '"></td><td><input type="text" data-g="' + i + ',1" value="' + esc(g[1]) + '"></td>' +
+        [2, 3, 4, 5].map(function (j) { return '<td class="n"><input class="num" type="number" min="0" step="1" data-g="' + i + ',' + j + '" value="' + (g[j] == null ? '' : g[j]) + '"></td>'; }).join('') + '</tr>';
+    }).join('');
+    $('staff-t').innerHTML = x.staff.map(function (s, i) {
+      return '<tr><td>' + esc(s[0]) + '</td><td>' + esc(s[1] || '(blank)') + '</td>' + [2, 3].map(function (j) { return '<td class="n"><input class="num" type="number" min="0" step="1" data-s="' + i + ',' + j + '" value="' + (s[j] == null ? '' : s[j]) + '"></td>'; }).join('') + '</tr>';
+    }).join('');
+    paintPrior(); paintReadback();
+  }
+  function paintPrior() {
+    var x = S.inputs;
+    $('prior-src').innerHTML = x.priorFrom ? 'Read from <b>' + esc(x.priorFrom) + '</b>. Check the figures below if anything looks off.' :
+      'Last quarter\'s workbook (<b>' + esc(D.fileName(info().prior_quarter)) + '.xlsx</b>) was not found in <b>DRB Usage › Outputs</b>. Choose it, or type the figures below.';
+    $('prior-t').innerHTML = D.PRIOR_KEYS.map(function (k) {
+      var v = x.prior[k];
+      return '<tr><td>' + esc(PRIOR_LABELS[k]) + (PRIOR_NEED.indexOf(k) >= 0 ? ' <span class="req">*</span>' : '') + '</td><td class="n"><input class="num" type="number" step="1" data-p="' + k + '" value="' + (v == null ? '' : v) + '"></td><td><input type="text" data-pn="' + k + '" value="' + esc(x.priorNotes[k] || '') + '"></td></tr>';
+    }).join('');
+    var cats = Object.keys(x.prior_categories);
+    $('pcat-t').innerHTML = cats.length ? cats.map(function (c) { return '<tr><td>' + esc(c) + '</td><td class="n"><input class="num" type="number" step="1" data-pc="' + esc(c) + '" value="' + (x.prior_categories[c] == null ? '' : x.prior_categories[c]) + '"></td></tr>'; }).join('')
+      : '<tr><td colspan="2" class="muted">None yet. They come from last quarter\'s workbook (Transactions sheet).</td></tr>';
+    $('open-items').value = (x.open_items || []).join('\n');
+    if (!x.priorFrom) $('prior-box').open = true;
+  }
+  function paintReadback() {
+    var x = S.inputs, c = x.cif, ok = c.total_cif != null && c.enrolled != null && c.cif_usage != null;
+    var genA = x.generations.reduce(function (s, g) { return s + (g[4] || 0); }, 0), genI = x.generations.reduce(function (s, g) { return s + (g[5] || 0); }, 0);
+    var stA = x.staff.reduce(function (s, g) { return s + (g[2] || 0); }, 0), stI = x.staff.reduce(function (s, g) { return s + (g[3] || 0); }, 0);
+    $('readback').innerHTML = !ok ? '<b>Type the CIF figures above.</b> They are read back here for you to check before the report is built.' :
+      '<b>Read these back against the CIF Profile:</b><dl><dt>Total CIFs</dt><dd>' + fmtN(c.total_cif) + '</dd><dt>Enrolled CIFs</dt><dd>' + fmtN(c.enrolled) + '</dd><dt>CIFs with usage</dt><dd>' + fmtN(c.cif_usage) + '</dd>' +
+      '<dt>Inactive CIFs</dt><dd>' + (c.inactive == null ? 'from the idle report' : fmtN(c.inactive) + ' (typed)') + '</dd><dt>Generation table, active / idle</dt><dd>' + fmtN(genA) + ' / ' + fmtN(genI) + '</dd><dt>Staff table, active / idle</dt><dd>' + fmtN(stA) + ' / ' + fmtN(stI) + '</dd></dl>' +
+      (genA + genI !== stA + stI ? '<p class="k-warn">The generation total and the staff total differ (' + fmtN(genA + genI) + ' vs ' + fmtN(stA + stI) + '). The Checks sheet will show FAIL.</p>' : '') +
+      '<label class="k-check"><input type="checkbox" id="cif-ok"' + (x.confirmed ? ' checked' : '') + '> These match the CIF Profile</label>';
+  }
+  function saveInputs() { return writeJson(qpath() + '/portal-inputs.json', 'drb-inputs-' + info().folder, S.inputs); }
+  function loadPrior(file) {   // last quarter's workbook -> prior figures (only fills what the user has not typed)
+    return P.parse.excel(file).then(function (bk) {
+      var r = D.readPrior(bk), x = S.inputs, pq = info().prior_quarter;
+      D.PRIOR_KEYS.forEach(function (k) { x.prior[k] = r.prior[k] != null ? r.prior[k] : x.prior[k]; x.priorNotes[k] = pq + ' workbook (QoQ carry-forward)'; });
+      x.prior_categories = r.categories; x.prior_categories_source = pq + ' workbook, Transactions sheet (Quarter total)';
+      if (!x.open_items || !x.open_items.length) x.open_items = r.open_items;
+      x.priorFrom = file.name + (r.quarter && r.quarter !== pq ? ' (its quarter is ' + r.quarter + ', not ' + pq + ')' : '');
+      paintPrior(); return saveInputs();
+    });
+  }
+  function findPrior() {
+    if (F.status() !== 'connected') return Promise.resolve(null);
+    var want = D.fileName(info().prior_quarter).toLowerCase();
+    return F.list('DRB Usage/Outputs').then(function (es) {
+      var c = es.filter(function (e) { return e.kind === 'file' && /\.xlsx$/i.test(e.name) && e.name.toLowerCase().indexOf(want) === 0; }).sort(function (a, b) { return b.file.lastModified - a.file.lastModified; });
+      return c[0] ? c[0].file : null;
+    });
+  }
+  function loadQuarter() {
+    var i = info();
+    $('q-where').innerHTML = F.status() === 'connected' ? 'Files are read from <b>' + esc(F.folderName()) + ' › DRB Usage › ' + i.folder + '</b>, one folder per sender (Ms. Hong, Sir Jun, Automailer, RIB Inbox shared drive). The workbook is saved to <b>DRB Usage › Outputs</b>.'
+      : 'No portal folder yet: choose it in the top bar, or pick each file below with <b>Choose file</b>.';
+    $('btn-mkdirs').classList.toggle('hide', F.status() !== 'connected');
+    S.files = {}; S.result = null; $('c-review').classList.add('hide');
+    return Promise.all([readJson(qpath() + '/portal-inputs.json', 'drb-inputs-' + i.folder), readJson('DRB Usage/txn_map.json', 'drb-txn-map')]).then(function (v) {
+      S.extraMap = v[1] || {};
+      var x = v[0] || defaults(); x.priorNotes = x.priorNotes || {}; S.inputs = x; paintInputs();
+      var p = x.priorFrom ? Promise.resolve() : findPrior().then(function (f) { return f ? loadPrior(f) : null; });
+      return Promise.all([p, scan()]);
+    });
+  }
+
+  /* ---------- events ---------- */
+  $('q-year').addEventListener('change', loadQuarter); $('q-q').addEventListener('change', loadQuarter);
+  $('btn-rescan').addEventListener('click', scan);
+  $('btn-mkdirs').addEventListener('click', function () {
+    var base = qpath();
+    Promise.all(SENDERS.map(function (s) { return F.folder(base + '/' + s, true); })).then(function () { $('mkdirs-note').textContent = 'Done: ' + F.folderName() + '\\' + base.replace(/\//g, '\\') + ' now has a folder for each sender.'; scan(); },
+      function (e) { $('mkdirs-note').textContent = 'Could not create the folders (' + (e && e.message || e) + ').'; });
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.matches('[data-src]')) { if (t.files[0]) { S.files[t.getAttribute('data-src')] = { file: t.files[0], where: '' }; if (/synthetic/i.test(t.files[0].name)) S.synthetic = true; paintFiles(); } t.value = ''; return; }
+    if (t.id === 'prior-file' && t.files[0]) { S.inputs.priorFrom = ''; loadPrior(t.files[0]).catch(function (er) { $('prior-src').innerHTML = '<span class="k-warn">' + esc(er.message || er) + '</span>'; }); t.value = ''; return; }
+    if (t.id === 'cif-ok') { S.inputs.confirmed = t.checked; saveInputs(); return; }
+  });
+  document.addEventListener('click', function (e) {
+    var u = e.target.closest('[data-unpick]'); if (u) { delete S.files[u.getAttribute('data-unpick')]; paintFiles(); }
+  });
+  document.addEventListener('input', function (e) {
+    var t = e.target, x = S.inputs; if (!x) return;
+    var map = { 'cif-total': 'total_cif', 'cif-enrolled': 'enrolled', 'cif-usage': 'cif_usage', 'cif-inactive': 'inactive' };
+    if (map[t.id]) { x.cif[map[t.id]] = numOrNull(t.value); x.confirmed = false; if (t.id === 'cif-inactive') { $('inactive-why-f').classList.toggle('hide', t.value === ''); paintFiles(); } paintReadback(); saveInputs(); return; }
+    if (t.id === 'cif-inactive-why') { x.cif.inactive_why = t.value; saveInputs(); return; }
+    var g = t.getAttribute('data-g'); if (g) { var a = g.split(','); x.generations[+a[0]][+a[1]] = +a[1] < 2 ? t.value : numOrNull(t.value); x.confirmed = false; paintReadback(); saveInputs(); return; }
+    var s = t.getAttribute('data-s'); if (s) { var b = s.split(','); x.staff[+b[0]][+b[1]] = numOrNull(t.value); x.confirmed = false; paintReadback(); saveInputs(); return; }
+    var p = t.getAttribute('data-p'); if (p) { x.prior[p] = numOrNull(t.value); saveInputs(); return; }
+    var pn = t.getAttribute('data-pn'); if (pn) { x.priorNotes[pn] = t.value; saveInputs(); return; }
+    var pc = t.getAttribute('data-pc'); if (pc) { x.prior_categories[pc] = numOrNull(t.value); saveInputs(); return; }
+    if (t.id === 'open-items') { x.open_items = t.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean); saveInputs(); }
+  });
+  $('btn-prior-reload').addEventListener('click', function () { S.inputs.priorFrom = ''; findPrior().then(function (f) { if (f) return loadPrior(f); paintPrior(); }); });
+
+  /* ---------- run ---------- */
+  function progress(msg, p) { $('prog').classList.remove('hide'); $('prog').firstChild.style.width = Math.max(2, Math.min(100, p || 0)) + '%'; $('prog-msg').textContent = msg; }
+  function fail(msg) { $('run-err').innerHTML = '<div class="errors card msg" role="alert"><b>Could not create the report.</b> ' + esc(msg) + '</div>'; $('btn-run').disabled = false; $('prog').classList.add('hide'); $('prog-msg').textContent = ''; }
+  function problems() {
+    var x = S.inputs, c = x.cif, out = [];
+    SOURCES.forEach(function (s) { if (s.need && !chosen(s.k) && !(s.k === 'idle' && c.inactive != null)) out.push('Add the ' + s.label + ' (' + s.who + ').'); });
+    if (c.total_cif == null || c.enrolled == null || c.cif_usage == null) out.push('Type the Total CIFs, Enrolled CIFs and CIFs with usage from the CIF Profile.');
+    if (x.generations.some(function (g) { return g[4] == null || g[5] == null; }) || x.staff.some(function (s) { return s[2] == null || s[3] == null; })) out.push('Fill in every Active and Idle cell in the generation and staff tables (0 if none).');
+    if (!x.confirmed) out.push('Tick “These match the CIF Profile” after reading the figures back.');
+    var miss = PRIOR_NEED.filter(function (k) { return x.prior[k] == null; });
+    if (miss.length) out.push('Last quarter\'s figures are missing: ' + miss.map(function (k) { return PRIOR_LABELS[k]; }).join(', ') + '.');
+    return out;
+  }
+  function config(agg) {
+    var i = info(), x = S.inputs, c = x.cif, months = i.months.slice();
+    // use the export's own month spellings when they are this quarter's months (the workbook matches on them)
+    (agg && agg.months ? Array.from(agg.months) : []).forEach(function (m) { var j = months.map(function (z) { return z.slice(0, 3); }).indexOf(String(m).slice(0, 3).toUpperCase()); if (j >= 0) months[j] = m; });
+    var files = {}; SOURCES.forEach(function (s) { var f = chosen(s.k); files[s.k] = f ? f.file.name : null; });
+    if (c.inactive != null && !chosen('idle')) files.idle = null;
+    var prior = {}; D.PRIOR_KEYS.forEach(function (k) { prior[k] = [x.prior[k] == null ? null : x.prior[k], x.priorNotes[k] || 'Typed']; });
+    return { quarter: i.quarter, period: i.period, months: months, prior_quarter: i.prior_quarter, prior_months: i.prior_months, as_of: i.as_of, files: files, display: D.DEFAULT_DISPLAY,
+      cif: { total_cif: [c.total_cif, 'CIF Profile (Ms. Maria Hong), net of dormant and closed'], enrolled: [c.enrolled, 'CIF Profile (Ms. Maria Hong), net of dormant and closed'],
+        cif_usage: [c.cif_usage, 'CIF Profile (Ms. Maria Hong)'], inactive: [c.inactive, c.inactive == null ? '' : (c.inactive_why || 'Typed override')] },
+      generations: x.generations.map(function (g) { return g.slice(); }), staff: x.staff.map(function (s) { return s.slice(); }), prior: prior,
+      prior_categories: x.prior_categories, prior_categories_source: x.prior_categories_source, open_items: x.open_items || [] };
+  }
+  function readRaw() {
+    var f = chosen('raw').file, k = key(f);
+    if (S.agg && S.aggKey === k) return Promise.resolve(S.agg);
+    var agg = new D.RawAgg(tmap());
+    var job = /\.csv$/i.test(f.name) ? D.readRawCsv(f, agg, progress) : D.readRawXlsx(f, agg, progress);
+    return job.then(function () { S.agg = agg; S.aggKey = k; return agg; }, function (e) {
+      if (e instanceof RangeError || /allocation|memory|Invalid string length|out of memory/i.test(String(e && e.message))) {
+        throw new Error('This computer ran out of memory reading the DRB Usage export. Open it in Excel, save the RAW sheet as “CSV (Comma delimited)”, put the CSV in the Ms. Hong folder (or choose it), and try again.');
+      }
+      throw e;
+    });
+  }
+  function run() {
+    $('run-err').innerHTML = ''; $('c-map').classList.add('hide');
+    var pr = problems();
+    if (pr.length) { $('run-err').innerHTML = '<div class="errors card msg" role="alert"><b>Before the report can be built:</b><ul>' + pr.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul></div>'; return; }
+    $('btn-run').disabled = true; $('c-review').classList.add('hide');
+    readRaw().then(function (agg) {
+      var tm = tmap(), raw = agg.finish(tm);
+      if (raw.unmapped) { showMap(raw.unmapped, tm); $('btn-run').disabled = false; $('prog').classList.add('hide'); $('prog-msg').textContent = ''; return; }
+      progress('Reading the other files…', 96);
+      var books = {};
+      return Promise.all(['drb_summary', 'itcom_dcb', 'dcb_stats', 'idle', 'rib'].map(function (k) { var c = chosen(k); return c ? book(c.file).then(function (b) { books[k] = b; if (hasSynth(b)) S.synthetic = true; }) : null; })).then(function () {
+        var cfg = config(agg);
+        if (!books.idle) cfg.files.idle = null;
+        progress('Building the workbook…', 97);
+        var res = D.build({ cfg: cfg, tmap: tm, raw: raw, idle: books.idle ? D.readIdle(books.idle.grids[books.idle.sheetNames[0]]) : null, rib: books.rib ? D.readRib(books.rib) : null,
+          books: { drb_summary: books.drb_summary, itcom_dcb: books.itcom_dcb, dcb_stats: books.dcb_stats }, today: new Date() });
+        progress('Working out every figure…', 98);
+        res.wb.calculate();
+        S.result = { wb: res.wb, cfg: cfg, fig: D.figures(res.wb), synthetic: S.synthetic };
+        $('prog').classList.add('hide'); $('prog-msg').textContent = 'Read ' + agg.n.toLocaleString('en-US') + ' rows.'; $('btn-run').disabled = false;
+        review();
+      });
+    }).catch(function (e) { fail(e && e.message || String(e)); });
+  }
+  $('btn-run').addEventListener('click', run);
+
+  /* ---------- new transaction types ---------- */
+  function showMap(unm, tm) {
+    var cats = {}; Object.keys(tm).forEach(function (t) { cats[tm[t].category] = 1; });
+    var opts = Object.keys(cats).sort();
+    var qrs = ['-'].concat(D.QRG, ['QR activation']);
+    $('map-t').innerHTML = Object.keys(unm).sort().map(function (t, i) {
+      return '<tr><td><b>' + esc(t) + '</b></td><td class="n">' + fmtN(unm[t]) + '</td><td><select data-mc="' + i + '"><option value="">Choose…</option>' + opts.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('') + '<option value="__new">New category…</option></select><input type="text" data-mn="' + i + '" class="hide" placeholder="Name of the new category"></td>' +
+        '<td><select data-mq="' + i + '">' + qrs.map(function (q) { return '<option>' + esc(q) + '</option>'; }).join('') + '</select></td><td><select data-mf="' + i + '"><option value="">Choose…</option><option>Yes</option><option>No</option></select></td></tr>';
+    }).join('');
+    $('map-t').setAttribute('data-types', JSON.stringify(Object.keys(unm).sort()));
+    $('c-map').classList.remove('hide'); $('c-map').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  $('map-t').addEventListener('change', function (e) { var c = e.target.getAttribute('data-mc'); if (c !== null) document.querySelector('[data-mn="' + c + '"]').classList.toggle('hide', e.target.value !== '__new'); });
+  $('btn-map').addEventListener('click', function () {
+    var types = JSON.parse($('map-t').getAttribute('data-types') || '[]'), add = {}, bad = [];
+    types.forEach(function (t, i) {
+      var c = document.querySelector('[data-mc="' + i + '"]').value, n = document.querySelector('[data-mn="' + i + '"]').value.trim(), q = document.querySelector('[data-mq="' + i + '"]').value, f = document.querySelector('[data-mf="' + i + '"]').value;
+      var cat = c === '__new' ? n : c;
+      if (!cat || !f) bad.push(t); else add[t] = { category: cat, qr_group: q === '-' ? '' : q, financial: f };
+    });
+    if (bad.length) { alert('Choose a category and Financial yes/no for: ' + bad.join(', ')); return; }
+    Object.assign(S.extraMap, add);
+    writeJson('DRB Usage/txn_map.json', 'drb-txn-map', S.extraMap).then(function () { $('c-map').classList.add('hide'); run(); });
+  });
+
+  /* ---------- review ---------- */
+  function chgTxt(v, kind) {
+    if (typeof v !== 'number') return '<span class="muted">' + esc(v == null ? '' : String(v)) + '</span>';
+    var up = v > 0, s = kind === 'pts' ? Math.abs(v).toFixed(1) + ' pts' : (Math.abs(v) * 100).toFixed(1) + '%';
+    return v === 0 ? '–' : '<span class="chg ' + (up ? 'up' : 'down') + '">' + (up ? '▲ ' : '▼ ') + s + '</span>';
+  }
+  function review() {
+    var R = S.result, f = R.fig, c = R.cfg;
+    $('rv-q').textContent = c.quarter + ' vs ' + c.prior_quarter; $('rv-cq').textContent = c.quarter; $('rv-pq').textContent = c.prior_quarter;
+    $('rv-tiles').innerHTML = f.tiles.map(function (t) {
+      return '<div class="tile"><small>' + esc(t.label) + '</small><b>' + (t.pct ? pct(t.value, 0) : fmtN(t.value)) + '</b><div>' + esc(t.sub || '') + '</div><div>' + chgTxt(t.chg, t.chgKind) + ' <span style="font-size:12px">vs ' + esc(c.prior_quarter) + '</span></div></div>';
+    }).join('');
+    $('rv-stm').innerHTML = f.statements.filter(Boolean).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+    $('rv-ck').innerHTML = '<span class="st ok">' + f.pass + ' pass</span> <span class="st ' + (f.fail ? 'bad' : 'off') + '">' + f.fail + ' fail</span> <span class="st warn">' + f.review + ' review</span>';
+    $('rv-checks').innerHTML = f.checks.map(function (k) {
+      var cls = k.result === 'PASS' ? 'ok' : k.result === 'FAIL' ? 'bad' : k.result === 'REVIEW' ? 'warn' : 'off';
+      return '<tr><td>' + k.n + '</td><td>' + esc(k.label) + '<br><span class="fname">' + esc(k.why || '') + '</span></td><td class="n">' + fmtN(k.a) + '</td><td class="n">' + fmtN(k.b) + '</td><td><span class="st ' + cls + '">' + esc(k.result || '') + '</span></td></tr>';
+    }).join('');
+    var top = function (l) { return l.map(function (b, i) { return '<tr><td>' + (i + 1) + '</td><td>' + esc(b.name || '') + '</td><td class="n">' + fmtN(b.count) + '</td><td class="n">' + pct(b.pct) + '</td></tr>'; }).join(''); };
+    $('rv-billers').innerHTML = top(f.billers); $('rv-banks').innerHTML = top(f.banks);
+    $('rv-qoq').innerHTML = f.qoq.map(function (q) {
+      var v = function (x) { return q.pct ? pct(x) : fmtN(x); };
+      return '<tr><td>' + esc(q.label) + '</td><td class="n">' + v(q.cur) + '</td><td class="n">' + v(q.prior) + '</td><td class="n">' + (q.pct ? chgTxt(q.chg, 'pts') : (typeof q.chg === 'number' ? (q.chg > 0 ? '▲ ' : q.chg < 0 ? '▼ ' : '') + fmtN(Math.abs(q.chg)) : esc(q.chg || ''))) + '</td><td class="n">' + (q.pct ? '' : chgTxt(q.pchg, 'pct')) + '</td></tr>';
+    }).join('');
+    $('btn-save').disabled = f.fail > 0;
+    $('save-msg').innerHTML = f.fail > 0 ? '<span class="k-warn">' + f.fail + ' check(s) FAIL. Fix the inputs (see Checks below), then create the report again. The workbook cannot be saved while a check fails.</span>' : 'Saves “' + esc(D.fileName(c.quarter) + (R.synthetic ? ' (TEST DATA)' : '')) + '.xlsx” to DRB Usage › Outputs.';
+    $('synth').classList.toggle('hide', !R.synthetic);
+    $('c-review').classList.remove('hide'); $('c-review').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  $('btn-save').addEventListener('click', function () {
+    var R = S.result; if (!R || R.fig.fail) return;
+    var name = D.fileName(R.cfg.quarter) + (R.synthetic ? ' (TEST DATA)' : '') + '.xlsx';
+    $('btn-save').disabled = true; $('save-msg').textContent = 'Saving…';
+    R.wb.toBlob().then(function (blob) { return F.save(name, blob, 'DRB Usage'); }).then(function (r) {
+      $('save-msg').innerHTML = r.where === 'folder' ? 'Saved <b>' + esc(r.name) + '</b> in ' + esc(r.folder) + '. Next quarter, it is read for the comparison.' : 'Downloaded <b>' + esc(r.name) + '</b>' + (r.error ? ' (' + esc(r.error) + ')' : '') + '. Keep it in your portal folder under DRB Usage › Outputs for next quarter.';
+      $('btn-save').disabled = false;
+    }, function (e) { $('save-msg').textContent = 'Could not save: ' + (e && e.message || e); $('btn-save').disabled = false; });
+  });
+
+  F.ready.then(loadQuarter);
+  F.onChange(function () { loadQuarter(); });
+})();
+</script>
+</body>
+</html>
