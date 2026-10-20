@@ -559,7 +559,7 @@
         var cfg = config(agg);
         if (!books.idle) cfg.files.idle = null;
         progress('Building the workbook…', 97);
-        var res = D.build({ cfg: cfg, tmap: tm, raw: raw, idle: books.idle ? D.readIdle(books.idle.grids[books.idle.sheetNames[0]]) : null, rib: rib,
+        var res = D.build({ cfg: cfg, tmap: tm, raw: raw, idle: books.idle ? D.readIdle(books.idle) : null, rib: rib,
           books: { drb_summary: books.drb_summary, itcom_dcb: books.itcom_dcb, dcb_stats: books.dcb_stats }, today: new Date() });
         progress('Working out every figure…', 98);
         res.wb.calculate();

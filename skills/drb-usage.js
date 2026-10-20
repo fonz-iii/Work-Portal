@@ -183,36 +183,54 @@
      2. Other sources
      ===================================================================== */
   // RIB Idle Accounts Report: header on row 6 (as the skill reads it); rolled up per CIF.
-  DRB.readIdle = function (grid) {
-    var hdr = (grid[5] || []).map(function (c) { return c === null ? '' : String(c).trim(); });
+  // book: the parsed report (all sheets: past 65,536 rows it runs over several, and later sheets carry on with or without
+  // their own header), or one sheet's grid.
+  DRB.readIdle = function (src) {
+    var grids = Array.isArray(src) ? [src] : src.sheetNames.map(function (n) { return src.grids[n] || []; });
+    var names = function (r) { return Array.from(r || [], function (c) { return c === null || c === undefined ? '' : String(c).trim(); }); };
+    var hdr = names(grids[0][5]);
     var ci = hdr.indexOf('CIF_ID_NO'), ai = hdr.indexOf('ACCOUNT_NUMBER'), ii = hdr.indexOf('IDLE'), bi = hdr.indexOf('ADB');
     if (ci < 0 || ii < 0 || bi < 0) stop('This does not look like the RIB Idle Accounts Report: CIF_ID_NO, IDLE and ADB were not found on row 6.');
-    // pandas reads this column with type inference: if every value looks like a number it becomes a number
-    // (leading zeros dropped; "123.0" when a blank row makes the column float). Copied so the ids match the skill.
-    var last = grid.length - 1;
-    while (last >= 6 && !(grid[last] || []).some(function (v) { return v !== null && v !== undefined && v !== ''; })) last--;
-    var ids = [], hasNull = false, allNum = true;
-    for (var r = 6; r <= last; r++) {
-      var v = (grid[r] || [])[ci];
-      if (v === null || v === undefined || (typeof v === 'string' && NA_STR.has(v))) { hasNull = true; continue; }
-      if (!(typeof v === 'number' || (typeof v === 'string' && /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(v)))) allNum = false;
-    }
-    var idOf = function (v) {
-      if (!allNum) return String(v).trim();
+    var parts = [{ g: grids[0], start: 6, ci: ci, ii: ii, bi: bi }];
+    grids.slice(1).forEach(function (g) {
+      var h = -1; for (var k = 0; k < Math.min(10, g.length); k++) if (names(g[k]).indexOf('CIF_ID_NO') >= 0) { h = k; break; }
+      if (h >= 0) { var n = names(g[h]); parts.push({ g: g, start: h + 1, ci: n.indexOf('CIF_ID_NO'), ii: n.indexOf('IDLE'), bi: n.indexOf('ADB') }); }
+      else parts.push({ g: g, start: 0, ci: ci, ii: ii, bi: bi });
+    });
+    // pandas reads the CIF column with type inference: if every value looks like a number it becomes a number
+    // (leading zeros dropped; "123.0" when a blank row makes the column float). Each sheet is read on its own and then
+    // joined (a number column stays a number column only when every sheet's is). Copied so the ids match the skill.
+    parts.forEach(function (p) {
+      p.last = p.g.length - 1;
+      while (p.last >= p.start && !(p.g[p.last] || []).some(function (v) { return v !== null && v !== undefined && v !== ''; })) p.last--;
+      p.hasNull = false; p.allNum = true; p.nonInt = false;
+      for (var r = p.start; r <= p.last; r++) {
+        var v = (p.g[r] || [])[p.ci];
+        if (v === null || v === undefined || (typeof v === 'string' && NA_STR.has(v))) { p.hasNull = true; continue; }
+        if (!(typeof v === 'number' || (typeof v === 'string' && /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(v)))) p.allNum = false;
+        else if (!Number.isInteger(Number(v))) p.nonInt = true;
+      }
+      p.isFloat = p.hasNull || p.nonInt;
+    });
+    parts = parts.filter(function (p) { return p.last >= p.start; });
+    var allNum = parts.every(function (p) { return p.allNum; }), anyFloat = parts.some(function (p) { return p.allNum && p.isFloat; });
+    var idOf = function (p, v) {
+      if (!p.allNum) return String(v).trim();
       var n = Number(v);
-      if (hasNull || !Number.isInteger(n)) return pyFloat(n);
-      return String(n);
+      return (allNum ? anyFloat : p.isFloat) ? pyFloat(n) : String(n);
     };
     var by = new Map(), acc = 0;
-    for (r = 6; r <= last; r++) {
-      var row = grid[r] || [], id = row[ci];
-      if (id === null || id === undefined || (typeof id === 'string' && NA_STR.has(id))) continue;
-      id = idOf(id); acc++;
-      var e = by.get(id); if (!e) { e = { acc: 0, bal: 0, idle: null }; by.set(id, e); }
-      e.acc++;
-      var b = toNumber(row[bi]); if (!isNaN(b)) e.bal += b;
-      var d = toNumber(row[ii]); if (!isNaN(d) && (e.idle === null || d < e.idle)) e.idle = d;
-    }
+    parts.forEach(function (p) {
+      for (var r = p.start; r <= p.last; r++) {
+        var row = p.g[r] || [], id = row[p.ci];
+        if (id === null || id === undefined || (typeof id === 'string' && NA_STR.has(id))) continue;
+        id = idOf(p, id); acc++;
+        var e = by.get(id); if (!e) { e = { acc: 0, bal: 0, idle: null }; by.set(id, e); }
+        e.acc++;
+        var b = toNumber(row[p.bi]); if (!isNaN(b)) e.bal += b;
+        var d = toNumber(row[p.ii]); if (!isNaN(d) && (e.idle === null || d < e.idle)) e.idle = d;
+      }
+    });
     var rows = Array.from(by.keys()).sort(pyCmp).map(function (id) { var e = by.get(id); return [id, e.acc, Math.round(e.bal * 100) / 100, e.idle === null ? 0 : Math.trunc(e.idle)]; });
     return { rows: rows, accounts: acc };
   };
@@ -229,7 +247,7 @@
     var t = String(v == null ? '' : v).trim(), m;
     if ((m = /^(\d{4})-(\d{1,2})-\d{1,2}/.exec(t))) return +m[1] * 100 + +m[2];
     if ((m = /^(\d{1,2})\/\d{1,2}\/(\d{4})/.exec(t))) return +m[2] * 100 + +m[1];
-    var d2 = t ? new Date(t) : null; return d2 && !isNaN(d2) ? d2.getFullYear() * 100 + d2.getMonth() + 1 : null;
+    return null;   // other spellings are left unread (and the row kept), as in the skill
   }
   RibAgg.prototype.row = function (r) {
     var vals = r.map(function (x) { return x === null || x === undefined ? '' : x; });
@@ -260,10 +278,15 @@
     return DRB.xlsbRows(data, null, function (si, ri, cells) { a.row(cells); }, onProgress).then(function () { return a.finish(); });
   };
   // Monthly channel counts (ITCom DCB, DRB Reports, DRB DCB Stats).
-  function grid(book, pat, label) {
-    var re = new RegExp(pat, 'i'), sn = book.sheetNames.filter(function (s) { return re.test(s); })[0];
-    if (!sn) stop("No sheet matching '" + pat.replace(/^\^/, '') + "' in " + book.name + '. Is this the right report?');
-    return { g: book.grids[sn] || [], sn: sn.trim() };
+  // Of the sheets whose names match (e.g. this month's and an earlier month's Insta-Peso-QR), the first with the row and all six months.
+  function pullSheet(book, pat, label, occ, months6) {
+    var re = new RegExp(pat, 'i'), sns = book.sheetNames.filter(function (s) { return re.test(s); }), why = [];
+    if (!sns.length) stop("No sheet matching '" + pat.replace(/^\^/, '') + "' in " + book.name + '. Is this the right report?');
+    for (var i = 0; i < sns.length; i++) {
+      try { return { sn: sns[i].trim(), vals: pull(book.grids[sns[i]] || [], label, occ, months6, book.name) }; }
+      catch (e) { if (!e.stop || sns.length === 1) throw e; why.push(sns[i].trim() + ': ' + e.message); }
+    }
+    stop(book.name + ': ' + why.join(' '));
   }
   function pull(g, label, occ, months6, fileName) {
     var hdr = null;
@@ -465,7 +488,7 @@
     var series = [];
     function add(key, label, fkey, pat, rowlabel, occ) {
       if (!files[fkey] || !input.books[fkey]) return;
-      var g = grid(input.books[fkey], pat, rowlabel); series.push([key, label, dn(fkey) + ' › ' + g.sn, pull(g.g, rowlabel, occ || 0, months6, input.books[fkey].name)]);
+      var g = pullSheet(input.books[fkey], pat, rowlabel, occ || 0, months6); series.push([key, label, dn(fkey) + ' › ' + g.sn, g.vals]);
     }
     add('drb_ft', 'DRB – Fund Transfer from/to Other Banks', 'drb_summary', 'RIB Stats', 'Fund Transfer from/to Other Banks');
     add('dcb_ft', 'DCB – Fund Transfer To Other Bank', 'itcom_dcb', '^DCB', 'Fund Transfer To Other Bank');
