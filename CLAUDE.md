@@ -148,6 +148,7 @@ Files: `rib.html` (page and UI), `skills/rib-advisory.js` (templates, builders, 
 - [x] DRB Usage: golden check on Fons's real Q3 2026 inputs + the skill's Q3 workbook (2026-10-19; never committed)
 - [ ] DRB Usage: office test in Chrome with the real Q3 files (memory and speed on the office PC, OCR of Ms. Hong's email, Excel opens the saved workbook without repair)
 - [x] RIB advisory format rules (module 6 above)
+- [x] Security and function check (2026-10-20): no network calls, eval or remote URLs outside `vendor/`; PDF.js 3.11.174 opened with `isEvalSupported:false` + `disableFontFace` (CVE-2024-4367 mitigation); no real figures in the repo or its history. Hardened stored data that pages trust (another local page can write the same `file://` storage): RIB advisories' saved HTML is cleaned on every load/import (`tidy`/`safeInner`, text + br/b/i/u only); DRB `portal-inputs.json` is type-checked on load (`cleanInputs`); Employee Info cached fields and the Word export title are escaped. All page tests pass.
 - [ ] Edge test of `rib.html` (clipboard formatting, folder access, .msg reading) on the office desktop
 - [ ] Complaints data format (Customer Service)
 - [ ] SBA-approved interpretation thresholds

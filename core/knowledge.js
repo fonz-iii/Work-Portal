@@ -348,7 +348,7 @@
   }
   function personCard(p) {
     var ts = dirTerms();
-    return '<article class="k-person k-' + p.kind + '"><div class="k-person-head"><span class="k-avatar" aria-hidden="true">' + (p.kind === 'person' ? esc(initials(p.name)) : icon(p.kind === 'vacant' ? 'clock' : 'chat')) + '</span>' +
+    return '<article class="k-person k-' + esc(p.kind) + '"><div class="k-person-head"><span class="k-avatar" aria-hidden="true">' + (p.kind === 'person' ? esc(initials(p.name)) : icon(p.kind === 'vacant' ? 'clock' : 'chat')) + '</span>' +
       '<div><h3>' + mark(p.name, ts) + (p.kind === 'vacant' ? ' <span class="pill">Vacant</span>' : '') + '</h3><p>' + mark(p.dept || '—', ts) + ' · ' + esc(p.loc) + '</p></div></div>' +
       '<div class="k-nums">' + numBtn('Local', p.local) + numBtn('Direct', p.direct) + p.mobile.map(function (m) { return numBtn('Mobile', m); }).join('') + '</div>' +
       (p.note ? '<p class="k-note">' + mark(p.note, ts) + '</p>' : '') + '</article>';
@@ -400,7 +400,7 @@
           (res.people.length > shown.length ? '<p class="k-hint">Showing the first ' + shown.length + '. Type more of the name to narrow it down.</p>' : '') : '') +
         (!res.people.length && !res.branches.length ? '<div class="k-none">No match for “' + esc(dirQuery()) + '”. Check the spelling, try only the surname, or clear the filters.</div>' : '');
     }
-    if (d.skipped.length) html += '<details class="k-skipped"><summary>' + d.skipped.length + ' row(s) in the file could not be placed</summary><ul>' + d.skipped.map(function (s) { return '<li>' + esc(s.loc) + ', row ' + s.row + ': ' + esc(s.text) + '</li>'; }).join('') + '</ul></details>';
+    if (d.skipped.length) html += '<details class="k-skipped"><summary>' + d.skipped.length + ' row(s) in the file could not be placed</summary><ul>' + d.skipped.map(function (s) { return '<li>' + esc(s.loc) + ', row ' + esc(s.row) + ': ' + esc(s.text) + '</li>'; }).join('') + '</ul></details>';
     var had = document.activeElement && document.activeElement.id === 'k-dq' ? document.activeElement.selectionStart : -1;
     box.innerHTML = html;
     if (had >= 0) { var i = $('#k-dq'); i.focus(); i.setSelectionRange(had, had); }
@@ -432,11 +432,11 @@
       '<input id="k-bq" type="search" autocomplete="off" placeholder="Search a biller name, category or biller code" value="' + esc(state.bq) + '">' +
       (ts.length || state.bcat || state.bnew ? '<span class="k-found">' + res.length + ' found</span>' : '') + '</div>' +
       '<div class="k-filter-row"><label>Category <select id="k-bcat"><option value="">All categories</option>' +
-      b.cats.map(function (c) { return '<option value="' + esc(c[0]) + '"' + (c[0] === state.bcat ? ' selected' : '') + '>' + esc(c[0]) + ' (' + c[1] + ')</option>'; }).join('') + '</select></label>' +
+      b.cats.map(function (c) { return '<option value="' + esc(c[0]) + '"' + (c[0] === state.bcat ? ' selected' : '') + '>' + esc(c[0]) + ' (' + esc(c[1]) + ')</option>'; }).join('') + '</select></label>' +
       '<label class="k-check"><input type="checkbox" id="k-bnew"' + (state.bnew ? ' checked' : '') + '> New and updated only</label></div></div>';
     html += res.length ? '<div class="k-btable-wrap"><table class="k-btable"><thead><tr><th class="n">No.</th><th>Biller name</th><th>Category</th><th>Biller code</th></tr></thead><tbody>' +
       res.map(function (r) {
-        return '<tr' + (r.status !== 'existing' ? ' class="flag"' : '') + '><td class="n">' + r.no + '</td><td data-th="Biller">' + mark(r.name, ts) +
+        return '<tr' + (r.status !== 'existing' ? ' class="flag"' : '') + '><td class="n">' + esc(r.no) + '</td><td data-th="Biller">' + mark(r.name, ts) +
           (STATUS[r.status] ? ' <span class="k-tag ' + (r.status === 'new' ? 'new' : 'upd') + '">' + STATUS[r.status] + '</span>' : '') + '</td>' +
           '<td data-th="Category">' + mark(r.category, ts) + '</td><td data-th="Code"><button type="button" class="k-num plain" data-copy="' + esc(r.code) + '" title="Copy the biller code">' + mark(r.code, ts) + '</button></td></tr>';
       }).join('') + '</tbody></table></div>'
@@ -460,18 +460,18 @@
   }
   function quickJumps(c) {
     var want = [['Grave infractions', /^grave infractions/i], ['Less grave infractions', /^less grave/i], ['Light infractions', /^light infractions/i], ['Kinds of sanctions', /kinds of sanctions/i], ['Definitions', /^definition/i]];
-    return want.map(function (w) { var n = c.nodes.filter(function (x) { return w[1].test(x.title); })[0]; return n ? '<button type="button" class="chip" data-jump="' + n.id + '"' + (/infractions/i.test(w[0]) ? ' data-find="' + esc(w[0].toLowerCase()) + '"' : '') + '>' + esc(w[0]) + '</button>' : ''; }).join('');
+    return want.map(function (w) { var n = c.nodes.filter(function (x) { return w[1].test(x.title); })[0]; return n ? '<button type="button" class="chip" data-jump="' + esc(n.id) + '"' + (/infractions/i.test(w[0]) ? ' data-find="' + esc(w[0].toLowerCase()) + '"' : '') + '>' + esc(w[0]) + '</button>' : ''; }).join('');
   }
   function renderCode() {
     var box = $('#k-code'), c = state.code;
     if (!c) { box.innerHTML = loader('code'); return; }
     var ts = terms(state.q), hits = codeHits(ts), total = Object.keys(hits).reduce(function (s, k) { return s + hits[k]; }, 0);
     var toc = c.nodes.map(function (n) {
-      return '<a href="#' + n.id + '" data-jump="' + n.id + '" class="lv' + n.level + (ts.length && !hits[n.id] ? ' dim' : '') + '">' + (n.num ? '<b>' + esc(n.num) + '</b> ' : '') + esc(n.title) + (hits[n.id] ? ' <span class="tab-n">' + hits[n.id] + '</span>' : '') + '</a>';
+      return '<a href="#' + esc(n.id) + '" data-jump="' + esc(n.id) + '" class="lv' + esc(n.level) + (ts.length && !hits[n.id] ? ' dim' : '') + '">' + (n.num ? '<b>' + esc(n.num) + '</b> ' : '') + esc(n.title) + (hits[n.id] ? ' <span class="tab-n">' + hits[n.id] + '</span>' : '') + '</a>';
     }).join('');
     var body = c.nodes.map(function (n) {
       var H = n.level === 1 ? 'h2' : n.level === 2 ? 'h3' : 'h4';
-      return '<section class="k-sec lv' + n.level + '" id="' + n.id + '"><' + H + '>' + (n.num ? '<span class="k-num-lbl">' + mark(n.num, ts) + '</span> ' : '') + mark(n.title, ts) + ' <small class="k-page">p. ' + n.page + '</small></' + H + '>' +
+      return '<section class="k-sec lv' + esc(n.level) + '" id="' + esc(n.id) + '"><' + H + '>' + (n.num ? '<span class="k-num-lbl">' + mark(n.num, ts) + '</span> ' : '') + mark(n.title, ts) + ' <small class="k-page">p. ' + esc(n.page) + '</small></' + H + '>' +
         n.paras.map(function (p) { return p.h ? '<p class="k-h">' + mark(p.t, ts) + '</p>' : '<p' + (RE_ITEM.test(p.t) ? ' class="k-item"' : '') + '>' + mark(p.t, ts) + '</p>'; }).join('') + '</section>';
     }).join('');
     box.innerHTML = loader('code') +

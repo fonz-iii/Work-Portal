@@ -276,6 +276,25 @@
     return { cif: { total_cif: null, enrolled: null, cif_usage: null, inactive: null, inactive_why: '' }, generations: D.defaultGenerations(y), staff: D.STAFF.map(function (s) { return [s[0], s[1], null, null]; }),
       confirmed: false, prior: {}, priorNotes: {}, prior_categories: {}, prior_categories_source: '', open_items: [], priorFrom: '' , quarter: i.quarter };
   }
+  // portal-inputs.json lives in the folder (or browser storage) and could be changed outside this page: keep numbers as numbers and text as text
+  function cleanInputs(x) {
+    if (!x || typeof x !== 'object') return null;
+    var d = defaults(), n = numOrNull, t = function (v) { return v === null || v === undefined ? '' : String(v); }, arr = function (v) { return Array.isArray(v) ? v : []; };
+    var c = x.cif || {}, out = {
+      cif: { total_cif: n(c.total_cif), enrolled: n(c.enrolled), cif_usage: n(c.cif_usage), inactive: n(c.inactive), inactive_why: t(c.inactive_why) },
+      generations: arr(x.generations).length ? x.generations.map(function (g) { g = arr(g); return [t(g[0]), t(g[1]), n(g[2]), n(g[3]), n(g[4]), n(g[5])]; }) : d.generations,
+      staff: arr(x.staff).length ? x.staff.map(function (r) { r = arr(r); return [t(r[0]), t(r[1]), n(r[2]), n(r[3])]; }) : d.staff,
+      confirmed: x.confirmed === true, prior: {}, priorNotes: {}, prior_categories: {}, prior_categories_source: t(x.prior_categories_source),
+      open_items: arr(x.open_items).map(t), priorFrom: t(x.priorFrom), priorConfirmed: x.priorConfirmed === true, quarter: t(x.quarter),
+      priorMissing: arr(x.priorMissing).filter(function (k) { return D.PRIOR_KEYS.indexOf(k) >= 0; })
+    };
+    D.PRIOR_KEYS.forEach(function (k) { if (x.prior && k in x.prior) out.prior[k] = n(x.prior[k]); if (x.priorNotes && x.priorNotes[k] != null) out.priorNotes[k] = t(x.priorNotes[k]); });
+    Object.keys(x.prior_categories || {}).forEach(function (k) { out.prior_categories[k] = n(x.prior_categories[k]); });
+    var f = x.cifFrom;
+    if (f && typeof f === 'object') out.cifFrom = { name: t(f.name), where: t(f.where), key: t(f.key), pics: n(f.pics) || 0, found: arr(f.found).map(t), flags: arr(f.flags).map(t),
+      checks: arr(f.checks).map(function (k) { return { label: t(k && k.label), ok: !!(k && k.ok) }; }) };
+    return out;
+  }
   function numOrNull(v) { if (v === '' || v === null || v === undefined) return null; var n = Number(v); return isFinite(n) ? n : null; }
   function paintInputs() {
     var x = S.inputs;
@@ -361,7 +380,7 @@
     S.files = {}; S.result = null; $('c-review').classList.add('hide');
     return Promise.all([readJson(qpath() + '/portal-inputs.json', 'drb-inputs-' + i.folder), readJson('DRB Usage/txn_map.json', 'drb-txn-map')]).then(function (v) {
       S.extraMap = v[1] || {};
-      var x = v[0] || defaults(); x.priorNotes = x.priorNotes || {}; S.inputs = x; paintInputs();
+      var x = cleanInputs(v[0]) || defaults(); S.inputs = x; paintInputs();
       var p = x.priorFrom ? Promise.resolve() : findPrior().then(function (f) { return f ? loadPrior(f.file, f.book) : null; }).catch(function (er) { $('prior-src').innerHTML = '<span class="k-warn">' + esc(er.message || er) + '</span>'; });
       return Promise.all([p, scan(), cifAuto()]);
     });

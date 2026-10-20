@@ -400,7 +400,7 @@
   var urlCache = {};
   async function shotURL(name) { if (urlCache[name]) return urlCache[name]; var b = await S.store.getBlob('shot', name); if (!b) return ''; return (urlCache[name] = URL.createObjectURL(b)); }
 
-  async function useStore(st) { S.store = st; urlCache = {}; S.entries = await st.list(); paintStore(); paintAll(); }
+  async function useStore(st) { S.store = st; urlCache = {}; S.entries = tidy(await st.list()); paintStore(); paintAll(); }
   function paintStore(pending) {
     var p = $('storePill'), b = $('btnFolder'), ban = $('banner');
     ban.classList.add('hide');
@@ -421,7 +421,7 @@
   function connectFolder() { return Portal.files.connect(); }
   function reconnect() { return Portal.files.reconnect(); }
   async function moveLocalInto(fresh) {
-    var local = await BrowserStore.list();
+    var local = tidy(await BrowserStore.list());
     if (!local.length || !confirm('Move ' + local.length + ' advisories saved in this browser into the portal folder?')) return;
     for (var e of local) { for (var n of (e.screenshots || [])) { var bl = await BrowserStore.getBlob('shot', n); if (bl) await fresh.putBlob('shot', n, bl); } await fresh.save(e); await BrowserStore.remove(e); }
   }
@@ -608,6 +608,7 @@
       if (n.nodeType === 3) return U.esc(n.nodeValue.replace(/\u00a0/g, ' '));
       if (n.nodeType !== 1) return '';
       var t = n.tagName.toLowerCase(); if (t === 'br') return '<br>';
+      if (/^(script|style|head|title|template|noscript|object|iframe)$/.test(t)) return '';   // their contents are not text
       var kids = Array.prototype.map.call(n.childNodes, walk).join(''), st = n.style || {};
       var tag = /^(b|strong)$/.test(t) || /bold|[6-9]00/.test(st.fontWeight || '') ? 'b' : /^(i|em)$/.test(t) || st.fontStyle === 'italic' ? 'i' : t === 'u' || /underline/.test(st.textDecoration || st.textDecorationLine || '') ? 'u' : '';
       if (tag && kids) kids = '<' + tag + '>' + kids + '</' + tag + '>';
@@ -616,6 +617,16 @@
     }
     var out = Array.prototype.map.call(el.childNodes, walk).join('');
     return out.replace(/^(<br>)+/, '').replace(/<(b|i|u)><\/\1>/g, '');
+  }
+  // Saved advisories are files that others with folder access (or another local page, through browser storage) could change:
+  // their HTML is cleaned to text, line breaks, bold, italic and underline each time it is loaded, never used as stored.
+  function safeInner(html) { var t = document.createElement('template'); t.innerHTML = String(html == null ? '' : html); return cleanInner(t.content); }
+  function tidy(list) {
+    (list || []).forEach(function (e) {
+      if (e.bodyHtml != null) e.bodyHtml = R.wrapBody(safeInner(e.bodyHtml));
+      if (e.edited && e.edited.body != null) e.edited.body = safeInner(e.edited.body);
+    });
+    return list;
   }
   function paintEditNote() {
     var on = edited(), b = on && S.edit.base;
@@ -848,12 +859,12 @@
     try {
       var data = JSON.parse(await file.text()); if (data.app !== 'rib-advisories' || !Array.isArray(data.entries)) throw new Error('This is not an RIB advisories backup.');
       var added = 0, updated = 0, byId = {}; S.entries.forEach(function (e) { byId[e.id] = e; });
-      for (var e of data.entries) {
+      for (var e of tidy(data.entries)) {
         var cur = byId[e.id]; if (cur && (cur.updatedAt || '') >= (e.updatedAt || '')) continue;
         for (var n of (e.screenshots || [])) if (data.images && data.images[n]) await S.store.putBlob('shot', n, dataURLToBlob(data.images[n]));
         await S.store.save(e); cur ? updated++ : added++;
       }
-      S.entries = await S.store.list(); paintAll(); toast('Imported: ' + added + ' new, ' + updated + ' updated');
+      S.entries = tidy(await S.store.list()); paintAll(); toast('Imported: ' + added + ' new, ' + updated + ' updated');
     } catch (err) { alert('Import failed: ' + err.message); }
   }
 

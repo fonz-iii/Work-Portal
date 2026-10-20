@@ -42,7 +42,7 @@
       var B = '----=_SBA_Portal_Part', base = 'file:///C:/sba-portal/';
       var html =
         '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
-        '<head><meta charset="utf-8"><title>' + (spec.title || 'Report') + '</title>' +
+        '<head><meta charset="utf-8"><title>' + String(spec.title || 'Report').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</title>' +
         '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->' +
         '<style>' + WORD_CSS + (spec.css || '') + '</style></head>' +
         '<body><div class="Section1">' + spec.html + '</div></body></html>';
