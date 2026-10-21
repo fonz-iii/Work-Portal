@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Library · Marketing Portal</title>
+<script>(function(){var t='light';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
+<link rel="icon" href="assets/icons/portal.svg">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/portal.css">
+<style>
+.rl .hide { display: none !important; }
+.rl .rl-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.rl .rl-bar input[type=search] { flex: 1 1 320px; min-width: 220px; }
+.rl .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.rl .seg button { border: 0; background: transparent; padding: 7px 14px; font: inherit; font-size: 13.5px; color: var(--ink-2, inherit); cursor: pointer; }
+.rl .seg button.on { background: var(--navy); color: #fff; }
+.rl .rl-main { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; margin-top: 18px; }
+.rl .rl-main.split { grid-template-columns: minmax(320px, 2fr) 3fr; }
+.rl .rl-q { margin: 0 0 4px; font-size: 18px; }
+.rl .rl-q small { font-weight: 500; color: var(--muted); font-size: 13px; margin-left: 6px; }
+.rl .rl-g { margin: 14px 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.rl .rl-doc { display: grid; grid-template-columns: 44px 1fr; gap: 10px; width: 100%; text-align: left; padding: 9px 10px; border: 1px solid transparent; border-radius: 10px; background: transparent; font: inherit; color: inherit; cursor: pointer; }
+.rl .rl-doc:hover, .rl .rl-doc:focus-visible { background: var(--sky, rgba(0,0,0,.04)); border-color: var(--line); }
+.rl .rl-doc.cur { border-color: var(--blue); background: var(--sky, rgba(0,0,0,.04)); }
+.rl .rl-kind { align-self: start; font-size: 10.5px; font-weight: 700; text-align: center; padding: 5px 0; border-radius: 6px; background: var(--navy); color: #fff; letter-spacing: .03em; }
+.rl .k-pdf { background: #b3261e; } .rl .k-word { background: #2b579a; } .rl .k-excel { background: #217346; } .rl .k-powerpoint { background: #c55a11; } .rl .k-image { background: #6b4fa3; } .rl .k-text, .rl .k-other { background: #5a626e; }
+.rl .rl-name { font-weight: 600; overflow-wrap: anywhere; }
+.rl .rl-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.rl .rl-snip { font-size: 13px; margin-top: 4px; color: var(--ink-2, inherit); }
+.rl .rl-snip mark { background: #f0b32366; color: inherit; border-radius: 2px; }
+.rl .rl-pages { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px; }
+.rl .rl-pages button { font: inherit; font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--card, #fff); color: inherit; cursor: pointer; }
+.rl .rl-pv { position: sticky; top: 12px; padding: 0; overflow: hidden; }
+.rl .rl-pv-head { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
+.rl .rl-pv-head > div:first-child { flex: 1; min-width: 0; }
+.rl .rl-pv-head b { display: block; overflow-wrap: anywhere; }
+.rl .rl-pv-head small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; overflow-wrap: anywhere; }
+.rl .rl-x { border: 0; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); padding: 0 4px; }
+.rl .rl-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.rl .rl-tools input { width: 56px; text-align: center; }
+.rl .rl-tools .btn { padding: 5px 12px; font-size: 13px; }
+.rl .rl-pv-body { position: relative; max-height: calc(100vh - 210px); min-height: 360px; overflow: auto; padding: 14px 16px; background: var(--surface-2, #f4f6f9); }
+.rl .rl-page { margin: 0 auto 14px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18); position: relative; }
+.rl .rl-page canvas { display: block; width: 100%; height: 100%; }
+.rl .rl-page span { position: absolute; right: 8px; bottom: 6px; font-size: 11px; color: #5a626e; background: #ffffffcc; padding: 0 4px; border-radius: 4px; }
+.rl .rl-text { background: #fff; color: #16181d; padding: 18px 22px; border-radius: 6px; font-size: 14px; line-height: 1.5; }
+.rl .rl-text h4 { margin: 14px 0 6px; } .rl .rl-text p { margin: 0 0 8px; } .rl .rl-text pre { white-space: pre-wrap; font: inherit; margin: 0; }
+.rl .rl-text .slide { border-top: 1px solid #d8dce2; padding-top: 10px; margin-top: 12px; }
+.rl .rl-sheet { overflow: auto; background: #fff; border-radius: 6px; }
+.rl .rl-sheet table { border-collapse: collapse; font-size: 12.5px; color: #16181d; }
+.rl .rl-sheet td { border: 1px solid #e3e6eb; padding: 3px 7px; white-space: nowrap; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+.rl .rl-img { max-width: 100%; display: block; margin: 0 auto; background: #fff; }
+.rl .rl-note { font-size: 13px; color: var(--muted); }
+.rl .empty-msg { padding: 18px 4px; color: var(--muted); }
+@media (max-width: 1100px) { .rl .rl-main.split { grid-template-columns: 1fr; } .rl .rl-pv { position: static; } }
+</style>
+<link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+<header id="shell" class="no-print"></header>
+<main id="main">
+  <header class="page-head no-print" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="index.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><a href="modules.html">Product Management</a><span aria-hidden="true">›</span><a href="modules.html#market-research">Market &amp; Research</a><span aria-hidden="true">›</span><b>Research Library</b></nav>
+    <div class="page-title"><div><h1>Research Library</h1><p class="lede">Past studies and references from the <b>Research Library</b> folder, by quarter and by topic. Search their names and the text inside PDFs, and preview them here. Files stay where they are; nothing is copied or uploaded.</p></div></div>
+  </div></header>
+  <div class="wrap page-body rl" data-scene="sky">
+    <a class="backlink" href="modules.html#market-research"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Back to Market &amp; Research</a>
+    <div id="synth" class="card errors hide" role="alert"><b>Practice files.</b> Some documents here are marked SYNTHETIC TEST DATA.</div>
+
+    <section class="card" id="rl-top">
+      <div class="rl-bar">
+        <input type="search" id="rl-q" placeholder="Search names and the text inside PDFs" aria-label="Search the library">
+        <select id="rl-quarter" aria-label="Quarter"></select>
+        <div class="seg" id="rl-view" role="group" aria-label="Group by"><button type="button" data-v="quarter" class="on">By quarter</button><button type="button" data-v="folder">By topic folder</button></div>
+      </div>
+      <p class="hint" id="rl-status" style="margin:10px 0 0"></p>
+      <div class="actions-row" style="margin:10px 0 0">
+        <button class="btn" id="rl-rescan" type="button">Look again</button>
+        <button class="btn" id="rl-mkq" type="button">Create this quarter's folder</button>
+        <label class="btn">Choose a folder to browse<input type="file" id="rl-pick" webkitdirectory multiple hidden></label>
+        <span class="hint" id="rl-note"></span>
+      </div>
+    </section>
+
+    <div class="rl-main" id="rl-main">
+      <section class="card" id="rl-list" aria-live="polite"></section>
+      <aside class="card rl-pv hide" id="rl-pv" aria-label="Preview">
+        <div class="rl-pv-head"><div><b id="pv-name"></b><small id="pv-where"></small></div><button class="rl-x" id="pv-close" type="button" aria-label="Close the preview">×</button></div>
+        <div class="rl-tools" id="pv-tools"></div>
+        <div class="rl-pv-body" id="pv-body"></div>
+      </aside>
+    </div>
+  </div>
+</main>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<script src="core/parse.js"></script>
+<script src="core/files.js"></script>
+<script src="data/feedback.js"></script>
+<script src="core/ui.js"></script>
+<script>Portal.ui.boot('research');</script>
+<script src="skills/research-library.js"></script>
+<script>
+(function () {
+  'use strict';
+  var P = window.Portal, F = P.files, R = window.RLIB, esc = P.ui.esc;
+  function $(id) { return document.getElementById(id); }
+  var S = { docs: [], from: '', view: 'quarter', quarter: '', q: '', open: null, gen: 0 };
+
+  /* ---------- PDF text for search: read once, kept in this browser (IndexedDB), re-read only when the file changes ---------- */
+  var IDB = (function () {
+    var dbp;
+    function db() { if (!dbp) dbp = new Promise(function (res, rej) { var r = indexedDB.open('sba-research', 1); r.onupgradeneeded = function () { r.result.createObjectStore('text'); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); return dbp; }
+    function tx(mode, fn) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction('text', mode), q = fn(t.objectStore('text')); t.oncomplete = function () { res(q && q.result); }; t.onerror = function () { rej(t.error); }; }); }); }
+    return { get: function (k) { return tx('readonly', function (s) { return s.get(k); }).catch(function () { return null; }); },
+      put: function (k, v) { return tx('readwrite', function (s) { return s.put(v, k); }).catch(function () { return null; }); } };
+  })();
+
+  /* ---------- reading the folder ---------- */
+  function docOf(file, folders) {
+    var pl = R.place(folders, file.name, file.lastModified);
+    return { id: folders.concat(file.name).join('/'), name: file.name, folders: folders, file: file, size: file.size, lastModified: file.lastModified,
+      kind: R.kindOf(file.name), quarter: pl.quarter, how: pl.how, group: pl.group, text: null, noText: false };
+  }
+  async function walk(dir, folders, out, depth) {
+    for await (var pair of dir.entries()) {
+      var name = pair[0], h = pair[1];
+      if (R.hidden(name)) continue;
+      if (h.kind === 'directory') { if (depth < 8) await walk(h, folders.concat(name), out, depth + 1); }
+      else { try { out.push(docOf(await h.getFile(), folders)); } catch (e) { /* unreadable file: skipped */ } }
+    }
+  }
+  function load() {
+    var gen = ++S.gen;
+    if (F.status() !== 'connected') {
+      S.docs = []; S.from = '';
+      $('rl-status').innerHTML = 'No portal folder yet: choose it in the top bar (the library reads its <b>Research Library</b> folder), or use <b>Choose a folder to browse</b>.';
+      $('rl-mkq').classList.add('hide'); paint(); return Promise.resolve();
+    }
+    $('rl-mkq').classList.remove('hide');
+    $('rl-status').textContent = 'Reading the Research Library folder…';
+    var out = [];
+    return F.folder(R.ROOT).then(function (d) { return walk(d, [], out, 0); }, function () { return null; }).then(function () {
+      if (gen !== S.gen) return;
+      S.docs = out; S.from = F.folderName() + ' › ' + R.ROOT; paint(); return index(gen);
+    }).catch(function (e) { $('rl-status').textContent = 'Could not read the folder (' + (e && e.message || e) + ').'; });
+  }
+  function fromPicked(files) {   // the "Choose a folder" fallback: File objects with their paths inside the chosen folder
+    var gen = ++S.gen, out = [];
+    files.forEach(function (f) {
+      var parts = (f.webkitRelativePath || f.name).split('/'), name = parts.pop();
+      parts.shift();   // the chosen folder itself
+      var at = parts.map(function (p) { return p.toLowerCase(); }).indexOf(R.ROOT.toLowerCase());
+      if (at >= 0) parts = parts.slice(at + 1);   // the portal folder was chosen: keep what is inside Research Library
+      if (!R.hidden(name) && !parts.some(R.hidden)) out.push(docOf(f, parts));
+    });
+    S.docs = out; S.from = (files[0] && (files[0].webkitRelativePath || '').split('/')[0]) || 'the chosen folder'; paint(); return index(gen);
+  }
+
+  async function index(gen) {
+    var pdfs = S.docs.filter(function (d) { return d.kind === 'pdf'; }), todo = [];
+    for (var d of pdfs) {
+      var key = d.size + '|' + d.lastModified, c = await IDB.get(d.id);
+      if (c && c.key === key) { d.text = c.pages; d.noText = !c.pages.join('').trim(); } else todo.push(d);
+    }
+    if (gen !== S.gen) return;
+    status();
+    for (var i = 0; i < todo.length; i++) {
+      if (gen !== S.gen) return;
+      $('rl-status').textContent = 'Reading PDFs for search: ' + (i + 1) + ' of ' + todo.length + ' (' + todo[i].name + ')… Browsing works meanwhile.';
+      try {
+        var r = await P.parse.pdf(todo[i].file);
+        todo[i].text = r.pages; todo[i].noText = !r.pages.join('').trim();
+        await IDB.put(todo[i].id, { key: todo[i].size + '|' + todo[i].lastModified, pages: r.pages });
+      } catch (e) { todo[i].text = []; todo[i].noText = true; todo[i].bad = true; }
+      if (S.q) paint();
+    }
+    if (gen === S.gen) { status(); if (S.q) paint(); }
+  }
+  function status() {
+    var pdfs = S.docs.filter(function (d) { return d.kind === 'pdf'; }), read = pdfs.filter(function (d) { return d.text; }), none = pdfs.filter(function (d) { return d.noText; });
+    $('rl-status').innerHTML = S.docs.length ? '<b>' + S.docs.length + '</b> document' + (S.docs.length === 1 ? '' : 's') + ' in <b>' + esc(S.from) + '</b>. Search covers every name' +
+      (pdfs.length ? ' and the text of ' + (read.length - none.length) + ' of ' + pdfs.length + ' PDFs' + (none.length ? ' (' + none.length + ' ha' + (none.length === 1 ? 's' : 've') + ' no text to search: scanned pages or protected)' : '') : '') + '.'
+      : 'The <b>Research Library</b> folder is empty' + (S.from ? ' (' + esc(S.from) + ')' : '') + '. Put studies in a folder per quarter, e.g. <b>' + esc(nowQ()) + '</b>, with your own topic folders inside.';
+  }
+  function nowQ() { var d = new Date(); return R.quarterOfMonth(d.getFullYear(), d.getMonth() + 1); }
+
+  /* ---------- the list ---------- */
+  var HOW = { folder: '', name: 'quarter from the file name', saved: 'quarter from the date saved' };
+  function meta(d, withQ) {
+    return '<div class="rl-meta">' + esc(R.KINDS[d.kind] ? R.KINDS[d.kind].label : (d.name.split('.').pop() || 'File').toUpperCase()) + ' · ' + R.size(d.size) +
+      ' · saved ' + esc(new Date(d.lastModified).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })) +
+      (withQ ? ' · ' + esc(R.quarterLabel(d.quarter)) : '') + (HOW[d.how] ? ' · <i>' + HOW[d.how] + '</i>' : '') + (d.noText ? ' · no searchable text' : '') + '</div>';
+  }
+  function row(d, i, withQ, hit) {
+    var terms = R.terms(S.q);
+    var snip = hit && hit.snippet ? '<div class="rl-snip">' + mark(hit.snippet, terms) + '</div>' : '';
+    var pages = hit && hit.pages.length ? '<div class="rl-pages">' + hit.pages.slice(0, 12).map(function (p) { return '<button type="button" data-i="' + i + '" data-page="' + p + '">p. ' + p + '</button>'; }).join('') + (hit.pages.length > 12 ? '<span class="rl-note">+' + (hit.pages.length - 12) + ' more</span>' : '') + '</div>' : '';
+    return '<button type="button" class="rl-doc' + (S.open === d ? ' cur' : '') + '" data-i="' + i + '"><span class="rl-kind k-' + d.kind + '">' + esc(R.KINDS[d.kind] ? R.KINDS[d.kind].short : 'FILE') + '</span><span><span class="rl-name">' + mark(d.name, terms) + '</span>' + meta(d, withQ) + snip + '</span></button>' + pages;
+  }
+  function mark(text, terms) {   // escape, then highlight the search words (accent-insensitive)
+    var t = String(text || ''), n = R.norm(t), spans = [];
+    terms.forEach(function (w) { var at = 0, k; while (w && (k = n.indexOf(w, at)) >= 0) { spans.push([k, k + w.length]); at = k + w.length; } });
+    if (!spans.length || n.length !== t.length) return esc(t);
+    spans.sort(function (a, b) { return a[0] - b[0]; });
+    var out = '', at2 = 0;
+    spans.forEach(function (s) { if (s[0] < at2) return; out += esc(t.slice(at2, s[0])) + '<mark>' + esc(t.slice(s[0], s[1])) + '</mark>'; at2 = s[1]; });
+    return out + esc(t.slice(at2));
+  }
+  function byName(a, b) { return a.name.localeCompare(b.name, 'en', { numeric: true, sensitivity: 'base' }); }
+  function qDesc(a, b) { return (b || '').localeCompare(a || ''); }
+  function paint() {
+    var quarters = {}, html = '';
+    S.docs.forEach(function (d) { quarters[d.quarter || ''] = (quarters[d.quarter || ''] || 0) + 1; });
+    var qs = Object.keys(quarters).sort(qDesc), sel = $('rl-quarter');
+    if (S.quarter && !quarters[S.quarter]) S.quarter = '';
+    sel.innerHTML = '<option value="">All quarters (' + S.docs.length + ')</option>' + qs.map(function (k) { return '<option value="' + esc(k) + '"' + (k === S.quarter ? ' selected' : '') + '>' + esc(R.quarterLabel(k)) + ' (' + quarters[k] + ')</option>'; }).join('');
+    $('synth').classList.toggle('hide', !S.docs.some(function (d) { return /synthetic/i.test(d.name); }));
+    var docs = S.docs.filter(function (d) { return !S.quarter || (d.quarter || '') === S.quarter; });
+    if (S.q.trim()) {
+      var terms = R.terms(S.q), hits = [];
+      docs.forEach(function (d) { var m = R.match(d, terms); if (m) hits.push({ d: d, m: m }); });
+      hits.sort(function (a, b) { return b.m.score - a.m.score || qDesc(a.d.quarter, b.d.quarter) || byName(a.d, b.d); });
+      var waiting = S.docs.some(function (d) { return d.kind === 'pdf' && !d.text; });
+      html = '<h2 class="rl-q">' + hits.length + ' result' + (hits.length === 1 ? '' : 's') + ' for “' + esc(S.q.trim()) + '”' + (S.quarter ? '<small>' + esc(R.quarterLabel(S.quarter)) + '</small>' : '') + '</h2>' +
+        (waiting ? '<p class="rl-note">Some PDFs are still being read; more results may appear.</p>' : '') +
+        (hits.length ? hits.map(function (h) { return row(h.d, S.docs.indexOf(h.d), true, h.m); }).join('') : '<p class="empty-msg">Nothing found. Try fewer or different words.</p>');
+    } else if (!docs.length) {
+      html = '<p class="empty-msg">' + (S.docs.length ? 'No documents in this quarter.' : 'No documents yet.') + '</p>';
+    } else if (S.view === 'quarter') {
+      qs.filter(function (k) { return !S.quarter || k === S.quarter; }).forEach(function (k) {
+        var inQ = docs.filter(function (d) { return (d.quarter || '') === k; }), groups = {};
+        inQ.forEach(function (d) { (groups[d.group] = groups[d.group] || []).push(d); });
+        html += '<h2 class="rl-q">' + esc(R.quarterLabel(k)) + '<small>' + inQ.length + ' document' + (inQ.length === 1 ? '' : 's') + '</small></h2>';
+        Object.keys(groups).sort(function (a, b) { return (a === '') - (b === '') || a.localeCompare(b, 'en', { sensitivity: 'base' }); }).forEach(function (g) {
+          html += '<h3 class="rl-g">' + (g ? esc(g) : 'Not in a topic folder') + '</h3>' + groups[g].sort(byName).map(function (d) { return row(d, S.docs.indexOf(d), false); }).join('');
+        });
+      });
+    } else {
+      var tops = {};
+      docs.forEach(function (d) { var t = d.group ? d.group.split(' › ')[0] : ''; (tops[t] = tops[t] || []).push(d); });
+      Object.keys(tops).sort(function (a, b) { return (a === '') - (b === '') || a.localeCompare(b, 'en', { sensitivity: 'base' }); }).forEach(function (t) {
+        html += '<h2 class="rl-q">' + (t ? esc(t) : 'Not in a topic folder') + '<small>' + tops[t].length + '</small></h2>' +
+          tops[t].sort(function (a, b) { return qDesc(a.quarter, b.quarter) || byName(a, b); }).map(function (d) { return row(d, S.docs.indexOf(d), true); }).join('');
+      });
+    }
+    $('rl-list').innerHTML = html;
+  }
+
+  /* ---------- preview ---------- */
+  var PV = { pdf: null, url: null, io: null };
+  function closePreview() {
+    if (PV.pdf) { try { PV.pdf.destroy(); } catch (e) {} PV.pdf = null; }
+    if (PV.io) { PV.io.disconnect(); PV.io = null; }
+    if (PV.url) { URL.revokeObjectURL(PV.url); PV.url = null; }
+    S.open = null; $('rl-pv').classList.add('hide'); $('rl-main').classList.remove('split'); $('pv-body').innerHTML = ''; $('pv-tools').innerHTML = '';
+  }
+  function tools(extra) {
+    $('pv-tools').innerHTML = (extra || '') + '<button class="btn" type="button" id="pv-dl">Download a copy</button>';
+  }
+  function openDoc(d, page) {
+    if (S.open === d && d.kind === 'pdf' && PV.pdf) { goPage(page || 1); return; }
+    closePreview(); S.open = d;
+    $('rl-pv').classList.remove('hide'); $('rl-main').classList.add('split');
+    $('pv-name').textContent = d.name;
+    $('pv-where').textContent = [R.ROOT].concat(d.folders).join(' › ') + ' · ' + R.quarterLabel(d.quarter);
+    $('pv-body').innerHTML = '<p class="rl-note">Opening…</p>';
+    paintCur();
+    var job = d.kind === 'pdf' ? showPdf(d, page) : d.kind === 'image' ? showImage(d) : /\.(docx|docm)$/i.test(d.name) ? showDocx(d) : /\.(pptx|pptm)$/i.test(d.name) ? showPptx(d)
+      : d.kind === 'excel' ? showSheet(d) : d.kind === 'text' ? showText(d) : Promise.resolve(noPreview(d));
+    job.catch(function (e) { if (S.open === d) $('pv-body').innerHTML = '<p class="rl-note">This file could not be shown (' + esc(e && e.message || e) + '). Open it from the folder: ' + esc([R.ROOT].concat(d.folders).join(' › ')) + '.</p>'; });
+    if (window.innerWidth <= 1100) $('rl-pv').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function paintCur() { Array.prototype.forEach.call(document.querySelectorAll('.rl-doc'), function (b) { b.classList.toggle('cur', S.docs[+b.getAttribute('data-i')] === S.open); }); }
+  function noPreview(d) {
+    tools('');
+    $('pv-body').innerHTML = '<div class="rl-text"><p>There is no preview for this kind of file' + (/\.(doc|ppt|rtf)$/i.test(d.name) ? ' (an older Office format)' : '') + '.</p><p>Open the original from the folder <b>' + esc([R.ROOT].concat(d.folders).join(' › ')) + '</b>, or download a copy.</p></div>';
+  }
+  function showPdf(d, page) {
+    tools('<button class="btn" type="button" id="pv-prev" aria-label="Previous page">‹</button><span>Page <input type="number" id="pv-page" min="1" value="1"> of <b id="pv-n">…</b></span><button class="btn" type="button" id="pv-next" aria-label="Next page">›</button>' +
+      '<button class="btn" type="button" id="pv-zout" aria-label="Smaller">−</button><button class="btn" type="button" id="pv-zin" aria-label="Larger">+</button><button class="btn" type="button" id="pv-tab">Open in a new tab</button>');
+    return P.parse.pdfDoc(d.file).then(function (pdf) {
+      if (S.open !== d) { pdf.destroy(); return; }
+      PV.pdf = pdf; PV.zoom = 1; $('pv-n').textContent = pdf.numPages; $('pv-page').max = pdf.numPages;
+      return pdf.getPage(1).then(function (p1) { PV.base = p1.getViewport({ scale: 1 }); layoutPages(); goPage(page || 1); });
+    });
+  }
+  function layoutPages() {   // one box per page at the page's shape; a page is drawn when it scrolls into view
+    var body = $('pv-body'), w = Math.max(240, (body.clientWidth - 32) * PV.zoom), h = w * PV.base.height / PV.base.width, html = '';
+    for (var i = 1; i <= PV.pdf.numPages; i++) html += '<div class="rl-page" data-p="' + i + '" style="width:' + w + 'px;height:' + h + 'px"><span>' + i + '</span></div>';
+    body.innerHTML = html;
+    if (PV.io) PV.io.disconnect();
+    PV.io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) drawPage(e.target); });
+      var vis = es.filter(function (e) { return e.isIntersecting; })[0];
+      if (vis) $('pv-page').value = vis.target.getAttribute('data-p');
+    }, { root: body, rootMargin: '300px 0px' });
+    Array.prototype.forEach.call(body.querySelectorAll('.rl-page'), function (el) { PV.io.observe(el); });
+  }
+  function drawPage(el) {
+    if (el.getAttribute('data-drawn') || !PV.pdf) return;
+    el.setAttribute('data-drawn', '1');
+    var n = +el.getAttribute('data-p'), pdf = PV.pdf;
+    pdf.getPage(n).then(function (pg) {
+      if (PV.pdf !== pdf) return;
+      var ratio = window.devicePixelRatio || 1, vp = pg.getViewport({ scale: el.clientWidth / pg.getViewport({ scale: 1 }).width * ratio });
+      var c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height); el.insertBefore(c, el.firstChild);
+      return pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    }).catch(function () { el.removeAttribute('data-drawn'); });
+  }
+  function goPage(n) {
+    if (!PV.pdf) return;
+    n = Math.max(1, Math.min(PV.pdf.numPages, +n || 1));
+    var el = $('pv-body').querySelector('.rl-page[data-p="' + n + '"]');
+    if (el) $('pv-body').scrollTop = el.offsetTop - 14;
+    $('pv-page').value = n;
+  }
+  function zoom(f) {
+    if (!PV.pdf) return;
+    var cur = +$('pv-page').value || 1; PV.zoom = Math.max(0.5, Math.min(3, PV.zoom * f)); layoutPages(); goPage(cur);
+  }
+  function showImage(d) {
+    tools('<button class="btn" type="button" id="pv-tab">Open in a new tab</button>');
+    PV.url = URL.createObjectURL(d.file);
+    $('pv-body').innerHTML = '<img class="rl-img" alt="' + esc(d.name) + '" src="' + PV.url + '">';
+    return Promise.resolve();
+  }
+  function xmlText(node) {   // the text of a Word/PowerPoint XML element, with tabs and line breaks
+    var out = '';
+    (function walkX(n) {
+      Array.prototype.forEach.call(n.childNodes, function (c) {
+        if (c.nodeType !== 1) return;
+        var t = c.localName;
+        if (t === 't') out += c.textContent; else if (t === 'tab') out += '\t'; else if (t === 'br' || t === 'cr') out += '\n'; else walkX(c);
+      });
+    })(node);
+    return out;
+  }
+  function textNote() { return '<p class="rl-note" style="margin:0 0 10px">Text only: pictures, charts and layout are not shown. Open the original from the folder for the full document.</p>'; }
+  function showDocx(d) {
+    tools('');
+    return JSZip.loadAsync(d.file).then(function (z) {
+      var f = z.file('word/document.xml'); if (!f) throw new Error('not a Word document');
+      return f.async('string');
+    }).then(function (xml) {
+      if (S.open !== d) return;
+      var doc = new DOMParser().parseFromString(xml, 'application/xml'), html = '';
+      Array.prototype.forEach.call(doc.getElementsByTagNameNS('*', 'p'), function (p) {
+        var t = xmlText(p); if (!t.trim()) return;
+        var st = p.getElementsByTagNameNS('*', 'pStyle')[0], sv = st ? (st.getAttribute('w:val') || st.getAttributeNS(st.namespaceURI, 'val') || '') : '';
+        html += /^(heading|title)/i.test(sv) ? '<h4>' + esc(t) + '</h4>' : '<p>' + esc(t).replace(/\n/g, '<br>') + '</p>';
+      });
+      $('pv-body').innerHTML = textNote() + '<div class="rl-text">' + (html || '<p>No text found.</p>') + '</div>';
+    });
+  }
+  function showPptx(d) {
+    tools('');
+    return JSZip.loadAsync(d.file).then(function (z) {
+      var slides = Object.keys(z.files).filter(function (n) { return /^ppt\/slides\/slide\d+\.xml$/.test(n); }).sort(function (a, b) { return +a.match(/(\d+)\.xml$/)[1] - +b.match(/(\d+)\.xml$/)[1]; });
+      return Promise.all(slides.map(function (n) { return z.file(n).async('string'); }));
+    }).then(function (xs) {
+      if (S.open !== d) return;
+      var html = xs.map(function (xml, i) {
+        var doc = new DOMParser().parseFromString(xml, 'application/xml'), paras = Array.prototype.map.call(doc.getElementsByTagNameNS('*', 'p'), xmlText).filter(function (t) { return t.trim(); });
+        return '<div class="slide"><h4>Slide ' + (i + 1) + '</h4>' + (paras.length ? paras.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') : '<p class="rl-note">(no text)</p>') + '</div>';
+      }).join('');
+      $('pv-body').innerHTML = textNote() + '<div class="rl-text">' + (html || '<p>No slides found.</p>') + '</div>';
+    });
+  }
+  function showSheet(d) {
+    return P.parse.excel(d.file).then(function (bk) {
+      if (S.open !== d) return;
+      PV.book = bk;
+      tools('<select id="pv-sheet" aria-label="Sheet">' + bk.sheetNames.map(function (n, i) { return '<option value="' + i + '">' + esc(n) + '</option>'; }).join('') + '</select>');
+      sheet(0);
+    });
+  }
+  function sheet(i) {
+    var bk = PV.book, g = bk.grids[bk.sheetNames[i]] || [], rows = g.slice(0, 200), cols = Math.min(30, rows.reduce(function (m, r) { return Math.max(m, (r || []).length); }, 0));
+    var cell = function (v) { return v === null || v === undefined ? '' : v instanceof Date ? v.toLocaleDateString('en-US') : typeof v === 'number' ? v.toLocaleString('en-US', { maximumFractionDigits: 4 }) : String(v); };
+    $('pv-body').innerHTML = '<p class="rl-note" style="margin:0 0 10px">Values only' + (g.length > 200 ? '; the first 200 of ' + g.length + ' rows' : '') + '.</p><div class="rl-sheet"><table>' +
+      rows.map(function (r) { var tds = ''; for (var c = 0; c < cols; c++) tds += '<td>' + esc(cell((r || [])[c])) + '</td>'; return '<tr>' + tds + '</tr>'; }).join('') + '</table></div>';
+  }
+  function showText(d) {
+    tools('');
+    return d.file.slice(0, 200000).text().then(function (t) { if (S.open === d) $('pv-body').innerHTML = '<div class="rl-text"><pre>' + esc(t) + '</pre></div>'; });
+  }
+
+  /* ---------- events ---------- */
+  var tmr;
+  $('rl-q').addEventListener('input', function () { clearTimeout(tmr); tmr = setTimeout(function () { S.q = $('rl-q').value; paint(); }, 180); });
+  $('rl-quarter').addEventListener('change', function () { S.quarter = this.value; paint(); });
+  $('rl-view').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    S.view = b.getAttribute('data-v'); Array.prototype.forEach.call(this.querySelectorAll('button'), function (x) { x.classList.toggle('on', x === b); }); paint();
+  });
+  $('rl-rescan').addEventListener('click', function () { closePreview(); load(); });
+  $('rl-mkq').addEventListener('click', function () {
+    var k = nowQ();
+    F.folder(R.ROOT + '/' + k, true).then(function () { $('rl-note').textContent = 'Done: ' + F.folderName() + '\\' + R.ROOT + '\\' + k + ' is ready for this quarter\'s studies.'; load(); },
+      function (e) { $('rl-note').textContent = 'Could not create the folder (' + (e && e.message || e) + ').'; });
+  });
+  $('rl-pick').addEventListener('change', function () { var fl = Array.prototype.slice.call(this.files); this.value = ''; if (fl.length) { closePreview(); fromPicked(fl); } });
+  $('rl-list').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-i]'); if (!b) return;
+    var d = S.docs[+b.getAttribute('data-i')]; if (d) openDoc(d, +b.getAttribute('data-page') || 1);
+  });
+  $('pv-close').addEventListener('click', closePreview);
+  $('rl-pv').addEventListener('click', function (e) {
+    var t = e.target, d = S.open; if (!d) return;
+    if (t.id === 'pv-dl') F.download(d.name, d.file);
+    else if (t.id === 'pv-tab') { var u = URL.createObjectURL(d.file); window.open(u, '_blank', 'noopener'); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); }
+    else if (t.id === 'pv-prev') goPage((+$('pv-page').value || 1) - 1);
+    else if (t.id === 'pv-next') goPage((+$('pv-page').value || 1) + 1);
+    else if (t.id === 'pv-zin') zoom(1.25);
+    else if (t.id === 'pv-zout') zoom(0.8);
+  });
+  $('rl-pv').addEventListener('change', function (e) {
+    if (e.target.id === 'pv-page') goPage(e.target.value);
+    if (e.target.id === 'pv-sheet') sheet(+e.target.value);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && S.open) closePreview(); });
+
+  F.ready.then(load);
+  F.onChange(function () { closePreview(); load(); });
+})();
+</script>
+</body>
+</html>

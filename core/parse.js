@@ -69,6 +69,13 @@
       });
     },
 
+    /** The opened PDF (pdf.js document) for drawing pages, with the same safe settings. */
+    pdfDoc: function (file) {
+      return Promise.all([readBuffer(file), ensurePdfWorker()]).then(function (res) {
+        return root.pdfjsLib.getDocument({ data: new Uint8Array(res[0]), isEvalSupported: false, disableFontFace: true }).promise;
+      });
+    },
+
     /** -> { kind:'pdf', name, pages:[string] } */
     pdf: function (file) {
       return Promise.all([readBuffer(file), ensurePdfWorker()]).then(function (res) {

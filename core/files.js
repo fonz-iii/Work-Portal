@@ -8,7 +8,7 @@
 
   /* The portal folder: one folder the user picks once. The portal creates these subfolders inside it,
      reads each project's reference files from it, and saves outputs into that project's own Outputs folder. */
-  var LAYOUT = ['Employee Info', 'QR Ph Billers', 'QR Ph Billers/Outputs', 'Industry Ranking', 'Industry Ranking/Outputs', 'RIB Advisories', 'RIB Advisories/Outputs', 'DRB Usage', 'DRB Usage/Outputs'];
+  var LAYOUT = ['Employee Info', 'QR Ph Billers', 'QR Ph Billers/Outputs', 'Industry Ranking', 'Industry Ranking/Outputs', 'RIB Advisories', 'RIB Advisories/Outputs', 'DRB Usage', 'DRB Usage/Outputs', 'Research Library'];
   var README = 'SBA MARKETING PORTAL FOLDER\r\n\r\nPut each new file in its folder, then open the page in the portal. The portal uses the newest file by itself.\r\n\r\n' +
     'Employee Info      the phone directory Excel and the Code of Conduct PDF\r\n' +
     'QR Ph Billers      the P2B Biller Masterlist files (keep the previous one too; the newest is "this period")\r\n' +
@@ -21,7 +21,9 @@
     'DRB Usage          one folder per quarter (e.g. 2026-Q3) with a folder per sender: Ms. Hong (DRB Usage export),\r\n' +
     '                   Sir Jun (DRB Reports, ITCom DCB Reports, DRB DCB Stats), Automailer (RIB Idle Accounts Report),\r\n' +
     '                   RIB Inbox shared drive (RIB Usage). The page can create these folders for you.\r\n' +
-    '  Outputs          the worked-figures workbooks (last quarter\'s is read for the comparison)\r\n\r\n' +
+    '  Outputs          the worked-figures workbooks (last quarter\'s is read for the comparison)\r\n' +
+    'Research Library   past studies and references, in one folder per quarter (e.g. 2026-Q3), with your own topic\r\n' +
+    '                   folders inside; any file type. Files outside a quarter folder are placed by the date in their name.\r\n\r\n' +
     'Each project keeps its own Outputs folder. Files in Outputs are never used as inputs.\r\n' +
     'Files here stay on this computer. Do not upload them to GitHub or the shared portal folder.\r\n';
   var MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];

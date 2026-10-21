@@ -6,6 +6,7 @@
   var SKILL_FILES = [
     'industry-ranking.js',    // Market & Research: BSP thrift-bank ranking deck + report (first in its section)
     'placeholders.js',        // menu tiles for modules not built yet
+    'research-library.js',    // Market & Research: Research Library (its own page, research.html; replaces its placeholder)
     'qrph-p2b-directory.js',  // Payments & Risk: QR Ph P2B biller directory (Word + PDF)
     'rib-advisory.js',        // Digital Banking: RIB Advisory Generator (its own page, rib.html)
     'demo-branch-deposits.js' // milestone 1 demo (synthetic data only)
