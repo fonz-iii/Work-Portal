@@ -86,7 +86,7 @@ code { background: var(--line-2); padding: 1px 6px; border-radius: 5px; font-siz
 .btn:focus-visible, a:focus-visible, .linkbtn:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 
 /* ---------- home hero ---------- */
-.home-hero { position: relative; color: #fff; overflow: hidden; isolation: isolate;
+.home-hero { position: relative; color: #fff; overflow: hidden; overflow: clip; isolation: isolate;
   background: radial-gradient(900px 420px at 88% -10%, rgba(91, 143, 214, .35), transparent 60%), linear-gradient(120deg, var(--chrome) 0%, #0d2240 55%, #17396a 100%); }
 .hero-art { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .hero-art span { position: absolute; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .10); }
@@ -390,6 +390,8 @@ input.year { width: 96px; }
   .masthead .wrap { max-width: none; padding: 0 24px; }
   .nav a { padding: 7px 10px; font-size: 13.5px; gap: 5px; }
   .soon { font-size: 9px; padding: 1px 5px; }
+}
+@media (min-width: 1101px) and (max-width: 1480px) {   /* two hero columns only above 1100px (one column below, rule above) */
   .home-hero-in { grid-template-columns: 1.15fr .85fr; }
 }
 @media (prefers-reduced-motion: reduce) {

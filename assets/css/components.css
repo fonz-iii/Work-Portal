@@ -216,3 +216,31 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--blue); }
 @media print {
   .home-hero::before, .home-hero::after, .mcard::before { content: none; }
 }
+
+/* ---------- Home: main picture slide show (core/ui.js slideshow; pictures from data/home.js heroSlides) ---------- */
+.slideshow { position: relative; width: 100%; overflow: hidden; border-radius: var(--r); background: #0b1730; outline: none; touch-action: pan-y; user-select: none; }
+.slideshow:focus-visible { box-shadow: 0 0 0 3px var(--gold, #f0b323), 0 24px 50px rgba(0, 0, 0, .35); }
+.ss-track, .ss-slide { position: absolute; inset: 0; }
+.ss-slide { margin: 0; opacity: 0; transition: opacity .7s ease; }
+.ss-slide.on { opacity: 1; z-index: 1; }
+.ss-bg { position: absolute; inset: -24px; width: calc(100% + 48px); height: calc(100% + 48px); object-fit: cover; filter: blur(22px) brightness(.5) saturate(1.2); }
+.ss-img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; }
+.ss-cap { position: absolute; left: 14px; bottom: 50px; max-width: 70%; padding: 6px 12px; border-radius: 999px; background: rgba(10, 23, 48, .72); color: #fff; font-size: 13.5px; font-weight: 600; }
+.ss-slide .imgslot-ph { background: rgba(255, 255, 255, .05); color: #b8c5d8; }
+.ss-slide.empty .ss-img, .ss-slide.empty .ss-bg { display: none; }
+.ss-slide.empty .imgslot-ph { display: flex; }
+.ss-btn { position: absolute; top: 50%; z-index: 2; width: 40px; height: 40px; margin-top: -20px; border: 0; border-radius: 50%; background: rgba(10, 23, 48, .6); color: #fff; display: grid; place-items: center; cursor: pointer; opacity: 0; transition: opacity .2s, background .2s; }
+.ss-btn .ico { width: 22px; height: 22px; }
+.ss-prev { left: 12px; } .ss-next { right: 12px; }
+.slideshow:hover .ss-btn, .slideshow:focus-within .ss-btn { opacity: 1; }
+.ss-btn:hover, .ss-btn:focus-visible { background: rgba(10, 23, 48, .88); }
+@media (hover: none) { .ss-btn { opacity: 1; } }
+.ss-bar { position: absolute; left: 50%; bottom: 12px; z-index: 2; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 999px; background: rgba(10, 23, 48, .55); }
+.ss-dot { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .5); cursor: pointer; transition: width .25s, background .25s; }
+.ss-dot.on { width: 24px; background: var(--gold, #f0b323); }
+.ss-play { width: 24px; height: 24px; padding: 0; border: 0; background: transparent; color: #fff; display: grid; place-items: center; cursor: pointer; }
+.ss-play .ico { width: 15px; height: 15px; }
+.ss-dot:focus-visible, .ss-play:focus-visible, .ss-btn:focus-visible { outline: 2px solid var(--gold, #f0b323); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .ss-slide, .ss-dot { transition: none; } }
+@media print { .ss-btn, .ss-bar { display: none; } }
+.feature .imgslot img { object-position: center 25%; }   /* placeholder photos are portraits: keep faces in frame */

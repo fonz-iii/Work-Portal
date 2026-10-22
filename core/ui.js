@@ -340,7 +340,7 @@
       '<div class="finder"><label for="finder" class="sr-only">Search for a report or tool</label>' + icon('search') +
       '<input id="finder" type="search" autocomplete="off" placeholder="What do you need? Try “ranking”, “DRB” or “biller”"><ul id="finder-list" class="finder-list" hidden></ul></div>' +
       '<div class="hero-cta"><a class="btn gold lg" href="modules.html">Open Product Management ' + icon('arrow') + '</a><a class="btn ghost-light lg" href="help.html">' + icon('help') + 'How to use this site</a></div></div>' +
-      imgSlot(H.heroImage || 'assets/images/home-hero.jpg', 'Main picture', 'hero-img') + '</div></section>';
+      ((H.heroSlides || []).length ? slideshow(H.heroSlides) : imgSlot(H.heroImage || 'assets/images/home-hero.jpg', 'Main picture', 'hero-img')) + '</div></section>';
 
     var pmTeam = TEAMS[0];
     html += '<div class="wrap"><div id="folder-setup"></div></div>';
@@ -374,7 +374,69 @@
       '</ol><p class="center-cta"><a class="btn" href="help.html">' + icon('help') + 'Read the full guide</a></p></div></section>';
     main.innerHTML = html;
     initFinder();
+    initSlideshow(main);
     settle(main);
+  }
+
+  /* ---------- Home: main picture slide show (pictures and captions from data/home.js heroSlides) ---------- */
+  var SS_ICO = { prev: '<path d="M15 18l-6-6 6-6"/>', next: '<path d="M9 18l6-6-6-6"/>', pause: '<path d="M9 5v14M15 5v14"/>', play: '<path d="M8 5l11 7-11 7z"/>' };
+  function ssIco(k) { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + SS_ICO[k] + '</svg>'; }
+  function slideshow(slides) {
+    var n = slides.length;
+    return '<div class="slideshow hero-img" role="region" aria-roledescription="carousel" aria-label="Main pictures" tabindex="0">' +
+      '<div class="ss-track" aria-live="off">' + slides.map(function (sl, i) {
+        var alt = sl.caption || 'Picture ' + (i + 1) + ' of ' + n;
+        return '<figure class="ss-slide' + (i ? '' : ' on') + '" role="group" aria-roledescription="slide" aria-label="' + (i + 1) + ' of ' + n + '"' + (i ? ' aria-hidden="true"' : '') + '>' +
+          '<img class="ss-bg" src="' + esc(sl.image) + '" alt="" aria-hidden="true" draggable="false">' +
+          '<img class="ss-img" draggable="false" src="' + esc(sl.image) + '" alt="' + esc(alt) + '" onerror="this.parentNode.classList.add(\'empty\')"' + (i ? ' loading="lazy"' : '') + '>' +
+          (sl.caption ? '<figcaption class="ss-cap">' + esc(sl.caption) + '</figcaption>' : '') +
+          '<div class="imgslot-ph">' + icon('image') + '<b>Picture ' + (i + 1) + '</b><span>Add a picture named</span><code>' + esc(sl.image) + '</code></div></figure>';
+      }).join('') + '</div>' +
+      (n > 1 ? '<button type="button" class="ss-btn ss-prev" aria-label="Previous picture">' + ssIco('prev') + '</button><button type="button" class="ss-btn ss-next" aria-label="Next picture">' + ssIco('next') + '</button>' +
+        '<div class="ss-bar"><button type="button" class="ss-play" aria-label="Pause the slide show">' + ssIco('pause') + '</button>' +
+        slides.map(function (sl, i) { return '<button type="button" class="ss-dot' + (i ? '' : ' on') + '" data-i="' + i + '" aria-label="Show picture ' + (i + 1) + '"' + (i ? '' : ' aria-current="true"') + '></button>'; }).join('') + '</div>' : '') +
+      '</div>';
+  }
+  function initSlideshow(main) {
+    var box = main.querySelector('.slideshow'); if (!box) return;
+    var slides = box.querySelectorAll('.ss-slide'), dots = box.querySelectorAll('.ss-dot'), play = box.querySelector('.ss-play'), track = box.querySelector('.ss-track');
+    var n = slides.length, at = 0, playing = n > 1 && !reduceMotion, hold = false, timer = null, x0 = null;
+    if (n < 2) return;
+    function go(i) {
+      at = (i + n) % n;
+      Array.prototype.forEach.call(slides, function (s, k) { s.classList.toggle('on', k === at); if (k === at) s.removeAttribute('aria-hidden'); else s.setAttribute('aria-hidden', 'true'); });
+      Array.prototype.forEach.call(dots, function (d, k) { d.classList.toggle('on', k === at); if (k === at) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+      tick();
+    }
+    function tick() {   // auto-advance every 5 s while playing, not while the pointer or keyboard focus is on it, and not in a hidden tab
+      clearTimeout(timer);
+      if (playing && !hold && !document.hidden) timer = setTimeout(function () { go(at + 1); }, 5000);
+    }
+    function setPlay(on) {
+      playing = on; play.innerHTML = ssIco(on ? 'pause' : 'play'); play.setAttribute('aria-label', on ? 'Pause the slide show' : 'Play the slide show');
+      box.classList.toggle('paused', !on); track.setAttribute('aria-live', on ? 'off' : 'polite'); tick();
+    }
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.classList.contains('ss-prev')) go(at - 1);
+      else if (b.classList.contains('ss-next')) go(at + 1);
+      else if (b.classList.contains('ss-dot')) go(+b.getAttribute('data-i'));
+      else if (b === play) setPlay(!playing);
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') { go(at - 1); e.preventDefault(); } else if (e.key === 'ArrowRight') { go(at + 1); e.preventDefault(); }
+    });
+    box.addEventListener('pointerenter', function () { hold = true; tick(); });
+    box.addEventListener('pointerleave', function () { hold = false; tick(); });
+    box.addEventListener('focusin', function () { hold = true; tick(); });
+    box.addEventListener('focusout', function () { hold = false; tick(); });
+    box.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    box.addEventListener('mousedown', function (e) { if (!e.target.closest('button')) e.preventDefault(); });   // a mouse swipe must not start selecting text
+    box.addEventListener('pointerdown', function (e) { x0 = e.clientX; if (!e.target.closest('button')) try { box.setPointerCapture(e.pointerId); } catch (er) {} });
+    box.addEventListener('pointercancel', function () { x0 = null; });
+    box.addEventListener('pointerup', function (e) { if (x0 !== null && Math.abs(e.clientX - x0) > 40 && !e.target.closest('button')) go(at + (e.clientX < x0 ? 1 : -1)); x0 = null; });
+    document.addEventListener('visibilitychange', tick);
+    setPlay(playing);
   }
 
   /* ---------- Product Management page ---------- */
