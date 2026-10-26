@@ -1,0 +1,85 @@
+/* SBA Marketing Portal — design tokens.
+   Loaded first on every page (before portal.css and components.css).
+   Colours are the approved portal palette: deep navy + corporate blue on cool greys, a hint of SBA yellow (#f0b323).
+   Light is the default; :root[data-theme="dark"] redefines the same tokens. Reports, exports and print always use light values.
+   System fonts only (no web fonts, no network). */
+
+/* ---------- colour palette (unchanged values) ---------- */
+:root {
+  --ink: #0b1a2e; --navy: #0d2240; --navy-2: #163560; --navy-3: #22497f;
+  --blue: #1f5fbf; --blue-2: #174c9a; --sky: #e9f1fc; --sky-2: #d4e3f8;
+  --bg: #f4f6fa; --surface: #ffffff; --line: #e1e6ee; --line-2: #eef1f6;
+  --text: #1a2433; --muted: #5b6676; --faint: #8a94a3;
+  --gold: #f0b323; --gold-2: #d99a0b; --gold-soft: #fdf4dc; --gold-ink: #8a6100;
+  --chrome: #0b1a2e; --link: #1f5fbf; --zebra: #f8fafc; --field-line: #cdd5e0; --bad-line: #f3c7c2; --stripe-a: #f1f4f8; --stripe-b: #eaeef4;
+  --ok: #1d7a4f; --ok-bg: #e8f5ee; --warn: #9a5800; --warn-bg: #fdf3e3; --bad: #b42318; --bad-bg: #fdecea;
+  --band-alt: rgba(255, 255, 255, .55); --glass: rgba(255, 255, 255, .78);
+  --r: 16px; --r-md: 12px; --r-sm: 8px;
+  --shadow: 0 1px 2px rgba(13, 34, 64, .05), 0 2px 8px rgba(13, 34, 64, .05);
+  --shadow-lg: 0 14px 34px rgba(13, 34, 64, .13);
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* scroll background scenes */
+  --b1: #d6e5fa; --b2: #e6edf8; --b3: #fbefd2; --bg-op: .7;
+}
+:root[data-scene="sky"], :root[data-scene="hero"] { --b1: #cfe0fa; --b2: #dfeafb; --b3: #e9f1ff; }
+:root[data-scene="gold"] { --b1: #fbe6b5; --b2: #e3ebf8; --b3: #fdf1d6; }
+:root[data-scene="mint"] { --b1: #d3ebf2; --b2: #dfe8f7; --b3: #e6f3f6; }
+:root[data-scene="navy"] { --b1: #c9d6ea; --b2: #dde5f2; --b3: #eef1f8; }
+
+/* ---------- system tokens (fintech layer) ---------- */
+:root {
+  /* type */
+  --font-num: var(--font);
+  --font-mono: "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", ui-monospace, Menlo, monospace;
+  --t-xs: 11.5px; --t-sm: 12.5px; --t-base: 14px; --t-md: 15px; --t-lg: 17px; --t-xl: 20px; --t-2xl: 26px; --t-3xl: 34px; --t-hero: 46px;
+  --lh-tight: 1.15; --lh: 1.55;
+  --track-label: .08em;       /* uppercase micro-labels */
+  --track-head: -.02em;       /* headings */
+  /* spacing (4px base) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 48px;
+  /* radius: cards 16px (Design), controls 10px, pills */
+  --r-ctl: 10px; --r-pill: 999px;
+  /* elevation: hairline ring + short, low-blur shadow */
+  --ring: 0 0 0 1px var(--line);
+  --e-0: none;
+  --e-1: 0 1px 2px rgba(13, 34, 64, .06), 0 1px 1px rgba(13, 34, 64, .03);
+  --e-2: 0 2px 4px rgba(13, 34, 64, .05), 0 8px 20px -6px rgba(13, 34, 64, .12);
+  --e-3: 0 4px 8px rgba(13, 34, 64, .06), 0 20px 40px -12px rgba(13, 34, 64, .22);
+  --focus: 0 0 0 3px rgba(31, 95, 191, .28);
+  /* semantic */
+  --surface-2: #f8fafc;       /* insets, table headers on light cards, KPI tiles */
+  --border-strong: #cdd5e0;
+  --accent: var(--gold);
+  --positive: var(--ok); --negative: var(--bad);
+  --hero-1: #081528; --hero-2: #0d2240; --hero-3: #17396a;
+  --grid-line: rgba(255, 255, 255, .055);
+  --ctl-h: 40px;
+}
+
+:root[data-theme="dark"] {
+  --ink: #eef2f8; --navy: #1d3f73; --navy-2: #2a5290; --navy-3: #3a64a8;
+  --sky: #1b2c47; --sky-2: #2a4369;
+  --bg: #0b1320; --surface: #131c2b; --line: #26324a; --line-2: #1d283b;
+  --text: #d5dce7; --muted: #a3adbc; --faint: #8692a4;
+  --gold-soft: #3a2f12; --gold-ink: #f0c75e;
+  --link: #8fbaf3; --zebra: #172133; --field-line: #3a4864; --bad-line: #6b2a25; --stripe-a: #172133; --stripe-b: #1b2639;
+  --ok: #6fcf97; --ok-bg: #12301f; --warn: #e8b05a; --warn-bg: #33270f; --bad: #f28b82; --bad-bg: #3a1714;
+  --band-alt: rgba(19, 28, 43, .45); --glass: rgba(14, 22, 36, .78);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35); --shadow-lg: 0 14px 34px rgba(0, 0, 0, .5);
+  --b1: #13284b; --b2: #101d33; --b3: #2a2310; --bg-op: .8;
+  color-scheme: dark;
+}
+:root[data-theme="dark"][data-scene="sky"], :root[data-theme="dark"][data-scene="hero"] { --b1: #173263; --b2: #10203a; --b3: #142a4d; }
+:root[data-theme="dark"][data-scene="gold"] { --b1: #3a2c0c; --b2: #122039; --b3: #2b230f; }
+:root[data-theme="dark"][data-scene="mint"] { --b1: #0f3440; --b2: #112038; --b3: #0e2a33; }
+:root[data-theme="dark"][data-scene="navy"] { --b1: #1a2a4f; --b2: #0f1a2e; --b3: #18243e; }
+:root[data-theme="dark"] {
+  --e-1: 0 1px 2px rgba(0, 0, 0, .4);
+  --e-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 24px -8px rgba(0, 0, 0, .55);
+  --e-3: 0 4px 8px rgba(0, 0, 0, .4), 0 22px 44px -12px rgba(0, 0, 0, .65);
+  --focus: 0 0 0 3px rgba(143, 186, 243, .35);
+  --surface-2: #172133;
+  --border-strong: #3a4864;
+  --hero-1: #060e1b; --hero-2: #0b1a33; --hero-3: #14305a;
+}

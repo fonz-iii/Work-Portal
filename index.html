@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketing Portal · Sterling Bank of Asia</title>
+<script>(function(){var t='light';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
+<link rel="icon" href="assets/icons/portal.svg">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/portal.css">
+<link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+<header id="shell" class="no-print"></header>
+<main id="main"><p class="muted">Loading…</p></main>
+<footer id="foot" class="foot no-print"></footer>
+
+<!-- vendor (local copies only) -->
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<!-- core engine -->
+<script src="core/files.js"></script>
+<script src="core/parse.js"></script>
+<script src="core/validate.js"></script>
+<script src="core/calc.js"></script>
+<script src="core/rules.js"></script>
+<script src="core/charts.js"></script>
+<script src="core/export.js"></script>
+<script src="data/feedback.js"></script>
+<script src="core/ui.js"></script>
+<!-- home page text and pictures (edit data/home.js) -->
+<script src="data/home.js"></script>
+<!-- reference data used by skills -->
+<script src="data/industry-ranking-config.js"></script>
+<script src="data/brand-logos.js"></script>
+<!-- skills -->
+<script src="skills/registry.js"></script>
+<script>Portal.ui.boot('home');</script>
+</body>
+</html>
