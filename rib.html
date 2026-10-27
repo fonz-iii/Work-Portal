@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RIB Advisory Generator · Marketing Portal</title>
-<script>(function(){var t='light';try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
+<script>(function(){var t='light',r=null,d=document.documentElement;try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';r=localStorage.getItem('portal-rail');}catch(e){}if(r!=='open'&&r!=='closed')r=window.innerWidth<1100?'closed':'open';d.setAttribute('data-theme',t);d.setAttribute('data-rail',r);})();</script>
 <link rel="icon" href="assets/icons/portal.svg">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/portal.css">

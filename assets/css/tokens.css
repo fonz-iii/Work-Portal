@@ -83,3 +83,21 @@
   --border-strong: #3a4864;
   --hero-1: #060e1b; --hero-2: #0b1a33; --hero-3: #14305a;
 }
+
+/* ---------- team colours (2026-10-27 handoff): --t accent (icons, borders, text), --ts soft fill, --tb page/card wash ---------- */
+:root {
+  --t-pm: #1f5fbf; --ts-pm: #e2ebf8; --tb-pm: #eef3fb;   /* Product Management: brand blue */
+  --t-cr: #6b4fbb; --ts-cr: #ebe5f6; --tb-cr: #f4f1fa;   /* Creatives: violet */
+  --t-cs: #12796f; --ts-cs: #dcefe9; --tb-cs: #edf6f3;   /* Customer Service: teal */
+  --t-fm: #b4434a; --ts-fm: #f6e2e0; --tb-fm: #fbf1f0;   /* Fraud Management: rose */
+}
+:root[data-theme="dark"] {
+  --t-pm: #8fbaf3; --ts-pm: #172438; --tb-pm: #0b1524;
+  --t-cr: #b9a6ec; --ts-cr: #211c36; --tb-cr: #12121f;
+  --t-cs: #6fcfbf; --ts-cs: #13292a; --tb-cs: #0a1719;
+  --t-fm: #f0989c; --ts-fm: #2c1a1f; --tb-fm: #171114;
+}
+[data-team="pm"] { --team: var(--t-pm); --team-soft: var(--ts-pm); --team-bg: var(--tb-pm); }
+[data-team="creatives"] { --team: var(--t-cr); --team-soft: var(--ts-cr); --team-bg: var(--tb-cr); }
+[data-team="customer-service"] { --team: var(--t-cs); --team-soft: var(--ts-cs); --team-bg: var(--tb-cs); }
+[data-team="fraud"] { --team: var(--t-fm); --team-soft: var(--ts-fm); --team-bg: var(--tb-fm); }

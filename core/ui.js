@@ -18,11 +18,11 @@
 
   /* ---------- site structure ---------- */
   var TEAMS = [
-    { id: 'pm', name: 'Product Management', short: 'Product Management', icon: 'chart', live: true,
+    { id: 'pm', name: 'Product Management', short: 'Product Management', icon: 'chart', tone: 'pm', live: true,
       blurb: 'Benchmarking, research, digital banking reports, RIB content, payments and risk.' },
-    { id: 'creatives', name: 'Creatives', short: 'Creatives', icon: 'brush', blurb: 'Tools for the Creatives team are being planned.' },
-    { id: 'customer-service', name: 'Customer Service', short: 'Customer Service', icon: 'chat', blurb: 'Tools for Customer Service are being planned.' },
-    { id: 'fraud', name: 'Fraud Management System', short: 'Fraud Management', icon: 'shield', blurb: 'Tools for fraud management are being planned.' }
+    { id: 'creatives', name: 'Creatives', short: 'Creatives', icon: 'brush', tone: 'cr', blurb: 'Tools for the Creatives team are being planned.' },
+    { id: 'customer-service', name: 'Customer Service', short: 'Customer Service', icon: 'chat', tone: 'cs', blurb: 'Tools for Customer Service are being planned.' },
+    { id: 'fraud', name: 'Fraud Management System', short: 'Fraud Management', icon: 'shield', tone: 'fm', blurb: 'Tools for fraud management are being planned.' }
   ];
   // Sections set 2026-10-19 (Fons): Market & Research, Digital Banking, Payments & Risk (+ Demo).
   var SECTION_ORDER = ['Market & Research', 'Digital Banking', 'Payments & Risk', 'Demo'];
@@ -58,7 +58,8 @@
     lock: '<rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-    moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'
+    moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+    panel: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9 4.5v15"/>'
   };
   function icon(name, cls) {
     return '<svg class="ico ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
@@ -107,27 +108,47 @@
     var c = /^cat\/(.+)$/.exec(location.hash.slice(1));
     return c ? 'team:' + c[1] : 'team:pm';
   }
+  // left rail (2026-10-27 handoff): Home, the four teams (team colour via data-team), Employee Info; How to use + Collapse in the rail footer
+  function railItem(label, href, key, ico, teamId, soon) {
+    var on = key === navKey();
+    return '<a href="' + href + '" class="rail-item' + (on ? ' active' : '') + '"' + (teamId ? ' data-team="' + teamId + '"' : '') + ' title="' + esc(label) + '"' + (on ? ' aria-current="page"' : '') + '>' +
+      '<span class="rail-bar"></span><span class="rail-ico">' + icon(ico) + '</span><span class="rail-label">' + esc(label) + '</span>' + (soon ? '<span class="soon">Soon</span>' : '') + '</a>';
+  }
   function renderNav() {
-    var nav = $('#nav'), key = navKey();
+    var nav = $('#nav'), help = $('#rail-help');
     if (!nav) return;
-    var items = [['Home', 'index.html', 'home', '']].concat(TEAMS.map(function (t) {
-      return [t.short, t.live ? 'modules.html' : 'modules.html#cat/' + t.id, 'team:' + t.id, t.live ? '' : '<span class="soon">Soon</span>'];
-    })).concat([['Employee Info', 'knowledge.html', 'knowledge', ''], ['How to use', 'help.html', 'help', '']]);
-    nav.innerHTML = items.map(function (n) {
-      var on = n[2] === key;
-      return '<a href="' + n[1] + '"' + (on ? ' class="active" aria-current="page"' : '') + '>' + n[0] + n[3] + '</a>';
-    }).join('');
+    nav.innerHTML = railItem('Home', 'index.html', 'home', 'home') + TEAMS.map(function (t) {
+      return railItem(t.short, t.live ? 'modules.html' : 'modules.html#cat/' + t.id, 'team:' + t.id, t.icon, t.id, !t.live);
+    }).join('') + railItem('Employee Info', 'knowledge.html', 'knowledge', 'bank');
+    if (help) help.outerHTML = railItem('How to use', 'help.html', 'help', 'help').replace('<a ', '<a id="rail-help" ');
+  }
+  function railOpen() { return document.documentElement.getAttribute('data-rail') !== 'closed'; }
+  function railToggle() {
+    var open = railOpen();
+    return '<button type="button" class="rail-item rail-toggle" aria-label="' + (open ? 'Collapse menu' : 'Expand menu') + '" title="' + (open ? 'Collapse menu' : 'Expand menu') + '" aria-expanded="' + open + '">' +
+      '<span class="rail-ico">' + icon('panel') + '</span><span class="rail-label">Collapse</span></button>';
+  }
+  function setRail(open) {
+    var v = open ? 'open' : 'closed', b = $('.rail-toggle');
+    document.documentElement.setAttribute('data-rail', v);
+    try { localStorage.setItem('portal-rail', v); } catch (e) { /* storage blocked: lasts for this page only */ }
+    if (b) { b.setAttribute('aria-expanded', String(open)); b.setAttribute('aria-label', open ? 'Collapse menu' : 'Expand menu'); b.title = open ? 'Collapse menu' : 'Expand menu'; }
   }
 
   function renderShell() {
+    var de = document.documentElement;
+    if (!de.getAttribute('data-rail')) de.setAttribute('data-rail', root.innerWidth < 1100 ? 'closed' : 'open');   // pages set it in <head>; this is a fallback
+    document.body.classList.add('has-rail');
     document.body.insertAdjacentHTML('afterbegin', '<div class="bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><span class="grid-lines"></span></div>');
     $('#shell').innerHTML =
       '<a class="skip" href="#main">Skip to content</a>' +
+      '<aside class="rail no-print" aria-label="Sections"><a class="rail-brand" href="index.html" title="Go to Home">' + LOGO +
+      '<span class="brand-text"><b>Marketing Portal</b><small>Sterling Bank of Asia</small></span></a><nav class="rail-nav" id="nav" aria-label="Main menu"></nav>' +
+      '<div class="rail-foot"><a id="rail-help"></a>' + railToggle() + '</div></aside>' +
       '<div class="topbar"><div class="wrap topbar-in"><span class="restricted-note">' + icon('lock') + '<b>For the Marketing Group only</b></span>' +
-      '<span class="topbar-sep">Works offline · nothing leaves this computer</span><div class="folder" id="folder"></div>' + themeToggle() + '</div></div>' +
-      '<div class="masthead"><div class="wrap masthead-in"><a class="brand" href="index.html" title="Go to Home">' + LOGO +
-      '<span class="brand-text"><b>Marketing Portal</b><small>Sterling Bank of Asia</small></span></a><nav class="nav" id="nav" aria-label="Main menu"></nav></div></div>';
+      '<span class="topbar-sep">Works offline · nothing leaves this computer</span><div class="folder" id="folder"></div>' + themeToggle() + '</div></div>';
     renderNav();
+    $('.rail-toggle').addEventListener('click', function () { setRail(!railOpen()); });
     renderFolder();
     renderFooter();
     document.body.insertAdjacentHTML('beforeend', '<div class="fab-stack no-print"><button class="suggest-fab" type="button" data-suggest title="Suggest a change to this portal">' + icon('chat') + '<span>Suggest a change</span></button>' +
@@ -349,7 +370,7 @@
       '<h3>' + esc(pmTeam.name) + '</h3><p>' + esc(pmTeam.blurb) + '</p><dl class="team-stats"><div><dt>Ready to use</dt><dd>' + ready + '</dd></div><div><dt>Coming soon</dt><dd>' + soon + '</dd></div></dl>' +
       '<span class="more">Go to Product Management' + icon('arrow') + '</span></a><div class="teams-soon">' +
       TEAMS.slice(1).map(function (t) {
-        return '<a class="team team-soon reveal" href="modules.html#cat/' + t.id + '"><span class="team-ico">' + icon(t.icon) + '</span><div><h3>' + esc(t.name) + '</h3><p>' + esc(t.blurb) + '</p></div><span class="pill">' + icon('clock') + 'Coming soon</span></a>';
+        return '<a class="team team-soon reveal" data-team="' + t.id + '" href="modules.html#cat/' + t.id + '"><span class="team-ico">' + icon(t.icon) + '</span><div><h3>' + esc(t.name) + '</h3><p>' + esc(t.blurb) + '</p></div><span class="pill">' + icon('clock') + 'Coming soon</span></a>';
       }).join('') + '</div></div></div></section>';
 
     html += '<section class="band alt" data-scene="gold"><div class="wrap"><header class="band-head"><p class="kicker">Step 2</p><h2>Jump straight to a report</h2><p>The main areas inside Product Management.</p></header><div class="shortcuts">' +
@@ -710,6 +731,7 @@
     var main = $('#main'), h = location.hash.slice(1), m = /^skill\/(.+)$/.exec(h), c = /^cat\/(.+)$/.exec(h);
     var skill = m && P.getSkill(decodeURIComponent(m[1])), t = c && team(c[1]);
     runnerRefill = null;
+    main.setAttribute('data-team', t && !t.live ? t.id : 'pm');   // team colour wash on the page head
     if (skill) { renderRunner(main, skill); document.title = skill.title + ' · Marketing Portal'; }
     else if (t && !t.live) { renderTeam(main, t); document.title = t.name + ' · Marketing Portal'; }
     else {
