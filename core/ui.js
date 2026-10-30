@@ -315,8 +315,9 @@
       '<span class="more">' + (isLive(s) ? 'Open' : 'See what it will do') + icon('arrow') + '</span></a>';
   }
   /** Picture slot: shows the image if the file exists, otherwise a labelled placeholder naming the file to add. */
-  function imgSlot(src, label, cls) {
-    return '<figure class="imgslot ' + (cls || '') + '"><img src="' + esc(src) + '" alt="' + esc(label) + '" onerror="this.parentNode.classList.add(\'empty\')">' +
+  function imgSlot(src, label, cls, focus) {   // focus: optional crop point, e.g. 'center 60%'
+    var pos = /^[a-z0-9 .%]{1,30}$/i.test(focus || '') ? ' style="object-position:' + focus + '"' : '';
+    return '<figure class="imgslot ' + (cls || '') + '"><img src="' + esc(src) + '" alt="' + esc(label) + '"' + pos + ' onerror="this.parentNode.classList.add(\'empty\')">' +
       '<figcaption class="imgslot-ph">' + icon('image') + '<b>' + esc(label) + '</b><span>Add a picture named</span><code>' + esc(src) + '</code></figcaption></figure>';
   }
   function pageHead(crumbs, title, lede, extra, scene) {
@@ -382,7 +383,7 @@
     var feats = H.features || [];
     if (feats.length) {
       html += '<section class="band" data-scene="mint"><div class="wrap"><header class="band-head"><p class="kicker">' + esc(H.featuresKicker || 'Highlights') + '</p><h2>' + esc(H.featuresTitle || 'From the Marketing Group') + '</h2></header><div class="features">' +
-        feats.map(function (f, i) { return '<article class="feature reveal">' + imgSlot(f.image, 'Picture ' + (i + 1)) + '<div class="feature-body"><h3>' + esc(f.title) + '</h3><p>' + esc(f.text) + '</p></div></article>'; }).join('') +
+        feats.map(function (f, i) { return '<article class="feature reveal">' + imgSlot(f.image, 'Picture ' + (i + 1), '', f.focus) + '<div class="feature-body"><h3>' + esc(f.title) + '</h3><p>' + esc(f.text) + '</p></div></article>'; }).join('') +
         '</div></div></section>';
     }
 
