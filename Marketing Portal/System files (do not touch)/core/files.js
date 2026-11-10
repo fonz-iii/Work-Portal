@@ -23,12 +23,25 @@
   var LAYOUT = ['Employee Info', 'Product Management', 'Industry Ranking/' + REF, 'Industry Ranking/Outputs', 'QR Ph Billers/' + REF, 'QR Ph Billers/Outputs',
     'DRB Usage/' + REF, 'DRB Usage/Outputs', 'RIB Advisories', 'RIB Advisories/Outputs', 'Research Library', 'KRI Report/' + REF, 'KRI Report/Outputs',
     'Creatives', 'Customer Service', 'Types of Complaints', 'Fraud Management'];
+  /* Quarter folders made for you (2026-11-10, per Fons): the quarter being reported (the last one that ended) gets its
+     DRB Usage folder with one folder per sender and its Industry Ranking folder; the Research Library gets this quarter's
+     folder. Made when the folder is connected, so each new quarter's folders appear by themselves. */
+  var SENDERS = ['Ms. Hong', 'Sir Jun', 'Automailer', 'RIB Inbox shared drive'];
+  function quarterLayout(d) {
+    var y = d.getFullYear(), q = Math.floor(d.getMonth() / 3) + 1, now = y + '-Q' + q;
+    if (--q === 0) { q = 4; y--; }
+    var last = y + '-Q' + q;
+    return SENDERS.map(function (s) { return 'DRB Usage/' + REF + '/' + last + '/' + s; })
+      .concat(['Industry Ranking/' + REF + '/' + last, 'Research Library/' + now]);
+  }
   var README = 'SBA MARKETING PORTAL\r\n\r\nOpen "Marketing Portal.html" in Chrome or Edge. Leave "System files (do not touch)" as it is.\r\n' +
     'Each report has a "Reference files" folder: put the files it needs there (or choose them on the page: the portal\r\n' +
     'copies them in for you). The page checks that every file is there before it makes the report, uses the newest\r\n' +
     'file by itself, and saves what it makes in the report\'s Outputs folder.\r\n\r\n' +
     'Employee Info                     the phone directory Excel and the Code of Conduct PDF\r\n\r\n' +
     'Product Management\r\n' +
+    'The folders for the quarter being reported (e.g. 2026-Q3, with a folder per sender for DRB Usage) are made for you\r\n' +
+    'when the quarter ends; make an earlier quarter\'s folder yourself if you need one (same name pattern).\r\n\r\n' +
     '  Industry Ranking\r\n' +
     '    Reference files               one folder per quarter, named like 2026-Q3, holding that quarter\'s four BSP thrift PDFs\r\n' +
     '                                  (the old "Industry Ranking as of ..." workbook may go in the previous quarter\'s folder)\r\n' +
@@ -190,7 +203,7 @@
     ensureLayout: function () {
       var dir = files.dir;
       if (!dir) return Promise.resolve();
-      return LAYOUT.reduce(function (p, path) { return p.then(function () { return files.folder(path, true); }); }, Promise.resolve())
+      return LAYOUT.concat(quarterLayout(new Date())).reduce(function (p, path) { return p.then(function () { return files.folder(path, true); }); }, Promise.resolve())
         .then(function () {
           return dir.getFileHandle('READ ME.txt').then(function () {}, function () {
             return dir.getFileHandle('READ ME.txt', { create: true }).then(function (fh) { return fh.createWritable(); })
@@ -223,11 +236,16 @@
       var idx = (source.subfolder || source.pick) === 'second' ? 1 : 0;
       if (source.subfolder) {
         return files.list(base).then(function (es) {
-          var subs = es.filter(function (e) { return e.kind === 'folder' && !/^outputs$/i.test(e.name); }).sort(newestFirst), sub = subs[idx];
-          if (!sub) return { status: 'not-found', files: [], path: files.where(base), why: idx ? 'only one quarter folder' : 'no quarter folders' };
-          return files.list(base + '/' + sub.name).then(function (fs) {
-            var got = fs.filter(function (e) { return e.kind === 'file' && extRe.test(e.name); }).sort(function (a, b) { return a.name < b.name ? -1 : 1; });
-            return { status: got.length ? 'ok' : 'not-found', files: got.map(function (e) { return e.file; }), path: files.where(base + '/' + sub.name), why: idx ? 'previous quarter folder' : 'newest quarter folder' };
+          var subs = es.filter(function (e) { return e.kind === 'folder' && !/^outputs$/i.test(e.name); }).sort(newestFirst);
+          // quarter folders that hold files (empty placeholder folders, e.g. a new quarter's, are skipped)
+          return Promise.all(subs.map(function (sub) {
+            return files.list(base + '/' + sub.name).then(function (fs) {
+              return { sub: sub, got: fs.filter(function (e) { return e.kind === 'file' && extRe.test(e.name); }).sort(function (a, b) { return a.name < b.name ? -1 : 1; }) };
+            });
+          })).then(function (all) {
+            var full = all.filter(function (x) { return x.got.length; }), hit = full[idx];
+            if (!hit) return { status: 'not-found', files: [], path: files.where(base), why: idx ? (full.length ? 'only one quarter folder has files' : 'no quarter folder has files') : (subs.length ? 'the quarter folders are empty' : 'no quarter folders') };
+            return { status: 'ok', files: hit.got.map(function (e) { return e.file; }), path: files.where(base + '/' + hit.sub.name), why: idx ? 'previous quarter folder with files' : 'newest quarter folder with files' };
           });
         });
       }
