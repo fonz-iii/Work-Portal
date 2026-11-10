@@ -615,3 +615,15 @@ mark.cur { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
   .kpi, .report th, .report tbody tr:nth-child(even) td, .report tr.total td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .report table, .chart, .kpis { break-inside: avoid; }
 }
+
+/* ---------- reference files checklist (skill runner, 2026-11-10) ---------- */
+.refcheck ul { list-style: none; margin: 4px 0 16px; padding: 0; display: grid; gap: 6px; }
+.refcheck li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; }
+.refcheck .rc-st { flex: none; min-width: 74px; text-align: center; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.refcheck .ok .rc-st { background: var(--ok-bg); color: var(--ok); }
+.refcheck .bad .rc-st { background: var(--bad-bg); color: var(--bad); }
+.refcheck .off .rc-st { background: var(--line-2); color: var(--muted); }
+.ref-q { display: inline-flex; gap: 8px; align-items: center; margin-top: 8px; font-size: 13px; color: var(--muted); }
+.ref-q select { font: inherit; }
+#run[disabled] { opacity: .55; cursor: not-allowed; }
+#run-hint { font-size: 13px; color: var(--bad); margin-top: 8px; }

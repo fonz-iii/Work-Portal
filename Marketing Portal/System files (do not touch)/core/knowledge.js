@@ -267,7 +267,7 @@
   var KINDS = {
     directory: { key: 'dir', box: '#k-directory', name: 'Employee Directory', label: 'Employee Directory (phone directory Excel, .xls or .xlsx)', accept: '.xls,.xlsx,.xlsm', icon: 'chat', folder: 'Employee Info', practice: 'samples/employee-info/' },
     code: { key: 'code', box: '#k-code', name: 'Code of Conduct', label: 'Code of Conduct PDF', accept: '.pdf', icon: 'book', folder: 'Employee Info', practice: 'samples/employee-info/' },
-    billers: { key: 'bill', box: '#k-billers', name: 'QR Ph biller list', label: 'P2B Biller Masterlist (Excel)', accept: '.xlsx,.xls,.xlsm', icon: 'file', folder: 'QR Ph Billers', practice: 'samples/qrph-p2b/' }
+    billers: { key: 'bill', box: '#k-billers', name: 'QR Ph biller list', label: 'P2B Biller Masterlist (Excel)', accept: '.xlsx,.xls,.xlsm', icon: 'file', folder: 'QR Ph Billers/Reference files', practice: 'samples/qrph-p2b/' }
   };
   function $(s, c) { return (c || document).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); }
@@ -533,7 +533,7 @@
   /* ---------- portal folder: load the newest files from <portal folder>\Employee Info by themselves ---------- */
   var ready = false, syncing = false;
   var SOURCES = { directory: [{ folder: 'Employee Info', match: /directory/i }, 'excel'], code: [{ folder: 'Employee Info', match: /conduct/i }, 'pdf'],
-    billers: [{ folder: 'QR Ph Billers', match: /masterlist/i }, 'excel'] };
+    billers: [{ folder: 'QR Ph Billers/Reference files', match: /masterlist/i }, 'excel'] };
   function sync() {
     if (!ready || syncing || !P.files || P.files.status() !== 'connected') return Promise.resolve();
     syncing = true;

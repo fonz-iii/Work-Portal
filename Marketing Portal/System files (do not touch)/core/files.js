@@ -18,19 +18,26 @@
     if (parts.length && TOP.indexOf(parts[0]) < 0) parts.unshift(HOME[parts[0]] || 'Product Management');
     return parts;
   }
-  var LAYOUT = ['Employee Info', 'Product Management', 'Industry Ranking', 'Industry Ranking/Outputs', 'QR Ph Billers', 'QR Ph Billers/Outputs',
-    'DRB Usage', 'DRB Usage/Outputs', 'RIB Advisories', 'RIB Advisories/Outputs', 'Research Library', 'KRI Report',
+  // Each report keeps the files it needs in its own "Reference files" folder (2026-11-10, per Fons) and saves into Outputs.
+  var REF = 'Reference files';
+  var LAYOUT = ['Employee Info', 'Product Management', 'Industry Ranking/' + REF, 'Industry Ranking/Outputs', 'QR Ph Billers/' + REF, 'QR Ph Billers/Outputs',
+    'DRB Usage/' + REF, 'DRB Usage/Outputs', 'RIB Advisories', 'RIB Advisories/Outputs', 'Research Library', 'KRI Report/' + REF, 'KRI Report/Outputs',
     'Creatives', 'Customer Service', 'Types of Complaints', 'Fraud Management'];
   var README = 'SBA MARKETING PORTAL\r\n\r\nOpen "Marketing Portal.html" in Chrome or Edge. Leave "System files (do not touch)" as it is.\r\n' +
-    'Put each new file in its task folder, then open the page in the portal. The portal uses the newest file by itself.\r\n\r\n' +
+    'Each report has a "Reference files" folder: put the files it needs there (or choose them on the page: the portal\r\n' +
+    'copies them in for you). The page checks that every file is there before it makes the report, uses the newest\r\n' +
+    'file by itself, and saves what it makes in the report\'s Outputs folder.\r\n\r\n' +
     'Employee Info                     the phone directory Excel and the Code of Conduct PDF\r\n\r\n' +
     'Product Management\r\n' +
-    '  Industry Ranking                one folder per quarter, named like 2026-Q3, holding that quarter\'s four BSP thrift PDFs\r\n' +
+    '  Industry Ranking\r\n' +
+    '    Reference files               one folder per quarter, named like 2026-Q3, holding that quarter\'s four BSP thrift PDFs\r\n' +
     '                                  (the old "Industry Ranking as of ..." workbook may go in the previous quarter\'s folder)\r\n' +
     '    Outputs                       the decks, reports and figures the portal saves\r\n' +
-    '  QR Ph Billers                   the P2B Biller Masterlist files (keep the previous one too; the newest is "this period")\r\n' +
+    '  QR Ph Billers\r\n' +
+    '    Reference files               the P2B Biller Masterlist files (keep the previous one too; the newest is "this period")\r\n' +
     '    Outputs                       the Word directories and check sheets the portal saves\r\n' +
-    '  DRB Usage                       one folder per quarter (e.g. 2026-Q3) with a folder per sender: Ms. Hong (DRB Usage export),\r\n' +
+    '  DRB Usage\r\n' +
+    '    Reference files               one folder per quarter (e.g. 2026-Q3) with a folder per sender: Ms. Hong (DRB Usage export),\r\n' +
     '                                  Sir Jun (DRB Reports, ITCom DCB Reports, DRB DCB Stats), Automailer (RIB Idle Accounts Report),\r\n' +
     '                                  RIB Inbox shared drive (RIB Usage). The page can create these folders for you.\r\n' +
     '    Outputs                       the worked-figures workbooks (last quarter\'s is read for the comparison) and dashboards\r\n' +
@@ -38,7 +45,7 @@
     '    Outputs                       compilation Word files and backups\r\n' +
     '  Research Library                past studies and references, in one folder per quarter (e.g. 2026-Q3), with your own topic\r\n' +
     '                                  folders inside; any file type. Files outside a quarter folder are placed by the date in their name.\r\n' +
-    '  KRI Report                      for the Key Risk Indicators report (coming soon)\r\n\r\n' +
+    '  KRI Report                      for the Key Risk Indicators report (coming soon): Reference files and Outputs\r\n\r\n' +
     'Customer Service\r\n' +
     '  Types of Complaints             for the complaints report (coming soon)\r\n\r\n' +
     'Creatives, Fraud Management       their tools are being planned; task folders are added when they are built\r\n\r\n' +
@@ -233,6 +240,17 @@
         return f ? { status: 'ok', files: [f.file], path: files.where(base), why: idx ? 'the one before the newest, by date' : 'newest file, by date' } : { status: 'not-found', files: [], path: files.where(base), why: idx ? 'no older file' : 'no matching file' };
       });
     },
+
+    /** Copy a file the user chose into a folder of the portal folder (e.g. 'QR Ph Billers/Reference files'), keeping its name
+        and replacing a file of the same name. Resolves the folder it went to, for messages; rejects without a folder. */
+    put: function (path, file) {
+      if (!files.dir) return Promise.reject(new Error('No portal folder chosen.'));
+      return files.folder(path, true).then(function (d) { return d.getFileHandle(file.name, { create: true }); })
+        .then(function (fh) { return fh.createWritable(); })
+        .then(function (w) { return w.write(file).then(function () { return w.close(); }); })
+        .then(function () { return files.dir.name + '\\' + files.where(path); });
+    },
+    REF: REF,
 
     /** Save a Blob: into the portal folder (<project>\Outputs when a project is given) if possible, else as a browser download.
         Resolves { where: 'folder'|'download', name, folder? }. */

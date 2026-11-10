@@ -30,7 +30,13 @@
     ys.value = lq.y; $('q-q').value = lq.q;
   })();
   function info() { return D.quarterInfo(+$('q-year').value, +$('q-q').value); }
-  function qpath() { return 'DRB Usage/' + info().folder; }
+  function qpath() { return 'DRB Usage/Reference files/' + info().folder; }   // the quarter's reference files (one folder per sender)
+  // "Upload": a file chosen on the page is copied into the quarter's sender folder, so it is found by itself next time
+  function keepCopy(file, sub, what) {
+    if (F.status() !== 'connected') return;
+    F.put(sub, file).then(function (w) { $('scan-note').textContent = 'Copied ' + file.name + ' (' + what + ') into ' + w + '.'; },
+      function (e) { $('scan-note').textContent = 'Could not copy ' + file.name + ' into the portal folder (' + (e && e.message || e) + '). It is used for this run only.'; });
+  }
 
   /* ---------- storage (portal folder, else this browser) ---------- */
   function readJson(path, lsKey) {
@@ -197,7 +203,7 @@
   function findPrior() {
     if (F.status() !== 'connected') return Promise.resolve(null);
     var i = info(), pq = i.prior_quarter, want = D.fileName(pq).toLowerCase().replace(/[\s_-]+/g, ' ');
-    var dirs = ['DRB Usage/Outputs', 'DRB Usage/' + i.priorFolder, 'DRB Usage/' + i.priorFolder + '/Outputs'].concat(SENDERS.map(function (sd) { return 'DRB Usage/' + i.priorFolder + '/' + sd; }));
+    var pf = 'DRB Usage/Reference files/' + i.priorFolder, dirs = ['DRB Usage/Outputs', pf].concat(SENDERS.map(function (sd) { return pf + '/' + sd; }));
     return Promise.all(dirs.map(function (d) { return F.list(d).catch(function () { return []; }); })).then(function (ls) {
       var c = [].concat.apply([], ls).filter(function (e) { return e.kind === 'file' && /\.xlsx$/i.test(e.name) && !/^~\$/.test(e.name); });
       var named = function (e) { return e.name.toLowerCase().replace(/[\s_-]+/g, ' ').indexOf(want) === 0 ? 1 : 0; };
@@ -216,7 +222,7 @@
   }
   function loadQuarter() {
     var i = info();
-    $('q-where').innerHTML = F.status() === 'connected' ? 'Files are read from <b>' + esc(F.folderName()) + ' › Product Management › DRB Usage › ' + i.folder + '</b>, one folder per sender (Ms. Hong, Sir Jun, Automailer, RIB Inbox shared drive). The workbook is saved to <b>Product Management › DRB Usage › Outputs</b>.'
+    $('q-where').innerHTML = F.status() === 'connected' ? 'Files are read from <b>' + esc(F.folderName()) + ' › Product Management › DRB Usage › Reference files › ' + i.folder + '</b>, one folder per sender (Ms. Hong, Sir Jun, Automailer, RIB Inbox shared drive). The workbook is saved to <b>Product Management › DRB Usage › Outputs</b>.'
       : 'No portal folder yet: choose it in the top bar, or pick each file below with <b>Choose file</b>.';
     $('btn-mkdirs').classList.toggle('hide', F.status() !== 'connected');
     S.files = {}; S.result = null; $('c-review').classList.add('hide');
@@ -277,7 +283,7 @@
   }
   function paintCif() {
     var x = S.inputs, c = x && x.cifFrom;
-    if (!c) { $('cif-src').innerHTML = F.status() === 'connected' ? 'Ms. Hong\'s email was not found in <b>Product Management › DRB Usage › ' + esc(info().folder) + ' › Ms. Hong</b>. Save it there (in Outlook: File › Save As), choose it below, or type the figures.' : 'Choose Ms. Hong\'s email (or its pictures) below, or type the figures.'; $('cif-checks').innerHTML = ''; return; }
+    if (!c) { $('cif-src').innerHTML = F.status() === 'connected' ? 'Ms. Hong\'s email was not found in <b>Product Management › DRB Usage › Reference files › ' + esc(info().folder) + ' › Ms. Hong</b>. Save it there (in Outlook: File › Save As), choose it below, or type the figures.' : 'Choose Ms. Hong\'s email (or its pictures) below, or type the figures.'; $('cif-checks').innerHTML = ''; return; }
     var bad = (c.flags || []).length;
     $('cif-src').innerHTML = '<b>Read from ' + esc(c.name) + '</b>' + (c.where ? ' (' + esc(c.where) + ')' : '') + (c.pics ? ', ' + c.pics + ' picture' + (c.pics === 1 ? '' : 's') : '') + '. ' +
       (bad ? '<span class="k-warn">Check the items marked ! and correct the figures below.</span>' : 'The figures add up' + (c.pics ? '; compare them with the pictures below' : '') + ', then tick “These match the CIF Profile”.');
@@ -323,11 +329,11 @@
   });
   page.addEventListener('change', function (e) {
     var t = e.target;
-    if (t.matches('[data-src]')) { if (t.files[0]) { S.files[t.getAttribute('data-src')] = { file: t.files[0], where: '' }; if (/synthetic/i.test(t.files[0].name)) S.synthetic = true; paintFiles(); maybeAutoRun(); } t.value = ''; return; }
-    if (t.id === 'prior-file' && t.files[0]) { S.inputs.priorFrom = ''; loadPrior(t.files[0]).catch(function (er) { $('prior-src').innerHTML = '<span class="k-warn">' + esc(er.message || er) + '</span>'; }); t.value = ''; return; }
+    if (t.matches('[data-src]')) { if (t.files[0]) { var k = t.getAttribute('data-src'), src = SOURCES.filter(function (s) { return s.k === k; })[0]; S.files[k] = { file: t.files[0], where: '' }; if (/synthetic/i.test(t.files[0].name)) S.synthetic = true; keepCopy(t.files[0], qpath() + '/' + src.who, src.label); paintFiles(); maybeAutoRun(); } t.value = ''; return; }
+    if (t.id === 'prior-file' && t.files[0]) { S.inputs.priorFrom = ''; keepCopy(t.files[0], 'DRB Usage/Outputs', 'last quarter\'s workbook'); loadPrior(t.files[0]).catch(function (er) { $('prior-src').innerHTML = '<span class="k-warn">' + esc(er.message || er) + '</span>'; }); t.value = ''; return; }
     if (t.id === 'cif-ok') { S.inputs.confirmed = t.checked; saveInputs(); maybeAutoRun(); return; }
     if (t.id === 'prior-ok') { S.inputs.priorConfirmed = t.checked; saveInputs(); maybeAutoRun(); return; }
-    if (t.id === 'cif-file' && t.files.length) { var fl = Array.from(t.files); t.value = ''; cifSource(fl, '').then(function (src) { if (src) readCif(src); else $('cif-src').innerHTML = '<span class="k-warn">No CIF Profile figures or pictures were found in that file.</span>'; }); return; }
+    if (t.id === 'cif-file' && t.files.length) { var fl = Array.from(t.files); t.value = ''; fl.forEach(function (f) { keepCopy(f, qpath() + '/Ms. Hong', 'CIF Profile'); }); cifSource(fl, '').then(function (src) { if (src) readCif(src); else $('cif-src').innerHTML = '<span class="k-warn">No CIF Profile figures or pictures were found in that file.</span>'; }); return; }
   });
   page.addEventListener('click', function (e) {
     var u = e.target.closest('[data-unpick]'); if (u) { delete S.files[u.getAttribute('data-unpick')]; paintFiles(); maybeAutoRun(); }

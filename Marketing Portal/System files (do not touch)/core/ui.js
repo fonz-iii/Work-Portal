@@ -389,7 +389,7 @@
         '</div></div></section>';
     }
 
-    var steps = [['file', 'Choose your file', 'Open a module and pick the Excel or PDF file. It is read on this computer only.'],
+    var steps = [['file', 'Check the reference files', 'Open a report: it finds its files in its Reference files folder, or you choose them. They are read on this computer only.'],
       ['check', 'The portal checks it', 'If something is missing or wrong in the file, you get a plain list of what to fix.'],
       ['eye', 'Review the draft', 'Figures, charts and comments appear on screen for you to check.'],
       ['save', 'Save and send', 'Save as Excel, Word or PDF. You decide what gets sent, and to whom.']];
@@ -510,15 +510,28 @@
     }
 
     main.innerHTML = head + '<div class="wrap page-body">' + back +
-      '<div class="guide no-print"><b>How to use this page:</b><ol><li>Choose your file</li><li>Check the settings</li><li>Click <b>Create report</b></li><li>Review it, then save</li></ol><a href="#help/reports">More help</a></div>' +
+      '<div class="guide no-print"><b>How to use this page:</b><ol><li>Check the reference files</li><li>Check the settings</li><li>Click <b>Create report</b></li><li>Review it, then save</li></ol><a href="#help/reports">More help</a></div>' +
       '<div class="runner-grid">' +
-      '<section class="card"><h2><span class="step">1</span>Choose your file</h2><div id="inputs"></div></section>' +
+      '<section class="card"><h2><span class="step">1</span>Reference files</h2><p class="help" id="ref-where"></p><div class="refcheck" id="refcheck" aria-live="polite"></div><div id="inputs"></div></section>' +
       '<section class="card"><h2><span class="step">2</span>Check the settings</h2><div id="params"></div>' +
-      '<div class="actions"><button class="btn primary lg" id="run">Create report ' + icon('arrow') + '</button></div>' + rulesNote(skill) + '</section></div>' +
+      '<div class="actions"><button class="btn primary lg" id="run">Create report ' + icon('arrow') + '</button></div><p class="hint" id="run-hint"></p>' + rulesNote(skill) + '</section></div>' +
       '<div id="errors"></div><section id="results"></section></div>';
 
     var inBox = $('#inputs'), rows = {};
-    (skill.inputs || []).forEach(function (d) { inBox.appendChild(rows[d.key] = inputRow(d, state)); });
+    // the checklist: every file the report needs, found or missing; Create report waits for the required ones
+    function updateCheck() {
+      var items = (skill.inputs || []).map(function (d) { var v = state.inputs[d.key]; return { d: d, n: Array.isArray(v) ? v.length : v ? 1 : 0 }; });
+      var miss = items.filter(function (x) { return x.d.required && !x.n; });
+      $('#refcheck').innerHTML = items.length ? '<ul>' + items.map(function (x) {
+        return '<li class="' + (x.n ? 'ok' : x.d.required ? 'bad' : 'off') + '"><span class="rc-st">' + (x.n ? 'Found' : x.d.required ? 'Missing' : 'Optional') + '</span><span>' + esc(x.d.label) + (x.n > 1 ? ' <span class="muted">(' + x.n + ' files)</span>' : '') + '</span></li>';
+      }).join('') + '</ul>' : '';
+      $('#run').disabled = miss.length > 0;
+      $('#run-hint').textContent = miss.length ? 'Add the missing reference file' + (miss.length > 1 ? 's' : '') + ' first: ' + miss.map(function (x) { return x.d.label; }).join('; ') + '.' : '';
+    }
+    var ref = (skill.inputs || []).filter(function (d) { return d.source; })[0];
+    if (ref) $('#ref-where').innerHTML = 'This report reads its files from <b>' + esc(P.files.where(ref.source.folder).replace(/\\/g, ' › ')) + '</b> in your portal folder. A file you choose below is copied there, so it is found by itself next time.';
+    (skill.inputs || []).forEach(function (d) { inBox.appendChild(rows[d.key] = inputRow(d, state, updateCheck)); });
+    updateCheck();
     fillFromFolder(skill, state, rows);
     runnerRefill = function () { fillFromFolder(skill, state, rows); };
     inBox.addEventListener('click', function (e) {
@@ -543,13 +556,13 @@
       P.files.find(d.source, d.type).then(function (res) {
         if (state.manual[d.key]) return;
         if (res.status === 'unsupported') return r._note('');
-        if (res.status === 'no-folder') return r._note(icon('folder') + 'Tip: choose your <b>portal folder</b> (top bar) and this is filled in for you from its <b>' + esc(d.source.folder) + '</b> folder.');
+        if (res.status === 'no-folder') return r._note(icon('folder') + 'Tip: choose your <b>portal folder</b> (top bar) and this is filled in for you from <b>' + esc(P.files.where(d.source.folder).replace(/\\/g, ' › ')) + '</b>.');
         if (res.status === 'needs-permission') return r._note(icon('folder') + 'Your portal folder needs permission again. <button class="linkbtn-dark" data-folder-allow>Allow folder</button>');
         if (res.status === 'not-found') {
           return r._note(icon('folder') + (d.required ? 'Not found in ' : 'Nothing in ') + esc(P.files.folderName()) + ' › <b>' + esc(res.path.replace(/\\/g, ' › ')) + '</b> (' + esc(res.why) + ').' +
             (d.required ? ' Put the file there and <button class="linkbtn-dark" data-src-refill>look again</button>, or choose it below.' : ''));
         }
-        r._fill(res.files);
+        r._fill(res.files, res.path);
         r._note(icon('check') + 'From your portal folder: <b>' + esc(P.files.folderName() + ' › ' + res.path.replace(/\\/g, ' › ')) + '</b> (' + esc(res.why) + '). <button class="linkbtn-dark" data-src-refill>Look again</button>');
       });
     });
@@ -570,10 +583,21 @@
       : '<p class="rules-note">Commentary thresholds: approved.</p>';
   }
 
-  function inputRow(d, state) {
+  // quarter folders like 2026-Q3, newest first (for copying a chosen file into the right one)
+  function quarterNames(n) {
+    var d = new Date(), y = d.getFullYear(), q = Math.floor(d.getMonth() / 3) + 1, out = [];
+    for (var i = 0; i < n; i++) { out.push(y + '-Q' + q); q--; if (!q) { q = 4; y--; } }
+    return out;
+  }
+  function inputRow(d, state, onChange) {
     var row = el('<div class="field"><label>' + esc(d.label) + (d.required ? ' <span class="req">*</span>' : '') + '</label>' +
       (d.help ? '<p class="help">' + esc(d.help) + '</p>' : '') + '<p class="src-note" hidden></p><div class="file-line"></div></div>');
-    var line = $('.file-line', row);
+    var line = $('.file-line', row), qsel = null;
+    if (d.source && d.source.subfolder) {   // files kept per quarter: say which quarter folder a chosen file goes into
+      var qs = quarterNames(9), def = qs[d.source.subfolder === 'second' ? 2 : 1];   // last completed quarter, or the one before it
+      var ql = el('<label class="ref-q">Copy chosen files into quarter folder <select>' + qs.map(function (q) { return '<option' + (q === def ? ' selected' : '') + '>' + q + '</option>'; }).join('') + '</select></label>');
+      qsel = $('select', ql); row.appendChild(ql);
+    }
 
     if (d.type === 'paste') {
       var ta = el('<textarea rows="6" placeholder="Paste text here"></textarea>');
@@ -607,26 +631,41 @@
           (many && cur.length ? '<button class="linkbtn-dark" data-clear>Clear files</button>' : '');
         info.className = 'file-info' + (bad.length || !cur.length ? ' bad' : ' ok');
         if (!many && !ok.length) state.inputs[d.key] = undefined;
+        if (onChange) onChange();
       });
     }
-    /* Used by the portal folder: replace whatever is there with the files found in the folder. */
-    row._fill = function (list) { state.inputs[d.key] = undefined; load(list); };
+    /* "Upload": a file the user chose is copied into the report's Reference files folder (the quarter folder picked above). */
+    function keep(list) {
+      list = Array.prototype.slice.call(list || []);
+      if (!d.source || !list.length) return;
+      var dest = d.source.folder + (qsel ? '/' + qsel.value : ''), shown = P.files.where(dest).replace(/\\/g, ' › ');
+      if (P.files.status() !== 'connected') { row._note(icon('folder') + 'Using the file you chose. Choose your <b>portal folder</b> (top bar) to keep a copy in <b>' + esc(shown) + '</b>.'); return; }
+      Promise.all(list.map(function (f) { return P.files.put(dest, f); })).then(function (w) {
+        row._note(icon('check') + 'Using the file' + (list.length > 1 ? 's' : '') + ' you chose. Copied into <b>' + esc(w[0].replace(/\\/g, ' › ')) + '</b>, so ' + (list.length > 1 ? 'they are' : 'it is') + ' found by itself next time. <button class="linkbtn-dark" data-src-refill>Use the folder\'s files</button>');
+      }, function (e) { row._note('Using the file you chose. It could not be copied into ' + esc(shown) + ' (' + esc(e && e.message || e) + ').'); });
+    }
+    /* Used by the portal folder: replace whatever is there with the files found in the folder (and its quarter folder). */
+    row._fill = function (list, path) {
+      state.inputs[d.key] = undefined; load(list);
+      var q = qsel && /(\d{4}-Q[1-4])$/.exec(path || ''); if (q && !Array.prototype.some.call(qsel.options, function (o) { return o.value === q[1]; })) qsel.insertAdjacentHTML('afterbegin', '<option>' + q[1] + '</option>'); if (q) qsel.value = q[1];
+    };
     row._note = function (html) { var n = $('.src-note', row); n.innerHTML = html || ''; n.hidden = !html; };
     btn.addEventListener('click', function () {
       P.files.pick({ accept: P.files.acceptFor(d.type), multiple: many }).then(function (l) {
         if (l.length) { state.manual[d.key] = true; if (d.source) row._note('Using the file you chose. <button class="linkbtn-dark" data-src-refill>Use the portal folder again</button>'); }
-        load(l);
+        load(l); keep(l);
       });
     });
     info.addEventListener('click', function (e) {
       if (!e.target.closest('[data-clear]')) return;
       state.inputs[d.key] = undefined;
       info.className = 'file-info muted'; info.textContent = 'No files chosen. You can also drag files here.';
+      if (onChange) onChange();
     });
     row.classList.add('dropzone');
     row.addEventListener('dragover', function (e) { e.preventDefault(); row.classList.add('over'); });
     row.addEventListener('dragleave', function (e) { if (!row.contains(e.relatedTarget)) row.classList.remove('over'); });
-    row.addEventListener('drop', function (e) { e.preventDefault(); row.classList.remove('over'); state.manual[d.key] = true; load(e.dataTransfer && e.dataTransfer.files); });
+    row.addEventListener('drop', function (e) { e.preventDefault(); row.classList.remove('over'); state.manual[d.key] = true; var fl = e.dataTransfer && e.dataTransfer.files; load(fl); keep(fl); });
     line.appendChild(btn); line.appendChild(info);
     return row;
   }

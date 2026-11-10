@@ -53,7 +53,8 @@
       <section class="card hsec reveal" id="help-reports"><h2><span class="num">2</span>Making a report</h2>
         <ol>
           <li>Open <span class="ui-chip">Product Management</span> and click the report you need.</li>
-          <li>Under <b>1 · Choose your file</b>, click <span class="ui-chip">Choose file…</span> and pick the source file. The portal shows how many rows it read.</li>
+          <li>Under <b>1 · Reference files</b>, check the list: each file the report needs shows <b>Found</b> or <b>Missing</b>. With a portal folder, the files are read by themselves from the report's <b>Reference files</b> folder (for example <b>Product Management › QR Ph Billers › Reference files</b>).</li>
+          <li>Missing one? Click <span class="ui-chip">Choose file…</span> and pick it. The portal uses it and copies it into the Reference files folder (into the quarter folder you pick, where files are kept per quarter), so it is found by itself next time. <span class="ui-chip">Create report</span> stays off until every required file is found.</li>
           <li>Under <b>2 · Check the settings</b>, confirm the quarter or date.</li>
           <li>Click <span class="ui-chip">Create report</span>. If something is wrong with the file, a red box lists exactly what to fix.</li>
           <li>Under <b>3 · Review, then save</b>, read the figures, chart and comments. Then click a <b>Save</b> button, or <b>Print / PDF</b>.</li>
@@ -118,7 +119,7 @@
           <li>When HR sends a newer file, click <b>Replace with newer file</b>.</li>
         </ol>
         <p class="tip"><b>Privacy:</b> the files are read on this computer and remembered only in this browser. They are never uploaded and are not part of the portal folder. Do not put them in GitHub or the shared portal folder. On another computer, load them again. <b>Remove from this PC</b> deletes the saved copy.</p>
-        <p><b>QR Ph Billers tab:</b> a searchable list of every biller that accepts QR Ph P2B, with its category and biller code (click the code to copy it). It reads the newest P2B Biller Masterlist in your portal folder's <b>QR Ph Billers</b> folder by itself, so there is nothing extra to load. It is the same list, in the same order, as the published directory; new and updated billers are tagged. Use <b>New and updated only</b> to see this period's changes.</p>
+        <p><b>QR Ph Billers tab:</b> a searchable list of every biller that accepts QR Ph P2B, with its category and biller code (click the code to copy it). It reads the newest P2B Biller Masterlist in your portal folder's <b>Product Management › QR Ph Billers › Reference files</b> folder by itself, so there is nothing extra to load. It is the same list, in the same order, as the published directory; new and updated billers are tagged. Use <b>New and updated only</b> to see this period's changes.</p>
         <p class="tip">The Code of Conduct view is a reading aid. The official version is the PDF from HR; each section shows its page number.</p>
       </section>
 
@@ -143,24 +144,27 @@
   System files (do not touch)    the app itself
   Employee Info                  phone directory Excel + Code of Conduct PDF
   Product Management
-    Industry Ranking             one folder per quarter (2026-Q3) with its four BSP thrift PDFs
+    Industry Ranking
+      Reference files            one folder per quarter (2026-Q3) with its four BSP thrift PDFs
       Outputs                    the decks, reports and figures you save
-    QR Ph Billers                P2B Biller Masterlist files (keep last period's too)
+    QR Ph Billers
+      Reference files            P2B Biller Masterlist files (keep last period's too)
       Outputs                    the directories and check sheets you save
-    DRB Usage                    one folder per quarter, a folder per sender inside
+    DRB Usage
+      Reference files            one folder per quarter, a folder per sender inside
       Outputs                    the workbooks and dashboards you save
     RIB Advisories               kept by the RIB Advisory Generator (don't edit by hand)
       Outputs                    compilation Word files and backups
     Research Library             past studies, one folder per quarter
-    KRI Report                   coming soon
+    KRI Report                   coming soon (Reference files, Outputs)
   Creatives                      coming soon
   Customer Service
     Types of Complaints          coming soon
   Fraud Management               coming soon</pre></li>
-          <li>Each task keeps its own <b>Outputs</b> folder, so its files and its finished reports stay together. Files in Outputs are never used as inputs.</li>
-          <li>When a new file comes in, save it into its task folder. Keep the date in the file name (for example <i>P2B Biller Masterlist-As of 2026-09-30.xlsx</i>); the newest date is used. For Industry Ranking, make a new quarter folder named like <b>2026-Q3</b>.</li>
+          <li>Each report keeps the files it needs in its <b>Reference files</b> folder and what it makes in its <b>Outputs</b> folder. Before a report is made, the page checks that every file it needs is there (you can also choose a missing file on the page; it is copied into Reference files). Files in Outputs are never used as inputs, except last quarter's DRB Usage workbook for the comparison.</li>
+          <li>When a new file comes in, save it into the report's <b>Reference files</b> folder. Keep the date in the file name (for example <i>P2B Biller Masterlist-As of 2026-09-30.xlsx</i>); the newest date is used. For Industry Ranking, make a new quarter folder named like <b>2026-Q3</b>.</li>
           <li>Open the page. The file boxes show <b>From your portal folder</b> and which file was picked. Click <b>Choose file…</b> if you want a different one.</li>
-          <li>Used an earlier portal folder (for example <b>SBA Portal Files</b>)? Move its <b>QR Ph Billers</b>, <b>Industry Ranking</b>, <b>DRB Usage</b>, <b>RIB Advisories</b> and <b>Research Library</b> folders into <b>Product Management</b>, and <b>Employee Info</b> next to it, then choose the Marketing Portal folder.</li>
+          <li>Used an earlier portal folder (for example <b>SBA Portal Files</b>)? Put the masterlists in <b>Product Management › QR Ph Billers › Reference files</b>, the quarter folders of Industry Ranking and DRB Usage in their <b>Reference files</b> folders, each Outputs folder in its report's folder, <b>RIB Advisories</b> and <b>Research Library</b> in <b>Product Management</b>, and <b>Employee Info</b> next to it, then choose the Marketing Portal folder.</li>
         </ol>
         <p class="tip"><b>Chrome asks again?</b> After Chrome restarts it may ask to allow the folder. Click <b>Allow</b> (top bar or the yellow card on Home); choose <b>Allow on every visit</b> if offered. Nothing in the folder ever leaves this computer.</p>
         <p class="tip">Want to try it first? Choose the practice folder <code>samples/Marketing Portal (practice)</code>. It holds only made-up or public files, in the same team folders.</p>
@@ -179,8 +183,8 @@
       <section class="card hsec reveal" id="help-drb"><h2><span class="num">13</span>DRB Usage (quarterly)</h2>
         <p>Open <span class="ui-chip">Product Management</span> › Digital Banking › <b>DRB Usage</b>. It builds the same “DRB Usage Qn YYYY - Worked Figures” Excel workbook as before: every figure is a live formula, with the Summary, Usage, Profile, Transactions, Channels, Billers_Banks, QR, Cards, QoQ and Checks sheets.</p>
         <ol>
-          <li><b>Pick the quarter.</b> Click <b>Create this quarter's folders</b> once. Your portal folder gets <b>Product Management › DRB Usage › 2026-Q3</b> with a folder per sender: <b>Ms. Hong</b> (DRB Usage export), <b>Sir Jun</b> (DRB Reports and ITCom DCB Reports, quarter-end month editions; DRB DCB Stats if you have it), <b>Automailer</b> (RIB Idle Accounts Report) and <b>RIB Inbox shared drive</b> (RIB Usage, optional).</li>
-          <li><b>Check the files.</b> Each line should say <b>Ready</b>. Files are recognised by what is inside them, so the names do not matter, and the RIB Usage Report V2 (.xlsb) can be used as received. <b>Choose file</b> uses another file. Rows dated outside the quarter (for example the 1 October rows in a report run on the 1st) are left out; the page says how many.</li>
+          <li><b>Pick the quarter.</b> Click <b>Create this quarter's folders</b> once. Your portal folder gets <b>Product Management › DRB Usage › Reference files › 2026-Q3</b> with a folder per sender: <b>Ms. Hong</b> (DRB Usage export), <b>Sir Jun</b> (DRB Reports and ITCom DCB Reports, quarter-end month editions; DRB DCB Stats if you have it), <b>Automailer</b> (RIB Idle Accounts Report) and <b>RIB Inbox shared drive</b> (RIB Usage, optional).</li>
+          <li><b>Check the files.</b> Each line should say <b>Ready</b>. A file you choose with <b>Choose file</b> is copied into its sender's folder for that quarter. Files are recognised by what is inside them, so the names do not matter, and the RIB Usage Report V2 (.xlsb) can be used as received. <b>Choose file</b> uses another file. Rows dated outside the quarter (for example the 1 October rows in a report run on the 1st) are left out; the page says how many.</li>
           <li><b>CIF Profile from Ms. Hong.</b> Save her email (“DRB Usage &amp; CIF Profile as of …”) in the <b>Ms. Hong</b> folder: in Outlook, open it and use File › Save As. The page reads the figures from the pictures pasted in it (it also takes the pictures themselves, an Excel file, or pasted text). It shows the pictures and checks that the tables add up; compare, correct anything marked <b>!</b>, then tick <b>These match the CIF Profile</b>. The first reading takes about half a minute. Leave <i>Inactive CIFs</i> blank unless you must override the idle report.</li>
           <li><b>Last quarter's figures</b> are read by themselves from last quarter's DRB Usage workbook, whatever its file name, in <b>Product Management › DRB Usage › Outputs</b> (or last quarter's folder). Read them back and tick <b>These are last quarter's figures</b>. <i>Have any online activity (Sir RD's count)</i> is optional; when filled in, the Usage sheet shows both ways of counting active clients.</li>
           <li>Once every file is found and both boxes are ticked, the report builds by itself (<b>Create report</b> builds it again). The <b>Dashboard</b> tab shows the quarter at a glance: print it or save it as a web page. The <b>Details</b> tab has the headline figures, checks, top billers and banks and quarter on quarter, and the <b>Save the workbook</b> button. It is saved to <b>Product Management › DRB Usage › Outputs</b>, where next quarter's run finds it.</li>
@@ -244,7 +248,7 @@
   </div></header>
   <div class="wrap page-body drb" data-scene="sky">
     <a class="backlink" href="#pm/digital-banking"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Back to Digital Banking</a>
-    <div class="guide no-print"><b>How to use this page:</b><ol><li>Pick the quarter</li><li>Check the files</li><li>Type the CIF Profile</li><li>Check last quarter's figures</li><li>The report builds itself: check the dashboard, then save</li></ol><a href="#help/drb">More help</a></div>
+    <div class="guide no-print"><b>How to use this page:</b><ol><li>Pick the quarter</li><li>Check the reference files</li><li>Type the CIF Profile</li><li>Check last quarter's figures</li><li>The report builds itself: check the dashboard, then save</li></ol><a href="#help/drb">More help</a></div>
     <div id="synth" class="card errors hide" role="alert"><b>Practice files.</b> These files are marked SYNTHETIC TEST DATA. The workbook will be stamped TEST DATA. Do not use the figures.</div>
 
     <section class="card" id="c-quarter">
@@ -258,7 +262,7 @@
     </section>
 
     <section class="card" id="c-files">
-      <h2><span class="step">2</span>The files</h2>
+      <h2><span class="step">2</span>Reference files</h2>
       <p class="help">Files are recognised by what is inside them, not by their names. Use <b>Choose file</b> to use a different file.</p>
       <table class="t"><thead><tr><th>File (sent by)</th><th>Status</th><th></th></tr></thead><tbody id="files-t"></tbody></table>
       <div class="actions-row"><button class="btn" id="btn-rescan" type="button">Look again</button><span class="hint" id="scan-note"></span></div>

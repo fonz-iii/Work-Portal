@@ -328,13 +328,14 @@
     title: 'QR Ph P2B Biller Directory',
     group: 'Payments & Risk',
     status: 'ready',
+    outputFolder: 'QR Ph Billers',
     description: 'Alphabetized "QR PH P2B List of Billers" on SBA letterhead (Word and PDF) from the BancNet/InstaPay biller masterlist.',
     inputs: [
       { key: 'masterlist', label: 'P2B Biller Masterlist (this period)', type: 'excel', required: true,
-        source: { folder: 'QR Ph Billers', match: /masterlist/i, pick: 'newest' },
+        source: { folder: 'QR Ph Billers/Reference files', match: /masterlist/i, pick: 'newest' },
         help: 'The "P2B Biller Masterlist-As of YYYY-MM-DD.xlsx" downloaded from the HUB (15th and month-end). Practice file: samples/qrph-p2b/.' },
       { key: 'previous', label: 'Previous masterlist (optional)', type: 'excel',
-        source: { folder: 'QR Ph Billers', match: /masterlist/i, pick: 'second' },
+        source: { folder: 'QR Ph Billers/Reference files', match: /masterlist/i, pick: 'second' },
         help: 'Last period’s masterlist. Used only to show which billers were added or dropped.' }
     ],
     params: [],
