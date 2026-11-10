@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketing Portal</title>
+<script>(function(){var t='light',r=null,d=document.documentElement;try{t=localStorage.getItem('portal-theme')==='dark'?'dark':'light';r=localStorage.getItem('portal-rail');}catch(e){}if(r!=='open'&&r!=='closed')r=window.innerWidth<1100?'closed':'open';d.setAttribute('data-theme',t);d.setAttribute('data-rail',r);})();</script>
+<link rel="icon" href="System%20files%20(do%20not%20touch)/assets/icons/portal.svg">
+<link rel="stylesheet" href="System%20files%20(do%20not%20touch)/assets/css/tokens.css">
+<link rel="stylesheet" href="System%20files%20(do%20not%20touch)/assets/css/portal.css">
+<link rel="stylesheet" href="System%20files%20(do%20not%20touch)/assets/css/pages.css">
+<link rel="stylesheet" href="System%20files%20(do%20not%20touch)/assets/css/components.css">
+</head>
+<body>
+<!-- SBA Marketing Portal: open this file in Chrome or Edge. Everything else lives in "System files (do not touch)";
+     the team folders next to this file hold your files and the portal's outputs. -->
+<header id="shell" class="no-print"></header>
+<main id="main"><p class="muted page-loading">Loading…</p></main>
+<footer id="foot" class="foot no-print"></footer>
+
+<!-- pages built from markup (the others are drawn by core/ui.js); each is copied in the first time it is opened -->
+<template id="tpl-help">  <header class="page-head" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="#home"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><b>How to use</b></nav>
+    <div class="page-title"><div><h1>How to use the Marketing Portal</h1><p class="lede">A short, plain guide. If you only read one thing: <b>open a module, add your file, click Create report, check it, then save.</b></p></div></div>
+  </div></header>
+
+  <section class="band" data-scene="sky"><div class="wrap">
+    <ol class="steps">
+      <li class="reveal"><span class="step-n">Step 1</span><h3>Choose your team</h3><p>On Home, click <span class="ui-chip">Product Management</span>. The other teams are coming soon.</p></li>
+      <li class="reveal"><span class="step-n">Step 2</span><h3>Pick a report</h3><p>Click a card that says <b>Ready to use</b>. Cards that say <b>Coming soon</b> only describe what is planned.</p></li>
+      <li class="reveal"><span class="step-n">Step 3</span><h3>Add your file</h3><p>Click <span class="ui-chip">Choose file…</span>, pick the Excel or PDF, then click <span class="ui-chip">Create report</span>.</p></li>
+      <li class="reveal"><span class="step-n">Step 4</span><h3>Check, then save</h3><p>Read the draft on screen. If it looks right, save it as Excel, Word or PDF.</p></li>
+    </ol>
+  </div></section>
+
+  <div class="wrap page-body hgrid" data-scene="gold">
+    <nav class="kside no-print" aria-label="Guide sections"><p>On this page</p>
+      <a href="#help/around">Finding your way around</a><a href="#help/reports">Making a report</a><a href="#help/saving">Saving your files</a>
+      <a href="#help/errors">Fixing file errors</a><a href="#help/theme">Light and dark mode</a><a href="#home-pics">Pictures on Home</a>
+      <a href="#help/privacy">Privacy and sharing</a><a href="#help/suggest">Suggesting a change</a><a href="#help/employee">Employee Info</a><a href="#help/qrph">QR Ph biller directory</a><a href="#help/folder">Your portal folder</a><a href="#rib">RIB advisories</a><a href="#drb">DRB Usage</a><a href="#research">Research Library</a><a href="#help/faq">Common questions</a></nav>
+    <div>
+      <section class="card hsec reveal" id="help-around"><h2><span class="num">1</span>Finding your way around</h2>
+        <ul>
+          <li><b>Top menu</b> (white bar): <span class="ui-chip">Home</span>, the four teams, <span class="ui-chip">Employee Info</span> and <span class="ui-chip">How to use</span>. The page you are on is highlighted.</li>
+          <li><b>“You are here” trail</b> under the menu shows where you are, for example <i>Home › Product Management › Market &amp; Research</i>. Click any part to go back.</li>
+          <li><b>Back links</b> on every report page take you to the list you came from.</li>
+          <li><b>Search box</b> on Home: type a word such as “ranking” or “biller” and press Enter.</li>
+          <li><b>How to use</b> button in the bottom-right corner brings you back to this guide from any page.</li>
+        </ul>
+        <p class="tip"><b>Lost?</b> Click the Marketing Portal logo at the top left. It always takes you Home.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-reports"><h2><span class="num">2</span>Making a report</h2>
+        <ol>
+          <li>Open <span class="ui-chip">Product Management</span> and click the report you need.</li>
+          <li>Under <b>1 · Choose your file</b>, click <span class="ui-chip">Choose file…</span> and pick the source file. The portal shows how many rows it read.</li>
+          <li>Under <b>2 · Check the settings</b>, confirm the quarter or date.</li>
+          <li>Click <span class="ui-chip">Create report</span>. If something is wrong with the file, a red box lists exactly what to fix.</li>
+          <li>Under <b>3 · Review, then save</b>, read the figures, chart and comments. Then click a <b>Save</b> button, or <b>Print / PDF</b>.</li>
+        </ol>
+        <p class="tip"><b>Want to practise first?</b> Open <span class="ui-chip">Demo: Branch Deposits</span> and use the sample file <code>samples/demo-branch-deposits.xlsx</code>. It is made-up data.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-saving"><h2><span class="num">3</span>Saving your files</h2>
+        <ul>
+          <li>Click <span class="ui-chip">Choose folder</span> in the dark bar at the very top and pick a folder. Finished files then save straight into it.</li>
+          <li>The next time you open the portal, click <b>Allow access</b> once to keep using the same folder. This is a browser safety check.</li>
+          <li>If you do not choose a folder, files go to your <b>Downloads</b> folder.</li>
+        </ul>
+      </section>
+
+      <section class="card hsec reveal" id="help-errors"><h2><span class="num">4</span>Fixing file errors</h2>
+        <p>The portal checks every file before calculating anything. Common messages:</p>
+        <table class="err-table"><thead><tr><th>Message says</th><th>What to do</th></tr></thead><tbody>
+          <tr><td>“is missing column(s): …”</td><td>A column header is missing or spelled differently. Rename the header in Excel to match exactly, save, and choose the file again.</td></tr>
+          <tr><td>“must be a number on row(s) …”</td><td>Those rows have text (such as “n/a”) where a number should be. Fix those cells and try again.</td></tr>
+          <tr><td>“not written like ‘Q3 2026’”</td><td>The quarter is typed in a different format. Use Q, the number, a space and the year.</td></tr>
+          <tr><td>“No rows for …”</td><td>The quarter you picked is not in the file. Pick a quarter listed in the message.</td></tr>
+          <tr><td>“Could not read …”</td><td>The file may be open in Excel, password-protected or damaged. Close it in Excel and try again.</td></tr>
+        </tbody></table>
+      </section>
+
+      <section class="card hsec reveal" id="help-theme"><h2><span class="num">5</span>Light and dark mode</h2>
+        <p>Use the <span class="ui-chip">Light</span> / <span class="ui-chip">Dark</span> switch in the top-right corner of the dark bar. The portal remembers your choice. Reports, saved files and printouts always come out in light colors.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-home-pics"><h2><span class="num">6</span>Pictures and text on Home</h2>
+        <ul>
+          <li>The main picture at the top of Home is a <b>slide show</b>: it moves on every 5 seconds and stops while your mouse or keyboard is on it. Use the arrows, the dots, swipe, or the ← → keys; the ❚❚ button pauses it.</li>
+          <li>Its pictures are the <code>heroSlides</code> lines in <code>System files (do not touch)\data\home.js</code> (one line per picture, in order). The pictures are the <code>team-1.jpg</code> … <code>team-3.jpg</code> files in <code>assets/images/</code>: replace them with your own pictures (same names), add more lines, or change the names in <code>data/home.js</code>. The Highlights row uses the same folder.</li>
+          <li>To change the headline or captions, open <code>System files (do not touch)\data\home.js</code> in Notepad and edit the text between the quote marks.</li>
+          <li>Do not use pictures that show customer or confidential information.</li>
+        </ul>
+      </section>
+
+      <section class="card hsec reveal" id="help-privacy"><h2><span class="num">7</span>Privacy and sharing</h2>
+        <ul>
+          <li>The portal works <b>offline</b>. Files you choose are read on this computer and never leave it.</li>
+          <li>The portal is for the <b>Marketing Group only</b>. Do not share it or its outputs outside the group without approval.</li>
+          <li>Everything the portal produces is a <b>draft</b>. You review it and decide what gets sent.</li>
+        </ul>
+      </section>
+
+      <section class="card hsec reveal" id="help-suggest"><h2><span class="num">8</span>Suggesting a change</h2>
+        <ol>
+          <li>Click <span class="ui-chip">Suggest a change</span> in the bottom-right corner of any page.</li>
+          <li>Pick what kind of change it is and describe it. The page you were on is filled in for you.</li>
+          <li>Click <span class="ui-chip">Open email</span>. Your email app (Outlook) opens with the message ready. Check it and click <b>Send</b>.</li>
+        </ol>
+        <p class="tip"><b>Email app didn't open?</b> Click <b>Copy text</b> instead and paste it into a new email to the address shown in the form.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-employee"><h2><span class="num">9</span>Employee Info (Employee Directory, Code of Conduct, QR Ph Billers)</h2>
+        <ol>
+          <li>Open <span class="ui-chip">Employee Info</span> in the top menu.</li>
+          <li>The first time, click <b>Choose file</b> and pick the phone directory Excel (on the <b>Employee Directory</b> tab) or the Code of Conduct PDF (on the <b>Code of Conduct</b> tab). You can also drag the file onto the box.</li>
+          <li>Type in the search box: a name (accents don't matter, so "munoz" finds "Muñoz"), a department, a branch, a local number or a word like "tardiness". To search only the directory, use the search box inside the <b>Employee Directory</b> tab. Click any number to copy it.</li>
+          <li>When HR sends a newer file, click <b>Replace with newer file</b>.</li>
+        </ol>
+        <p class="tip"><b>Privacy:</b> the files are read on this computer and remembered only in this browser. They are never uploaded and are not part of the portal folder. Do not put them in GitHub or the shared portal folder. On another computer, load them again. <b>Remove from this PC</b> deletes the saved copy.</p>
+        <p><b>QR Ph Billers tab:</b> a searchable list of every biller that accepts QR Ph P2B, with its category and biller code (click the code to copy it). It reads the newest P2B Biller Masterlist in your portal folder's <b>QR Ph Billers</b> folder by itself, so there is nothing extra to load. It is the same list, in the same order, as the published directory; new and updated billers are tagged. Use <b>New and updated only</b> to see this period's changes.</p>
+        <p class="tip">The Code of Conduct view is a reading aid. The official version is the PDF from HR; each section shows its page number.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-qrph"><h2><span class="num">10</span>QR Ph P2B Biller Directory (15th and month-end)</h2>
+        <ol>
+          <li>Download the <b>P2B Biller Masterlist</b> .xlsx from the HUB. It is not attached to the advisory email.</li>
+          <li>Open <span class="ui-chip">Product Management</span> › Payments &amp; Risk › <b>QR Ph P2B Biller Directory</b>. Add the masterlist, and if you have it, last period's masterlist.</li>
+          <li>Click <b>Create report</b>. Check the counts (they should match the Excel Summary sheet) and compare the new, updated and total figures with the <b>P2B Biller Advisory</b> email, using the checklist on screen.</li>
+          <li>If the advisory says otherwise, use <b>Changes to the list</b> to mark a biller new or updated, leave one out, or add one. Otherwise leave the list as the Excel says.</li>
+          <li>Click <b>Save Word directory (.docx)</b>. For a PDF, click <b>PDF version</b> and choose <b>Save as PDF</b> in the print window, or open the Word file and use Word's Save as PDF.</li>
+        </ol>
+        <p class="tip">The file name follows the house format, e.g. <i>List of QR Ph P2B list of billers_August 15, 2026.docx</i>. Yellow rows are new billers; orange rows are updated biller details.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-folder"><h2><span class="num">11</span>Your portal folder (no more uploading)</h2>
+        <p>The portal is one folder, <b>Marketing Portal</b>, laid out like the Policy Library: the app file, its system files, then a folder per team with a folder for each task. Keep the files the portal needs in their task folders; each page finds the newest file by itself, and you only check it and click <b>Create report</b>.</p>
+        <ol>
+          <li>Click <span class="ui-chip">Choose folder</span> in the top bar and pick the <b>Marketing Portal</b> folder itself (the one that holds <b>Marketing Portal.html</b>). Click <b>Allow</b> when Chrome asks.</li>
+          <li>The folder looks like this (the portal adds any folder that is missing, and a READ ME file):
+            <pre class="tree">Marketing Portal
+  Marketing Portal.html          open this one
+  System files (do not touch)    the app itself
+  Employee Info                  phone directory Excel + Code of Conduct PDF
+  Product Management
+    Industry Ranking             one folder per quarter (2026-Q3) with its four BSP thrift PDFs
+      Outputs                    the decks, reports and figures you save
+    QR Ph Billers                P2B Biller Masterlist files (keep last period's too)
+      Outputs                    the directories and check sheets you save
+    DRB Usage                    one folder per quarter, a folder per sender inside
+      Outputs                    the workbooks and dashboards you save
+    RIB Advisories               kept by the RIB Advisory Generator (don't edit by hand)
+      Outputs                    compilation Word files and backups
+    Research Library             past studies, one folder per quarter
+    KRI Report                   coming soon
+  Creatives                      coming soon
+  Customer Service
+    Types of Complaints          coming soon
+  Fraud Management               coming soon</pre></li>
+          <li>Each task keeps its own <b>Outputs</b> folder, so its files and its finished reports stay together. Files in Outputs are never used as inputs.</li>
+          <li>When a new file comes in, save it into its task folder. Keep the date in the file name (for example <i>P2B Biller Masterlist-As of 2026-09-30.xlsx</i>); the newest date is used. For Industry Ranking, make a new quarter folder named like <b>2026-Q3</b>.</li>
+          <li>Open the page. The file boxes show <b>From your portal folder</b> and which file was picked. Click <b>Choose file…</b> if you want a different one.</li>
+          <li>Used an earlier portal folder (for example <b>SBA Portal Files</b>)? Move its <b>QR Ph Billers</b>, <b>Industry Ranking</b>, <b>DRB Usage</b>, <b>RIB Advisories</b> and <b>Research Library</b> folders into <b>Product Management</b>, and <b>Employee Info</b> next to it, then choose the Marketing Portal folder.</li>
+        </ol>
+        <p class="tip"><b>Chrome asks again?</b> After Chrome restarts it may ask to allow the folder. Click <b>Allow</b> (top bar or the yellow card on Home); choose <b>Allow on every visit</b> if offered. Nothing in the folder ever leaves this computer.</p>
+        <p class="tip">Want to try it first? Choose the practice folder <code>samples/Marketing Portal (practice)</code>. It holds only made-up or public files, in the same team folders.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-rib"><h2><span class="num">12</span>RIB advisories</h2>
+        <p>Open <span class="ui-chip">Product Management</span> › Digital Banking › <b>RIB Advisory Generator</b>. The bar at the top shows the three steps; click a step to open it.</p>
+        <ol>
+          <li><b>Write the advisory.</b> Choose your name, add the email (file, pasted text, or type it in), pick the kind of advisory and check the details. The preview is editable: click in the subject or body to change the words, and select words then click <b>B</b>, <b>I</b> or <b>U</b> to make them bold, italic or underlined. Your typed changes are kept even if you change the form later (<b>Rebuild from the form</b> undoes them). Then copy the <b>subject</b> and the <b>body</b> into the RIB Inbox editor and click <b>Save to tracker</b>.</li>
+          <li><b>Track posting.</b> Each advisory has a card with four steps: Drafted › Posted on UAT (test site) › For Ms. Rocky’s approval › Posted on Prod (live site). When you finish a step, click the blue button on the card (for example <i>I’ve posted it on UAT</i>). The last step asks for the live date and a screenshot. Clicked by mistake? Use <i>Undo last step</i>.</li>
+          <li><b>Compilation.</b> Every advisory posted on Prod, newest first. Search, pick a kind or dates, then <b>Download Word file</b> or <b>Print / Save as PDF</b>.</li>
+        </ol>
+        <p class="tip"><b>First time:</b> in Compilation, open <b>Backup and restore</b> › <b>Restore from a backup file</b> and choose the starter file <i>RIB_advisories_starter_from_Sept_7_2026.json</i> (keep it on your PC; it is not part of the portal). Advisories are kept in your portal folder under <b>RIB Advisories</b>; without a portal folder they stay in this browser until you choose one.</p>
+      </section>
+
+      <section class="card hsec reveal" id="help-drb"><h2><span class="num">13</span>DRB Usage (quarterly)</h2>
+        <p>Open <span class="ui-chip">Product Management</span> › Digital Banking › <b>DRB Usage</b>. It builds the same “DRB Usage Qn YYYY - Worked Figures” Excel workbook as before: every figure is a live formula, with the Summary, Usage, Profile, Transactions, Channels, Billers_Banks, QR, Cards, QoQ and Checks sheets.</p>
+        <ol>
+          <li><b>Pick the quarter.</b> Click <b>Create this quarter's folders</b> once. Your portal folder gets <b>Product Management › DRB Usage › 2026-Q3</b> with a folder per sender: <b>Ms. Hong</b> (DRB Usage export), <b>Sir Jun</b> (DRB Reports and ITCom DCB Reports, quarter-end month editions; DRB DCB Stats if you have it), <b>Automailer</b> (RIB Idle Accounts Report) and <b>RIB Inbox shared drive</b> (RIB Usage, optional).</li>
+          <li><b>Check the files.</b> Each line should say <b>Ready</b>. Files are recognised by what is inside them, so the names do not matter, and the RIB Usage Report V2 (.xlsb) can be used as received. <b>Choose file</b> uses another file. Rows dated outside the quarter (for example the 1 October rows in a report run on the 1st) are left out; the page says how many.</li>
+          <li><b>CIF Profile from Ms. Hong.</b> Save her email (“DRB Usage &amp; CIF Profile as of …”) in the <b>Ms. Hong</b> folder: in Outlook, open it and use File › Save As. The page reads the figures from the pictures pasted in it (it also takes the pictures themselves, an Excel file, or pasted text). It shows the pictures and checks that the tables add up; compare, correct anything marked <b>!</b>, then tick <b>These match the CIF Profile</b>. The first reading takes about half a minute. Leave <i>Inactive CIFs</i> blank unless you must override the idle report.</li>
+          <li><b>Last quarter's figures</b> are read by themselves from last quarter's DRB Usage workbook, whatever its file name, in <b>Product Management › DRB Usage › Outputs</b> (or last quarter's folder). Read them back and tick <b>These are last quarter's figures</b>. <i>Have any online activity (Sir RD's count)</i> is optional; when filled in, the Usage sheet shows both ways of counting active clients.</li>
+          <li>Once every file is found and both boxes are ticked, the report builds by itself (<b>Create report</b> builds it again). The <b>Dashboard</b> tab shows the quarter at a glance: print it or save it as a web page. The <b>Details</b> tab has the headline figures, checks, top billers and banks and quarter on quarter, and the <b>Save the workbook</b> button. It is saved to <b>Product Management › DRB Usage › Outputs</b>, where next quarter's run finds it.</li>
+        </ol>
+        <p class="tip"><b>Checks:</b> PASS and REVIEW are fine; a <b>FAIL</b> means an input is wrong (for example the generation and staff tables do not add up to the same total) and the workbook cannot be saved until it is fixed. <b>New transaction type?</b> The page lists it; pick its report category and whether it is a money movement, and it is remembered. <b>Very large export?</b> If the PC runs out of memory, open it in Excel, save the RAW sheet as CSV and use that instead.</p>
+        <p class="tip">Practice files: <code>samples/Marketing Portal (practice)/Product Management/DRB Usage/</code> (made-up data; the CIF figures to type are in <code>samples/drb-usage/README.md</code>).</p>
+      </section>
+      <section class="card hsec reveal" id="help-research"><h2><span class="num">14</span>Research Library</h2>
+        <p>Open <span class="ui-chip">Product Management</span> › Market &amp; Research › <b>Research Library</b>. It shows the studies and references in the <b>Research Library</b> folder of your portal folder, grouped by quarter and by your own topic folders. Nothing is copied or uploaded.</p>
+        <ol>
+          <li><b>Put the files in.</b> Click <b>Create this quarter's folder</b> to get e.g. <b>Product Management › Research Library › 2026-Q4</b>, then make your own topic folders inside it (for example <i>Competitor studies</i>, <i>Customer surveys</i>). A file outside a quarter folder is placed by the date in its name (“September 2026”, “2026-09-30”, “Q3 2026”), else by the date it was last saved; the list says which.</li>
+          <li><b>Browse.</b> Pick a quarter, or switch to <b>By topic folder</b> to see one topic across all quarters.</li>
+          <li><b>Search.</b> Type words from a title or from inside a PDF. The PDFs are read once (a minute or two the first time) and remembered on this PC; changed files are read again. Click a page number to jump to it.</li>
+          <li><b>Preview.</b> Click a document. PDFs show page by page (zoom, page numbers, <b>Open in a new tab</b> for Chrome's own viewer); pictures show as they are; Word, PowerPoint and Excel files show their text or values. <b>Download a copy</b> saves a copy; to edit, open the original from its folder.</li>
+        </ol>
+        <p class="tip">Scanned PDFs (pictures of pages) have no text to search; the list marks them “no searchable text”. No portal folder? <b>Choose a folder to browse</b> shows any folder for this visit. Practice files: <code>samples/Marketing Portal (practice)/Product Management/Research Library/</code>.</p>
+      </section>
+
+      <section class="hsec faq reveal" id="help-faq"><h2><span class="num">?</span>Common questions</h2>
+        <details><summary>Do I need internet or to install anything?</summary><p>No. Double-click <code>Marketing Portal.html</code> in the Marketing Portal folder and it opens in Chrome or Edge.</p></details>
+        <details><summary>A card says “Coming soon”. Can I use it?</summary><p>Not yet. Click it to see what it will need and what it will produce. It opens once it is built and tested.</p></details>
+        <details><summary>I put the files in the wrong box. Is that a problem?</summary><p>No. For Industry Ranking the portal sorts the PDFs by their “As of” date: the latest is this quarter, the one before is the previous quarter. It tells you it did this under “Check before sending”.</p></details>
+        <details><summary>Where did my saved file go?</summary><p>Into the folder shown at the top (“Saving to …”). If no folder is shown, look in Downloads.</p></details>
+        <details><summary>The comments say DRAFT thresholds. What does that mean?</summary><p>The growth and decline bands used for the wording are placeholders until SBA approves them. The numbers themselves are calculated exactly from your file.</p></details>
+        <details><summary>Can I break anything?</summary><p>No. The portal never changes your source files and never sends anything. The worst case is a red box asking you to fix the file.</p></details>
+        <details><summary>The phone directory shows a wrong or old number. Can I fix it here?</summary><p>No. The page shows exactly what is in the Excel file. Ask the file owner to correct it, then load the newer file with <b>Replace with newer file</b>.</p></details>
+        <details><summary>Do I still need to upload files?</summary><p>Not if you use a portal folder (see <a href="#help/folder">Your portal folder</a><a href="#rib">RIB advisories</a>). The <b>Choose file</b> buttons still work for a one-off file.</p></details>
+        <details><summary>How do I suggest an improvement?</summary><p>Use the <b>Suggest a change</b> button at the bottom right of any page. It prepares an email to the portal owner; you click Send.</p></details>
+        <details><summary>Who do I ask for help?</summary><p>The Product Management Officer who maintains the portal (Marketing Group).</p></details>
+      </section>
+    </div>
+  </div>
+</template>
+<template id="tpl-employee-info">  <header class="page-head" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="#home"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><b>Employee Info</b></nav>
+    <div class="page-title"><div><h1>Employee Info</h1><p class="lede">Phone numbers, policies, QR Ph billers and other staff reference. Files you load here stay on this computer.</p></div></div>
+    <div class="finder k-search"><label for="k-q" class="sr-only">Search Employee Info</label><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="k-q" type="search" autocomplete="off" placeholder="Search a name, department, branch, number, policy word or biller"></div>
+  </div></header>
+  <div id="k-app">
+    <div class="tabs-bar"><div class="wrap"><nav class="tabs" id="k-tabs" aria-label="Employee Info sections">
+      <a href="#directory" data-tab="directory" class="active">Employee Directory <span class="tab-n" hidden></span></a>
+      <a href="#code" data-tab="code">Code of Conduct <span class="tab-n" hidden></span></a>
+      <a href="#billers" data-tab="billers">QR Ph Billers <span class="tab-n" hidden></span></a>
+      <a href="#soon" data-tab="soon">Coming soon</a>
+    </nav></div></div>
+    <div class="wrap page-body" data-scene="sky">
+      <section class="k-panel" data-panel="directory" id="k-directory"></section>
+      <section class="k-panel" data-panel="code" id="k-code" hidden></section>
+      <section class="k-panel" data-panel="billers" id="k-billers" hidden></section>
+      <section class="k-panel" data-panel="soon" hidden><div class="k-soon">
+        <div class="card"><h2>Organization chart</h2><p class="muted">Planned. Send the source file when ready.</p></div>
+        <div class="card"><h2>Product and fee summaries</h2><p class="muted">Planned.</p></div>
+        <div class="card"><h2>Templates</h2><p class="muted">Planned.</p></div>
+      </div></section>
+    </div>
+  </div>
+</template>
+<template id="tpl-drb">  <header class="page-head no-print" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="#home"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><a href="#pm">Product Management</a><span aria-hidden="true">›</span><a href="#pm/digital-banking">Digital Banking</a><span aria-hidden="true">›</span><b>DRB Usage</b></nav>
+    <div class="page-title"><div><h1>DRB Usage</h1><p class="lede">The quarterly Sterling Bank Online usage workbook: enrolment and user profile, transactions, channels, top billers and banks, QR, cards and the quarter-on-quarter comparison. Every figure is a live formula worked from the source files.</p></div></div>
+  </div></header>
+  <div class="wrap page-body drb" data-scene="sky">
+    <a class="backlink" href="#pm/digital-banking"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Back to Digital Banking</a>
+    <div class="guide no-print"><b>How to use this page:</b><ol><li>Pick the quarter</li><li>Check the files</li><li>Type the CIF Profile</li><li>Check last quarter's figures</li><li>The report builds itself: check the dashboard, then save</li></ol><a href="#help/drb">More help</a></div>
+    <div id="synth" class="card errors hide" role="alert"><b>Practice files.</b> These files are marked SYNTHETIC TEST DATA. The workbook will be stamped TEST DATA. Do not use the figures.</div>
+
+    <section class="card" id="c-quarter">
+      <h2><span class="step">1</span>Which quarter?</h2>
+      <div class="row2">
+        <div class="field"><label for="q-year">Year</label><select id="q-year"></select></div>
+        <div class="field"><label for="q-q">Quarter</label><select id="q-q"><option value="1">Q1 (January – March)</option><option value="2">Q2 (April – June)</option><option value="3">Q3 (July – September)</option><option value="4">Q4 (October – December)</option></select></div>
+      </div>
+      <p class="help" id="q-where"></p>
+      <div class="actions-row"><button class="btn" id="btn-mkdirs" type="button">Create this quarter's folders</button><span class="hint" id="mkdirs-note"></span></div>
+    </section>
+
+    <section class="card" id="c-files">
+      <h2><span class="step">2</span>The files</h2>
+      <p class="help">Files are recognised by what is inside them, not by their names. Use <b>Choose file</b> to use a different file.</p>
+      <table class="t"><thead><tr><th>File (sent by)</th><th>Status</th><th></th></tr></thead><tbody id="files-t"></tbody></table>
+      <div class="actions-row"><button class="btn" id="btn-rescan" type="button">Look again</button><span class="hint" id="scan-note"></span></div>
+    </section>
+
+    <section class="card" id="c-cif">
+      <h2><span class="step">3</span>CIF Profile (from Ms. Hong)</h2>
+      <p class="help">Save Ms. Hong's email (“DRB Usage &amp; CIF Profile as of …”) in the <b>Ms. Hong</b> folder: the figures are read from it, including the pictures pasted in it. Check them against the pictures, then tick below. They are saved with this quarter in your portal folder (on this PC only).</p>
+      <div class="src-box" id="cif-box"><div id="cif-src">Looking for Ms. Hong's email…</div><ul id="cif-checks"></ul><div class="cif-pics" id="cif-pics"></div>
+        <div class="actions-row" style="margin:10px 0 0"><label class="btn">Choose the email or picture<input type="file" id="cif-file" accept=".msg,.eml,.png,.jpg,.jpeg,.xlsx,.xls,.txt" multiple hidden></label><button class="btn" id="btn-cif-reread" type="button">Read again</button></div>
+        <details class="more"><summary>Or paste the email text</summary><textarea id="cif-paste" rows="5" placeholder="Paste the CIF Profile text here"></textarea><div class="actions-row" style="margin:8px 0 0"><button class="btn" id="btn-cif-paste" type="button">Read the pasted text</button></div></details>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="cif-total">Total CIFs</label><input id="cif-total" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
+        <div class="field"><label for="cif-enrolled">Total enrolled CIFs</label><input id="cif-enrolled" type="number" min="0" step="1"><small>Net of dormant and closed</small></div>
+        <div class="field"><label for="cif-usage">CIF w/ usage</label><input id="cif-usage" type="number" min="0" step="1"><small>As supplied in the CIF Profile</small></div>
+        <div class="field"><label for="cif-inactive">Inactive CIFs (only if overriding)</label><input id="cif-inactive" type="number" min="0" step="1"><small>Leave blank to use the RIB Idle Accounts Report</small></div>
+      </div>
+      <div class="field hide" id="inactive-why-f"><label for="cif-inactive-why">Why the inactive count is typed</label><input id="cif-inactive-why" type="text" placeholder="e.g. The idle report for the quarter has no balances"></div>
+      <h3 class="k-sub">Enrolled CIFs by generation, active vs idle</h3>
+      <table class="t"><thead><tr><th>Generation</th><th>Born</th><th class="n">Age from</th><th class="n">Age to</th><th class="n">Active</th><th class="n">Idle</th></tr></thead><tbody id="gen-t"></tbody></table>
+      <p class="hint">Age bands move up by one every January; they are set for the year you picked.</p>
+      <h3 class="k-sub">Enrolled CIFs by staff tag, active vs idle</h3>
+      <table class="t"><thead><tr><th>Staff tag</th><th>Code in the export</th><th class="n">Active</th><th class="n">Idle</th></tr></thead><tbody id="staff-t"></tbody></table>
+      <div class="readback" id="readback"></div>
+    </section>
+
+    <section class="card" id="c-prior">
+      <h2><span class="step">4</span>Last quarter's figures</h2>
+      <p class="help">Read by itself from last quarter's DRB Usage workbook, found by what is inside it (in <b>Product Management › DRB Usage › Outputs</b> or last quarter's folder), whatever its name.</p>
+      <div class="readback" id="prior-src"></div>
+      <div class="actions-row" style="margin-top:0"><label class="btn">Choose last quarter's workbook<input type="file" id="prior-file" accept=".xlsx" hidden></label><button class="btn" id="btn-prior-reload" type="button">Read it again</button></div>
+      <details class="more" id="prior-box"><summary>Show and edit last quarter's figures</summary>
+        <table class="t" style="margin-top:10px"><thead><tr><th>Figure</th><th class="n">Prior quarter</th><th>Source</th></tr></thead><tbody id="prior-t"></tbody></table>
+        <h3 class="k-sub">Successful transactions by type, last quarter</h3>
+        <table class="t"><thead><tr><th>Transaction type</th><th class="n">Prior quarter</th></tr></thead><tbody id="pcat-t"></tbody></table>
+        <div class="field" style="margin-top:14px"><label for="open-items">Open items (one per line; carried forward)</label><textarea id="open-items" rows="5"></textarea></div>
+      </details>
+    </section>
+
+    <section class="card" id="c-run">
+      <h2><span class="step">5</span>Create the report</h2>
+      <p class="help">The report builds by itself once every file is found and both boxes above are ticked; <b>Create report</b> builds it again. Reading a large DRB Usage export can take a minute. Keep this tab open.</p>
+      <div class="actions-row" style="margin-top:0"><button class="btn primary lg" id="btn-run" type="button">Create report</button><span class="hint" id="run-note"></span></div>
+      <div class="progress hide" id="prog"><i></i></div>
+      <p class="hint" id="prog-msg"></p>
+      <div id="run-err"></div>
+    </section>
+
+    <section class="card hide" id="c-map">
+      <h2>New transaction types</h2>
+      <p class="help">The export has transaction types the portal does not know yet. For each one, pick the report category it belongs to and whether it is a financial transaction (a money movement). Your choices are saved in your portal folder and used from now on.</p>
+      <table class="t"><thead><tr><th>Transaction type (as exported)</th><th class="n">Rows</th><th>Report category</th><th>QR group</th><th>Financial?</th></tr></thead><tbody id="map-t"></tbody></table>
+      <div class="actions-row"><button class="btn primary" id="btn-map" type="button">Save and continue</button></div>
+    </section>
+
+    <section id="c-review" class="hide">
+      <div class="rv-tabs no-print" role="tablist" aria-label="Report view"><button type="button" role="tab" id="tab-dash" aria-controls="rv-dash" aria-selected="true">Dashboard</button><button type="button" role="tab" id="tab-det" aria-controls="rv-details" aria-selected="false">Details</button></div>
+      <p class="hint no-print" id="dash-msg" aria-live="polite"></p>
+      <div id="rv-dash" role="tabpanel" aria-labelledby="tab-dash"></div>
+      <div id="rv-details" role="tabpanel" aria-labelledby="tab-det" hidden>
+      <div class="results-bar"><h2>Review</h2><div class="out-buttons"><button class="btn primary" id="btn-save" type="button">Save the workbook</button></div><p id="save-msg"></p></div>
+      <div class="card"><h2>Headline figures <span class="muted" id="rv-q" style="font-weight:500;font-size:14px"></span></h2><div class="tiles" id="rv-tiles"></div><h3 class="k-sub">What the data shows</h3><ul class="lst" id="rv-stm"></ul></div>
+      <div class="card"><h2>Checks <span id="rv-ck"></span></h2><p class="help">PASS = the numbers agree. FAIL = something is wrong and must be fixed before the figures are used. REVIEW = a known difference between sources that needs a decision.</p>
+        <table class="t"><thead><tr><th>#</th><th>Check</th><th class="n">Value A</th><th class="n">Value B</th><th>Result</th></tr></thead><tbody id="rv-checks"></tbody></table></div>
+      <div class="two">
+        <div class="card"><h2>Top billers</h2><table class="t"><thead><tr><th>#</th><th>Biller</th><th class="n">Count</th><th class="n">Share</th></tr></thead><tbody id="rv-billers"></tbody></table></div>
+        <div class="card"><h2>Top beneficiary banks</h2><table class="t"><thead><tr><th>#</th><th>Bank</th><th class="n">Count</th><th class="n">Share</th></tr></thead><tbody id="rv-banks"></tbody></table></div>
+      </div>
+      <div class="card"><h2>Quarter on quarter</h2><table class="t"><thead><tr><th>Measure</th><th class="n" id="rv-cq">This quarter</th><th class="n" id="rv-pq">Prior quarter</th><th class="n">Change</th><th class="n">% change</th></tr></thead><tbody id="rv-qoq"></tbody></table></div>
+      </div>
+    </section>
+  </div>
+</template>
+<template id="tpl-research">  <header class="page-head no-print" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="#home"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><a href="#pm">Product Management</a><span aria-hidden="true">›</span><a href="#pm/market-research">Market &amp; Research</a><span aria-hidden="true">›</span><b>Research Library</b></nav>
+    <div class="page-title"><div><h1>Research Library</h1><p class="lede">Past studies and references from the <b>Research Library</b> folder, by quarter and by topic. Search their names and the text inside PDFs, and preview them here. Files stay where they are; nothing is copied or uploaded.</p></div></div>
+  </div></header>
+  <div class="wrap page-body rl" data-scene="sky">
+    <a class="backlink" href="#pm/market-research"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Back to Market &amp; Research</a>
+    <div id="rl-synth" class="card errors hide" role="alert"><b>Practice files.</b> Some documents here are marked SYNTHETIC TEST DATA.</div>
+
+    <section class="card" id="rl-top">
+      <div class="rl-bar">
+        <input type="search" id="rl-q" placeholder="Search names and the text inside PDFs" aria-label="Search the library">
+        <select id="rl-quarter" aria-label="Quarter"></select>
+        <div class="seg" id="rl-view" role="group" aria-label="Group by"><button type="button" data-v="quarter" class="on">By quarter</button><button type="button" data-v="folder">By topic folder</button></div>
+      </div>
+      <p class="hint" id="rl-status" style="margin:10px 0 0"></p>
+      <div class="actions-row" style="margin:10px 0 0">
+        <button class="btn" id="rl-rescan" type="button">Look again</button>
+        <button class="btn" id="rl-mkq" type="button">Create this quarter's folder</button>
+        <label class="btn">Choose a folder to browse<input type="file" id="rl-pick" webkitdirectory multiple hidden></label>
+        <span class="hint" id="rl-note"></span>
+      </div>
+    </section>
+
+    <div class="rl-main" id="rl-main">
+      <section class="card" id="rl-list" aria-live="polite"></section>
+      <aside class="card rl-pv hide" id="rl-pv" aria-label="Preview">
+        <div class="rl-pv-head"><div><b id="pv-name"></b><small id="pv-where"></small></div><button class="rl-x" id="pv-close" type="button" aria-label="Close the preview">×</button></div>
+        <div class="rl-tools" id="pv-tools"></div>
+        <div class="rl-pv-body" id="pv-body"></div>
+      </aside>
+    </div>
+  </div>
+</template>
+<template id="tpl-rib">  <header class="page-head no-print" data-scene="calm"><div class="wrap">
+    <nav class="crumbs" aria-label="You are here"><a href="#home"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Home</a><span aria-hidden="true">›</span><a href="#pm">Product Management</a><span aria-hidden="true">›</span><a href="#pm/digital-banking">Digital Banking</a><span aria-hidden="true">›</span><b>RIB Advisory Generator</b></nav>
+    <div class="page-title"><div><h1>RIB Advisory Generator</h1><p class="lede">Turn an advisory email into ready-to-paste RIB Inbox text, track it until it is live, and keep a record of everything posted.</p></div></div>
+  </div></header>
+<div class="wrap rib" data-scene="sky">
+<nav class="flow no-print" aria-label="Steps">
+  <button class="flow-step on" data-tab="new"><span class="fs-num">1</span><span class="fs-txt"><b>Write the advisory</b><small>From the email to ready-to-paste text</small></span></button>
+  <span class="flow-arrow" aria-hidden="true">›</span>
+  <button class="flow-step" data-tab="tracker"><span class="fs-num">2</span><span class="fs-txt"><b>Track posting</b><small>Mark each step: test site, approval, live site</small></span><span class="n" id="nTracker" title="Still in progress">0</span></button>
+  <span class="flow-arrow" aria-hidden="true">›</span>
+  <button class="flow-step" data-tab="compilation"><span class="fs-num">3</span><span class="fs-txt"><b>Compilation</b><small>Everything posted on the live site</small></span><span class="n" id="nComp" title="Posted on Prod">0</span></button>
+</nav>
+<div class="store-line no-print"><span id="storePill">…</span> <button id="btnFolder" class="lnk">Choose portal folder</button></div>
+<input type="hidden" id="preparedBy">
+
+<div class="rib-main">
+  <div id="banner" class="banner hide"></div>
+
+  <!-- 1. WRITE THE ADVISORY -->
+  <section id="tab-new">
+    <div class="card step-card">
+      <h2><b>1</b>Who is preparing this advisory?</h2>
+      <div class="who" data-who></div>
+      <div class="note">Your name is saved with the advisory and with every status update. This PC remembers it.</div>
+    </div>
+
+    <div class="card step-card">
+      <h2><b>2</b>Where is the advisory coming from?</h2>
+      <div class="choices" id="methodSeg">
+        <button data-m="file" class="on"><b>Email file</b><span>I saved the email as a file (.eml or .msg)</span></button>
+        <button data-m="paste"><b>Paste the email</b><span>I'll copy the email text and paste it here</span></button>
+        <button data-m="form"><b>Type it in myself</b><span>No email; I'll fill in the details</span></button>
+      </div>
+      <div id="m-file">
+        <label class="drop" id="drop">
+          <input type="file" id="emailFile" accept=".eml,.msg,message/rfc822,application/vnd.ms-outlook">
+          <strong>Drop the email file here, or click to choose it</strong><br>
+          <span class="note">Outlook on the web: open the email › ⋯ › Download. Outlook on the desktop: drag the email onto your desktop or a folder.</span>
+        </label>
+      </div>
+      <div id="m-paste" class="hide mt">
+        <textarea id="pasteText" placeholder="Paste the whole email here (include the subject line if you can)."></textarea>
+        <div class="btns"><button class="btn pri" id="btnReadPaste">Read the text</button></div>
+      </div>
+      <div id="m-form" class="hide note mt">Choose the kind of advisory below, then fill in the details.</div>
+      <div id="emailBox" class="email hide"></div>
+    </div>
+
+    <div class="card step-card">
+      <h2><b>3</b>What kind of advisory is it?</h2>
+      <div class="chips" id="catChips"></div>
+      <div class="note" id="catNote"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card step-card">
+        <h2><b>4</b>Check the details</h2>
+        <div class="field"><label for="postDate" id="postDateLabel">Posting date (Prod)</label><input type="date" id="postDate"><div class="hint">The day it should go live on the RIB Inbox. Change it if posting moves.</div></div>
+        <div id="formFields"></div>
+      </div>
+      <div class="card step-card sticky">
+        <h2><b>5</b>Preview, copy and save</h2>
+        <div class="pv-label">Subject</div>
+        <div class="paper subj" id="pvSubj" data-ph="Type the subject or fill in the form" contenteditable="plaintext-only" spellcheck="true" role="textbox" aria-label="Subject (you can type here)"></div>
+        <div class="pv-label mt">Body <span class="pv-font">Trebuchet MS, size 3 · click in the text to change it</span></div>
+        <div class="fmtbar" role="toolbar" aria-label="Formatting">
+          <button type="button" class="fb" data-fmt="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button type="button" class="fb" data-fmt="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button type="button" class="fb" data-fmt="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+          <span class="fb-hint">Select words, then click B, I or U.</span>
+        </div>
+        <div class="paper" id="pvBody" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Body (you can type here)"></div>
+        <div class="edit-note hide" id="editTextNote"><span id="editTextMsg"></span><button class="lnk" id="btnRebuild" type="button">Rebuild from the form</button></div>
+        <div class="pv-label mt">Before you copy</div>
+        <ul class="checks" id="checks"></ul>
+        <ol class="do-list">
+          <li><button class="btn" id="cpSubj">Copy subject</button><span>Paste it into the RIB Inbox subject.</span></li>
+          <li><button class="btn amb" id="cpRich">Copy body</button><span>Paste it into the message box. <button class="lnk" id="cpPlain" title="Copy without bold and font">Copy as plain text</button></span></li>
+          <li><button class="btn pri" id="btnSave">Save to tracker</button><span><span class="note" id="editNote"></span> <button class="lnk hide" id="btnCancelEdit">Start a new advisory instead</button></span></li>
+        </ol>
+        <div class="saved hide" id="savedPanel">
+          <b>Saved.</b> Next: post it on UAT (the test site), then go to <b>2 Track posting</b> and click <i>I've posted it on UAT</i>.
+          <div class="btns"><button class="btn pri" id="goTrack">Go to Track posting</button><button class="btn" id="btnNew">Start another advisory</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. TRACK POSTING -->
+  <section id="tab-tracker" class="hide">
+    <div class="card">
+      <div class="trk-head">
+        <div class="chips" id="trkChips"></div>
+        <input type="search" id="trkSearch" placeholder="Search by subject">
+        <div class="who who-sm"><span class="who-lbl">You are</span><span data-who></span></div>
+      </div>
+      <p class="note">Each advisory goes through four steps: <b>Drafted</b> › <b>Posted on UAT</b> (test site) › <b>For Ms. Rocky’s approval</b> › <b>Posted on Prod</b> (live site). When you finish a step, click the blue button on its card.</p>
+      <div id="trkTable"></div>
+    </div>
+  </section>
+
+  <!-- 3. COMPILATION -->
+  <section id="tab-compilation" class="hide">
+    <div class="card no-print">
+      <div class="filters">
+        <div><label class="note" for="compKw">Search</label><input type="search" id="compKw" placeholder="Words in the subject or text"></div>
+        <div><label class="note" for="compCat">Kind of advisory</label><select id="compCat"></select></div>
+        <div><label class="note" for="compFrom">From</label><input type="date" id="compFrom"></div>
+        <div><label class="note" for="compTo">To</label><input type="date" id="compTo"></div>
+        <button class="btn" id="compClear">Clear</button>
+      </div>
+      <div class="btns">
+        <button class="btn pri" id="expWord">Download Word file</button>
+        <button class="btn" id="expPdf">Print / Save as PDF</button>
+        <span class="note" id="compCount"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="print-head"><strong>RIB Inbox Advisories</strong><div id="printSub"></div></div>
+      <div id="compList"></div>
+    </div>
+    <details class="card backup no-print">
+      <summary>Backup and restore</summary>
+      <p class="note">Save a backup file to keep a copy of every advisory and screenshot, or to move them to another PC. Use <b>Restore</b> once for the starter file. Restoring never makes duplicates.</p>
+      <div class="btns"><button class="btn" id="expBackup">Save a backup file</button><label class="btn">Restore from a backup file<input type="file" id="impBackup" accept=".json" class="hide"></label></div>
+    </details>
+  </section>
+</div>
+
+<dialog id="prodDlg">
+  <header>Posted on Prod (live site): add the date and a screenshot</header>
+  <div class="body">
+    <div class="field"><label for="prodDate">Date it went live</label><input type="date" id="prodDate"></div>
+    <div class="field"><label>Screenshot of the live post</label>
+      <div class="paste" id="pasteZone" tabindex="0">Click here and press Ctrl+V to paste a screenshot, or <label style="text-decoration:underline;cursor:pointer">choose image files<input type="file" id="shotFiles" accept="image/*" multiple class="hide"></label></div>
+      <div class="thumbs" id="shotThumbs"></div>
+    </div>
+  </div>
+  <footer><button class="btn" id="prodCancel">Cancel</button><button class="btn pri" id="prodOk">Save</button></footer>
+</dialog>
+<dialog id="viewer"><img id="viewerImg" alt="Screenshot"></dialog>
+<div class="toast" id="toast"></div>
+</div>
+</template>
+
+<script src="System%20files%20(do%20not%20touch)/vendor/xlsx.full.min.js"></script>
+<script src="System%20files%20(do%20not%20touch)/vendor/pdf.min.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/files.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/parse.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/validate.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/calc.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/rules.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/charts.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/export.js"></script>
+<script src="System%20files%20(do%20not%20touch)/data/feedback.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/ui.js"></script>
+<script src="System%20files%20(do%20not%20touch)/data/home.js"></script>
+<script src="System%20files%20(do%20not%20touch)/data/industry-ranking-config.js"></script>
+<script src="System%20files%20(do%20not%20touch)/data/brand-logos.js"></script>
+<script src="System%20files%20(do%20not%20touch)/skills/registry.js"></script>
+<script src="System%20files%20(do%20not%20touch)/vendor/jszip.min.js"></script>
+<script src="System%20files%20(do%20not%20touch)/data/qrph-templates.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/knowledge.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/xlsx-calc.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/xlsx-writer.js"></script>
+<script src="System%20files%20(do%20not%20touch)/data/drb-txn-map.js"></script>
+<script src="System%20files%20(do%20not%20touch)/vendor/cfb.min.js"></script>
+<script src="System%20files%20(do%20not%20touch)/core/ocr.js"></script>
+<script src="System%20files%20(do%20not%20touch)/skills/drb-usage.js"></script>
+<script src="System%20files%20(do%20not%20touch)/skills/drb-usage-dashboard.js"></script>
+<script src="System%20files%20(do%20not%20touch)/pages/drb.js"></script>
+<script src="System%20files%20(do%20not%20touch)/pages/research.js"></script>
+<script src="System%20files%20(do%20not%20touch)/pages/rib.js"></script>
+<script>Portal.ui.boot();</script>
+</body>
+</html>

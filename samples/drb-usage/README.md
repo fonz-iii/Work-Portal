@@ -5,7 +5,7 @@ Made-up files in the same layouts the DRB Usage page reads. No real bank data.
 They live in the practice portal folder:
 
 ```
-samples/SBA Portal Files (practice)/DRB Usage/
+samples/Marketing Portal (practice)/Product Management/DRB Usage/
   2026-Q3/
     Ms. Hong/                 SYNTHETIC DRB Usage Q3 2026.xlsx       (RAW sheet, 4,000 rows)
                               SYNTHETIC CIF Profile as of September 2026.eml   (CIF Profile email with three pasted pictures)

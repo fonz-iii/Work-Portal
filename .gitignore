@@ -1,0 +1,9 @@
+# Real files go in the team folders on the office PC only: never commit them (only the empty folder markers)
+Marketing Portal/Employee Info/**
+Marketing Portal/Product Management/**
+Marketing Portal/Creatives/**
+Marketing Portal/Customer Service/**
+Marketing Portal/Fraud Management/**
+!Marketing Portal/*/**/
+!Marketing Portal/**/.gitkeep
+Marketing Portal/READ ME.txt
