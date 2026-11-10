@@ -64,8 +64,8 @@ code { background: var(--line-2); padding: 1px 6px; border-radius: 5px; font-siz
 .brand.light { color: #fff; } .brand.light small { color: #93a3ba; }
 .soon { font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: var(--line-2); color: var(--muted); }
 
-/* ---------- left rail (2026-10-27 handoff): fixed, 232px open / 64px closed; the page is padded so page files need no change ---------- */
-:root { --rail-w: 232px; }
+/* ---------- left rail (2026-10-27 handoff): fixed, 272px open / 64px closed; the page is padded so page files need no change ---------- */
+:root { --rail-w: 272px; }
 :root[data-rail="closed"] { --rail-w: 64px; }
 body.has-rail { padding-left: var(--rail-w); transition: padding-left .25s var(--ease); }
 .rail { position: fixed; left: 0; top: 0; bottom: 0; z-index: 45; width: var(--rail-w); display: flex; flex-direction: column; overflow: hidden; background: var(--surface); border-right: 1px solid var(--line); transition: width .25s var(--ease); }
